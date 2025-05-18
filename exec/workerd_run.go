@@ -59,7 +59,7 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 			args = append(args, argv...)
 			cmd := exec.CommandContext(ctx, conf.AppConfigInstance.WorkerdBinPath, args...)
 			cmd.Dir = workerdDir
-			cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: false}
+			cmd.SysProcAttr = &syscall.SysProcAttr{}
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			cmd.Run()
