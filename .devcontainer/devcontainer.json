@@ -17,14 +17,13 @@
 	// Configure tool-specific properties.
 	// "customizations": {},
 	// Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
-	"remoteUser": "dev",
+	"remoteUser": "root",
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"golang.go",
-				"WakaTime.vscode-wakatime",
 				"bradlc.vscode-tailwindcss",
-				"GitHub.copilot"
+				"marscode.marscode-extension"
 			]
 		}
 	},
