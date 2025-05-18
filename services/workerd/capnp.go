@@ -44,8 +44,10 @@ func GenCapnpConfig() error {
 		}
 	}
 
-	logrus.Infof("GenCapnpConfig has error: %v, workerList: %+v", hasError,
-		lo.SliceToMap(workerList, func(w *entities.Worker) (string, bool) { return w.GetUID(), true }))
+	if hasError {
+		logrus.Infof("GenCapnpConfig has error: %v, workerList: %+v", hasError,
+			lo.SliceToMap(workerList, func(w *entities.Worker) (string, bool) { return w.GetUID(), true }))
+	}
 
 	if hasError {
 		return errors.New("GenCapnpConfig has error")
