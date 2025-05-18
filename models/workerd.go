@@ -222,9 +222,9 @@ func (w *Worker) Create() error {
 
 func (w *Worker) Update() error {
 	c := context.Background()
-	if w.ID == 0 {
-		return errors.New("worker has no id")
-	}
+	// if w.ID == 0 {
+	// 	return errors.New("worker has no id")
+	// }
 
 	if w.NodeName == conf.AppConfigInstance.NodeName {
 		port := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetUID())

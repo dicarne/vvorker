@@ -27,13 +27,16 @@ func GenCapnpConfig() error {
 		fileMap := utils.BuildCapfile([]*entities.Worker{w.ToEntity()})
 
 		if fileContent, ok := fileMap[worker.GetUID()]; ok {
-			err := utils.WriteFile(
-				filepath.Join(
-					conf.AppConfigInstance.WorkerdDir,
-					defs.WorkerInfoPath,
-					worker.GetUID(),
-					defs.CapFileName,
-				), fileContent)
+			// 打印生成的 capnp 文件路径
+			capnpFilePath := filepath.Join(
+				conf.AppConfigInstance.WorkerdDir,
+				defs.WorkerInfoPath,
+				worker.GetUID(),
+				defs.CapFileName,
+			)
+			logrus.Infof("Generating capnp file at: %s", capnpFilePath)
+
+			err := utils.WriteFile(capnpFilePath, fileContent)
 			if err != nil {
 				logrus.WithError(err).Errorf("failed to write file, worker is: %+v", worker.Name)
 				hasError = true

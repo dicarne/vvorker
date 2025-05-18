@@ -18,6 +18,8 @@ func FlushWorkerEventHandler(c *gin.Context, req *entities.NotifyEventRequest) {
 		return
 	}
 
+	logrus.Infoln("flush worker event handler", worker.GetUID())
+
 	if err := (&models.Worker{Worker: worker}).Flush(); err != nil {
 		logrus.WithError(err).Error("flush worker event handler error")
 		common.RespErr(c, common.RespCodeInvalidRequest, common.RespMsgInvalidRequest, nil)
