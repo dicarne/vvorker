@@ -63,18 +63,17 @@ RUN pip config set global.index-url http://pypi.douban.com/simple/ && \
 
 COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
 
-# ENV GOPROXY https://proxy.golang.com.cn,direct
-ENV GOPROXY https://goproxy.cn,direct
-ENV PATH /usr/local/go/bin:$PATH
-ENV GOROOT /usr/local/go
+# ENV GOPROXY https://goproxy.cn,direct
+# ENV PATH /usr/local/go/bin:$PATH
+# ENV GOROOT /usr/local/go
 
-RUN go install github.com/cweill/gotests/gotests@latest 		&& \
-	go install github.com/fatih/gomodifytags@latest     		&& \
-	go install github.com/josharian/impl@latest             	&& \
-	go install github.com/haya14busa/goplay/cmd/goplay@latest 	&& \
-	go install github.com/go-delve/delve/cmd/dlv@latest     	&& \
-	go install honnef.co/go/tools/cmd/staticcheck@latest    	&& \
-	go install golang.org/x/tools/gopls@latest
+# RUN go install github.com/cweill/gotests/gotests@latest 		&& \
+# 	go install github.com/fatih/gomodifytags@latest     		&& \
+# 	go install github.com/josharian/impl@latest             	&& \
+# 	go install github.com/haya14busa/goplay/cmd/goplay@latest 	&& \
+# 	go install github.com/go-delve/delve/cmd/dlv@latest     	&& \
+# 	go install honnef.co/go/tools/cmd/staticcheck@latest    	&& \
+# 	go install golang.org/x/tools/gopls@latest
 
 RUN npm config set registry https://registry.npmmirror.com/
 RUN npm install -g pnpm
@@ -83,11 +82,11 @@ RUN npm i workerd -g
 COPY . /app
 WORKDIR /app
 
-RUN go mod tidy
-RUN cd /app/www && pnpm i && pnpm run build && pnpm run export
+# RUN go mod tidy
+# RUN cd /app/www && pnpm i && pnpm run build && pnpm run export
 
 # 执行 go build 命令，-o 指定输出的二进制文件名称
-RUN CGO_ENABLED=0 GOOS=linux go build -o vorker .
+# RUN CGO_ENABLED=0 GOOS=linux go build -o vorker .
 
 FROM ubuntu:22.04
 
@@ -113,13 +112,11 @@ COPY --from=builder /app/vorker /app/vorker
 RUN apt-get update && \
 	DEBIAN_FRONTEND=noninteractive apt-get install -qy libc++1 ca-certificates
 
-# COPY bin/* /bin/
-
 RUN chmod +x /bin/*
 
 WORKDIR /app
 
-# COPY vorker /app/
+COPY vorker /app/
 
 EXPOSE 8888
 EXPOSE 8080

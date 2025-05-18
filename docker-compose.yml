@@ -8,6 +8,7 @@ services:
     volumes:
       # - /tmp/workerd-master:/var/lib/litefs # if you want to enable litefs, switch to this
       - /D/workerd/master:/workerd # change to your own path
+      - /F/Source/vorker/vorker:/app/vorker
     environment:
       - WORKER_URL_SUFFIX=.example.com # worker url = SCHEME://WORKERNAME+WORKER_URL_SUFFIX eg: .example.com
       - SCHEME=http
@@ -36,6 +37,7 @@ services:
     volumes:
       # - /tmp/workerd-agent:/var/lib/litefs # if you want to enable litefs, switch to this
       - /D/workerd/node1:/workerd # change to your own path
+      - /F/Source/vorker/vorker:/app/vorker
     environment:
       - WORKER_URL_SUFFIX=.example.com # worker url = SCHEME://WORKERNAME+WORKER_URL_SUFFIX eg: .example.com
       - AGENT_SECRET=123123 # must be same as master
