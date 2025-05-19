@@ -55,7 +55,7 @@ const config :Workerd.Config = (
 
 const vtestWorker :Workerd.Worker = (
   serviceWorkerScript = embed "src/test/entry.js",
-  compatibilityDate = "2023-04-03",
+  compatibilityDate = "2024-09-23",
 );
 `, result["test"])
 
@@ -78,7 +78,7 @@ const config :Workerd.Config = (
 
 const vtest1Worker :Workerd.Worker = (
   serviceWorkerScript = embed "src/test1/entry.js",
-  compatibilityDate = "2023-04-03",
+  compatibilityDate = "2024-09-23",
 );
 `, result["test1"])
 			},

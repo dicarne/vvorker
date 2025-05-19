@@ -122,7 +122,7 @@ const v{{.UID}}Worker :Workerd.Worker = (
   modules = [
     (name = "{{.Entry}}", esModule = embed "src/{{.Entry}}"),
   ],
-  compatibilityDate = "2023-04-03",
+  compatibilityDate = "2024-09-23",
   durableObjectNamespaces = [
     (className = "counter", uniqueKey = "xxxxxxx", preventEviction = true),
   ],
@@ -192,7 +192,7 @@ const v{{.UID}}Worker :Workerd.Worker = (
   modules = [
     (name = "{{.Entry}}", esModule = embed "src/{{.Entry}}"),
   ],
-  compatibilityDate = "2023-04-03",
+  compatibilityDate = "2024-09-23",
 );
 ```
 
