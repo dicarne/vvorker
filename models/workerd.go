@@ -7,10 +7,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
+
 	"time"
 	"vorker/conf"
 	"vorker/defs"
 	"vorker/entities"
+	"vorker/exec"
 	"vorker/rpc"
 	"vorker/tunnel"
 	"vorker/utils"
@@ -293,6 +296,9 @@ func (w *Worker) Flush() error {
 	if len(w.TunnelID) == 0 {
 		w.TunnelID = uuid.New().String()
 	}
+	if runtime.GOOS == "windows" {
+		exec.ExecManager.ExitCmd(w.UID)
+	}
 
 	if err := w.DeleteFile(); err != nil {
 		return err
@@ -300,6 +306,10 @@ func (w *Worker) Flush() error {
 	logrus.Infof("flush worker %s", w.Name)
 	if err := w.Update(); err != nil {
 		return err
+	}
+
+	if runtime.GOOS == "windows" {
+		exec.ExecManager.RunCmd(w.UID, []string{})
 	}
 	return nil
 }
