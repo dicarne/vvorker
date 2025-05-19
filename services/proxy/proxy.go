@@ -27,7 +27,7 @@ func Endpoint(c *gin.Context) {
 	worker, err := models.AdminGetWorkerByName(workerName)
 	if err != nil {
 		logrus.Errorf("failed to get worker by name, err: %v", err)
-		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+		common.RespErr(c, common.RespCodeServiceNotFound, common.RespMsgServiceNotFound, nil)
 		return
 	}
 

@@ -21,6 +21,7 @@ const (
 	RespCodeAuthErr
 	RespCodeDBErr
 	RespCodeMethodNotAllowed
+	RespCodeServiceNotFound
 )
 
 const (
@@ -33,6 +34,7 @@ const (
 	RespMsgAuthErr           = "Auth Err"
 	RespMsgDBErr             = "DB Err"
 	RespMsgMethodNotAllowed  = "Method Not Allowed"
+	RespMsgServiceNotFound   = "Service Not Found"
 )
 
 const (
