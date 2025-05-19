@@ -4,6 +4,7 @@ workerd/*.sqlite
 .env
 bin/workerd*
 vorker
+vorker.exe
 .vscode
 bin/gost
 gost.yaml
