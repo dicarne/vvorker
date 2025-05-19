@@ -19,17 +19,20 @@ type execManager struct {
 	signMap *defs.SyncMap[string, bool]
 	//用于执行cancel函数
 	chanMap *defs.SyncMap[string, chan struct{}]
-	// 新增：用于存储进程 ID
+	// 用于存储进程 ID
 	pidMap *defs.SyncMap[string, int]
+	// 用于记录 worker 运行状态
+	runningMap *defs.SyncMap[string, bool]
 }
 
 var ExecManager *execManager
 
 func init() {
 	ExecManager = &execManager{
-		signMap: new(defs.SyncMap[string, bool]),
-		chanMap: new(defs.SyncMap[string, chan struct{}]),
-		pidMap:  new(defs.SyncMap[string, int]),
+		signMap:    new(defs.SyncMap[string, bool]),
+		chanMap:    new(defs.SyncMap[string, chan struct{}]),
+		pidMap:     new(defs.SyncMap[string, int]),
+		runningMap: new(defs.SyncMap[string, bool]), // 初始化运行状态映射
 	}
 }
 
@@ -41,12 +44,14 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 
 	c := make(chan struct{})
 	m.chanMap.Set(uid, c)
+	m.runningMap.Set(uid, true) // 标记 worker 为运行状态
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	go func(ctx context.Context, uid string, argv []string, m *execManager) {
 		defer func(uid string, m *execManager) {
 			m.signMap.Delete(uid)
+			m.runningMap.Set(uid, false) // 标记 worker 为停止状态
 		}(uid, m)
 
 		logrus.Infof("workerd %s running!", uid)
@@ -57,6 +62,14 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 		)
 
 		for {
+			// 检查上下文是否被取消，如果取消则退出循环
+			select {
+			case <-ctx.Done():
+				logrus.Infof("workerd %s context cancelled, exiting loop", uid)
+				return
+			default:
+			}
+
 			args := []string{"serve",
 				filepath.Join(workerdDir, defs.CapFileName),
 			}
@@ -66,11 +79,13 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 			}
 			args = append(args, "--verbose")
 			args = append(args, argv...)
+
 			cmd := exec.CommandContext(ctx, conf.AppConfigInstance.WorkerdBinPath, args...)
 			cmd.Dir = workerdDir
 			cmd.SysProcAttr = &syscall.SysProcAttr{}
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
+
 			if err := cmd.Start(); err != nil {
 				logrus.Errorf("Failed to start workerd %s: %v", uid, err)
 				time.Sleep(3 * time.Second)
@@ -93,17 +108,12 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 	go func(cancel context.CancelFunc, uid string, m *execManager) {
 		defer func(uid string, m *execManager) {
 			m.chanMap.Delete(uid)
-			// m.pidMap.Delete(uid)
+			// m.pidMap.Delete(uid) // 不要试图删除pid
 		}(uid, m)
 
 		if channel, ok := m.chanMap.Get(uid); ok {
 			<-channel
-			m.signMap.Set(uid, true)
-			cancel()
-			return
-		} else {
-			logrus.Errorf("workerd %s is not running!", uid)
-			return
+			cancel() // 调用 cancel 函数取消上下文
 		}
 	}(cancel, uid, m)
 }
@@ -116,6 +126,7 @@ func (m *execManager) ExitCmd(uid string) {
 	} else {
 		logrus.Warnf("workerd %s is not running, cannot stop it!", uid)
 	}
+
 	// 如果是windows，需要等待workerd退出
 	if runtime.GOOS == "windows" {
 		// 尝试获取进程 ID
@@ -142,6 +153,8 @@ func (m *execManager) ExitCmd(uid string) {
 			logrus.Infof("workerd %s has stopped", uid)
 		}
 	}
+	m.pidMap.Delete(uid)
+	m.runningMap.Set(uid, false) // 标记 worker 为停止状态
 }
 
 func (m *execManager) ExitAllCmd() {
