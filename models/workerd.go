@@ -196,7 +196,7 @@ func Trans2Entities(workers []*Worker) []*entities.Worker {
 func (w *Worker) Create() error {
 	c := context.Background()
 	if w.NodeName == conf.AppConfigInstance.NodeName {
-		tunnel.GetPortManager().ClaimWorkerPort(c, w.GetUID())
+		w.Port = tunnel.GetPortManager().ClaimWorkerPort(c, w.GetUID())
 		tunnel.GetClient().Add(w.GetUID(), utils.WorkerHostPrefix(w.GetName()), int(w.GetPort()))
 		if err := w.UpdateFile(); err != nil {
 			return err
