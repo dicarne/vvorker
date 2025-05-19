@@ -120,6 +120,11 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 
 // ExitCmd 根据 uid 停止某个正在运行的 worker
 func (m *execManager) ExitCmd(uid string) {
+	defer func(uid string, m *execManager) {
+		m.signMap.Delete(uid)
+		m.runningMap.Set(uid, false) // 标记 worker 为停止状态
+	}(uid, m)
+
 	if channel, ok := m.chanMap.Get(uid); ok {
 		channel <- struct{}{}
 		logrus.Infof("workerd %s is being stopped!", uid)
@@ -153,8 +158,7 @@ func (m *execManager) ExitCmd(uid string) {
 			logrus.Infof("workerd %s has stopped", uid)
 		}
 	}
-	m.pidMap.Delete(uid)
-	m.runningMap.Set(uid, false) // 标记 worker 为停止状态
+
 }
 
 func (m *execManager) ExitAllCmd() {

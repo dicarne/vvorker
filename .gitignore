@@ -1,5 +1,6 @@
 workerd/workerd.capnp
 workerd/workers
+workerd/*
 workerd/*.sqlite
 .env
 bin/workerd*
