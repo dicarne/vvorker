@@ -24,6 +24,7 @@ func WriteFile(path string, content string) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	_, err = f.WriteString(content)
 	if err != nil {
 		return err
