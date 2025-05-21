@@ -25,24 +25,27 @@ const (
 
 const config :Workerd.Config = (
   services = [
-    (name = "{{.UID}}", worker = .v{{.UID}}Worker),
+    (name = "{{.Worker.UID}}", worker = .v{{.Worker.UID}}Worker),
   ],
 
   sockets = [
     (
-      name = "{{.UID}}",
-      address = "{{.HostName}}:{{.Port}}",
+      name = "{{.Worker.UID}}",
+      address = "{{.Worker.HostName}}:{{.Worker.Port}}",
       http=(),
-      service="{{.UID}}"
+      service="{{.Worker.UID}}"
     ),
-  ]
+  ],
+
+  extensions = [{{.ExtensionsText}}],
 );
 
-const v{{.UID}}Worker :Workerd.Worker = (
+const v{{.Worker.UID}}Worker :Workerd.Worker = (
   modules = [
-    (name = "{{.Entry}}", esModule = embed "src/{{.Entry}}"),
+    (name = "{{.Worker.Entry}}", esModule = embed "src/{{.Worker.Entry}}"),
   ],
   compatibilityDate = "2024-09-23",
+  bindings = [{{.BindingsText}}],
 );`
 )
 
