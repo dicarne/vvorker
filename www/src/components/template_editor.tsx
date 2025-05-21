@@ -21,7 +21,7 @@ export function TemplateEditor({ setContent, content }: TemplateEditorProps) {
                 height="60vh"
                 onChange={(v) => setContent(v || '')}
                 value={content}
-                defaultLanguage="capnp"
+                defaultLanguage="json"
             />
         </div>
     )
