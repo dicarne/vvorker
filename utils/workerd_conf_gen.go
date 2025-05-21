@@ -19,7 +19,8 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 	for _, worker := range workers {
 		writer := new(bytes.Buffer)
 		capTemplate := template.New("capfile")
-		workerTemplate := worker.GetTemplate()
+		// workerTemplate := worker.GetTemplate()
+		workerTemplate := defs.DefaultTemplate
 		if workerTemplate == "" {
 			workerTemplate = defs.DefaultTemplate
 		}
