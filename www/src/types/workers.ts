@@ -28,29 +28,13 @@ export const DEFAUTL_WORKER_ITEM: WorkerItem = {
 	}
   }
 };`),
-  Template: `using Workerd = import "/workerd/workerd.capnp";
-
-const config :Workerd.Config = (
-  services = [
-    (name = "{{.UID}}", worker = .v{{.UID}}Worker),
-  ],
-
-  sockets = [
-    (
-      name = "{{.UID}}",
-      address = "{{.HostName}}:{{.Port}}",
-      http=(),
-      service="{{.UID}}"
-    ),
-  ]
-);
-
-const v{{.UID}}Worker :Workerd.Worker = (
-  modules = [
-    (name = "{{.Entry}}", esModule = embed "src/{{.Entry}}"),
-  ],
-  compatibilityDate = "2024-09-23",
-);`
+  Template: `
+{
+    "name": "worker",
+    "version": "1.0.0",
+    "enabled_services": []
+}
+`
 }
 
 export interface WorkerEditorProperties {
