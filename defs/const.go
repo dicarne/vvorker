@@ -26,6 +26,7 @@ const (
 const config :Workerd.Config = (
   services = [
     (name = "{{.Worker.UID}}", worker = .v{{.Worker.UID}}Worker),
+	{{.ServiceText}}
   ],
 
   sockets = [
@@ -46,7 +47,10 @@ const v{{.Worker.UID}}Worker :Workerd.Worker = (
   ],
   compatibilityDate = "2024-09-23",
   bindings = [{{.BindingsText}}],
-);`
+  compatibilityFlags = [{{.FlagsText}}],
+);
+
+`
 )
 
 const (
