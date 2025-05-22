@@ -47,6 +47,7 @@ const v{{.Worker.UID}}Worker :Workerd.Worker = (
   ],
   compatibilityDate = "2024-09-23",
   bindings = [{{.BindingsText}}],
+  compatibilityFlags = [{{.FlagsText}}],
 );
 
 `

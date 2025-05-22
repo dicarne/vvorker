@@ -17,6 +17,7 @@ type GenTemplateConfig struct {
 	BindingsText   template.HTML
 	ExtensionsText template.HTML
 	ServiceText    template.HTML
+	FlagsText      template.HTML
 }
 
 func BuildCapfile(workers []*entities.Worker) map[string]string {
@@ -34,6 +35,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 		bindingsText := ""
 		extensionsText := ""
 		servicesText := ""
+		flagsText := ""
 		if werr != nil {
 			logrus.Warnf("workerconfig error: %v", werr)
 			workerconfig = conf.DefaultWorkerConfig()
@@ -65,6 +67,12 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 			}
 		}
 
+		if len(workerconfig.CompatibilityFlags) > 0 {
+			for _, flag := range workerconfig.CompatibilityFlags {
+				flagsText = flagsText + flag + ","
+			}
+		}
+
 		capTemplate, err := capTemplate.Parse(workerTemplate)
 		if err != nil {
 			panic(err)
@@ -75,6 +83,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 			BindingsText:   template.HTML(bindingsText),
 			ExtensionsText: template.HTML(extensionsText),
 			ServiceText:    template.HTML(servicesText),
+			FlagsText:      template.HTML(flagsText),
 		}
 		capTemplate.Execute(writer, genConfig)
 		results[worker.GetUID()] = writer.String()

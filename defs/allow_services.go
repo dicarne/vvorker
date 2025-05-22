@@ -35,7 +35,8 @@ var commonBasicBindingTemplate = `
 ),
 `
 
-func GenerateTemplate(temp AllowServiceTemplate) AllowServiceTemplate {
+// 生成简单扩展模板
+func GenerateExtensionTemplate(temp AllowServiceTemplate) AllowServiceTemplate {
 	capTemplate := template.New("basic")
 	basicTemplate, err := capTemplate.Parse(temp.BasicServiceTemplate)
 	if err != nil {
@@ -69,7 +70,7 @@ func GenerateTemplate(temp AllowServiceTemplate) AllowServiceTemplate {
 }
 
 var AllowServicesMap = map[string]AllowServiceTemplate{
-	"ai": GenerateTemplate(AllowServiceTemplate{
+	"ai": GenerateExtensionTemplate(AllowServiceTemplate{
 		Name:                  "ai",
 		Path:                  "../../libs/openai/dist/index.js",
 		BasicServiceTemplate:  commonBasicServiceTemplate,
@@ -77,26 +78,6 @@ var AllowServicesMap = map[string]AllowServiceTemplate{
 		ServiceInjectTemplate: "",
 		Type:                  "extension",
 	}),
-	// 	"request": GenerateTemplate(AllowServiceTemplate{
-	// 		Name: "request",
-	// 		Path: "../../libs/request/dist/index.js",
-	// 		BasicServiceTemplate: `
-	// const {{.Name}} :Workerd.Worker = (
-	//   modules = [
-	//     (name = "{{.Name}}", esModule = embed "{{.Path}}"),
-	//   ],
-	//   compatibilityDate = "2025-05-01",
-	//   bindings = [
-	//     (name = "internalNet", service = "vorkerInternalNetwork"),
-	//   ],
-	// );
-	// `,
-	// 		BasicBindingTemplate: `
-	// (name = "{{.Name}}", service = "{{.Name}}"),
-	// `,
-	// 		ServiceInjectTemplate: `(name = "{{.Name}}", worker= .{{.Name}} ),`,
-	// 		Type:                  "worker",
-	// 	}),
 }
 
 type ServiceNetworkTemplate struct {
@@ -109,6 +90,9 @@ type NameStruct struct {
 	Name string
 }
 
+// 用于生成内部网络绑定的代码。会生成将服务名称改为驼峰命名后的env绑定。
+//
+// @param serviceName 服务名称，例如：test-service
 func GenServiceNetwork(serviceName string) ServiceNetworkTemplate {
 	name := strings.ReplaceAll(serviceName, "-", "_")
 
