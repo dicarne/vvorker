@@ -365,7 +365,7 @@ func (w *Worker) Run() ([]byte, error) {
 	resp, err := req.C().R().SetHeader(
 		defs.HeaderHost, fmt.Sprintf("%s%s", w.Name, conf.AppConfigInstance.WorkerURLSuffix),
 	).Get(addr)
-	if err != nil || resp == nil || resp.StatusCode >= 299 {
+	if err != nil {
 		return nil, err
 	}
 	return resp.Bytes(), nil
