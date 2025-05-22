@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"html/template"
 	"path/filepath"
@@ -75,6 +76,17 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 			for _, flag := range workerconfig.CompatibilityFlags {
 				flagsText = flagsText + flag + ","
 			}
+		}
+
+		if len(workerconfig.Vars) > 0 {
+			jsonBytes, err := json.Marshal(string(workerconfig.Vars))
+			if err != nil {
+				logrus.Errorln("Error:", err)
+			} else {
+				jsonString := string(jsonBytes)
+				bindingsText += "( name = \"vars\", json = " + jsonString + " ),"
+			}
+
 		}
 
 		capTemplate, err := capTemplate.Parse(workerTemplate)

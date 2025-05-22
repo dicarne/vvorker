@@ -32,8 +32,9 @@ export const DEFAUTL_WORKER_ITEM: WorkerItem = {
 {
     "name": "worker",
     "version": "1.0.0",
-    "entensions": [],
+    "extensions": [],
     "services": [],
+    "vars": []
 }
 `
 }

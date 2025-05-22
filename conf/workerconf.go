@@ -6,11 +6,12 @@ import (
 )
 
 type WorkerConfig struct {
-	ProjectName        string   `json:"name"`
-	Version            string   `json:"version"`
-	Extensions         []string `json:"extensions"`
-	Services           []string `json:"services"`
-	CompatibilityFlags []string `json:"compatibility_flags"`
+	ProjectName        string          `json:"name"`
+	Version            string          `json:"version"`
+	Extensions         []string        `json:"extensions"`
+	Services           []string        `json:"services"`
+	CompatibilityFlags []string        `json:"compatibility_flags"`
+	Vars               json.RawMessage `json:"vars"`
 }
 
 func ParseWorkerConfig(s string) (*WorkerConfig, error) {
