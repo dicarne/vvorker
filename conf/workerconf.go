@@ -6,9 +6,10 @@ import (
 )
 
 type WorkerConfig struct {
-	ProjectName     string   `json:"name"`
-	Version         string   `json:"version"`
-	EnabledServices []string `json:"enabled_services"`
+	ProjectName string   `json:"name"`
+	Version     string   `json:"version"`
+	Extensions  []string `json:"extensions"`
+	Services    []string `json:"services"`
 }
 
 func ParseWorkerConfig(s string) (*WorkerConfig, error) {
@@ -25,8 +26,9 @@ func ParseWorkerConfig(s string) (*WorkerConfig, error) {
 
 func DefaultWorkerConfig() *WorkerConfig {
 	return &WorkerConfig{
-		ProjectName:     "default",
-		Version:         "0.0.1",
-		EnabledServices: []string{"ai"},
+		ProjectName: "default",
+		Version:     "0.0.1",
+		Extensions:  []string{},
+		Services:    []string{},
 	}
 }

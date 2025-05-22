@@ -16,6 +16,7 @@ type GenTemplateConfig struct {
 	Worker         *entities.Worker
 	BindingsText   template.HTML
 	ExtensionsText template.HTML
+	ServiceText    template.HTML
 }
 
 func BuildCapfile(workers []*entities.Worker) map[string]string {
@@ -32,21 +33,35 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 
 		bindingsText := ""
 		extensionsText := ""
+		servicesText := ""
 		if werr != nil {
 			logrus.Warnf("workerconfig error: %v", werr)
 			workerconfig = conf.DefaultWorkerConfig()
 		}
 
-		if len(workerconfig.EnabledServices) > 0 {
-			for _, service := range workerconfig.EnabledServices {
+		if len(workerconfig.Extensions) > 0 {
+			for _, service := range workerconfig.Extensions {
 				allowService, ok := defs.AllowServicesMap[service]
 				if ok {
-					workerTemplate = workerTemplate + allowService.ServiceTemplate
+					workerTemplate = workerTemplate + allowService.ExtensionTemplate
 					bindingsText = bindingsText + allowService.BindingTemplate
-					extensionsText = extensionsText + "." + allowService.Name + ","
+					if allowService.Type == "extension" {
+						extensionsText = extensionsText + "." + allowService.Name + ","
+					} else if allowService.Type == "worker" {
+						servicesText = servicesText + allowService.ServiceInjectTemplate
+					}
 				} else {
 					logrus.Warnf("service %s not found", service)
 				}
+			}
+		}
+
+		if len(workerconfig.Services) > 0 {
+			for _, service := range workerconfig.Services {
+				netw := defs.GenServiceNetwork(service)
+				workerTemplate = workerTemplate + netw.NetworkText
+				servicesText = servicesText + netw.ServiceText
+				bindingsText = bindingsText + netw.BindingsText
 			}
 		}
 
@@ -59,6 +74,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 			Worker:         worker,
 			BindingsText:   template.HTML(bindingsText),
 			ExtensionsText: template.HTML(extensionsText),
+			ServiceText:    template.HTML(servicesText),
 		}
 		capTemplate.Execute(writer, genConfig)
 		results[worker.GetUID()] = writer.String()
