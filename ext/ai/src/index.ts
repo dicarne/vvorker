@@ -1,7 +1,11 @@
-import { WorkerEntrypoint, env } from "cloudflare:workers";
+import { env } from "cloudflare:workers";
 
-export default class extends WorkerEntrypoint {
-	async invoke(url: string, init: any) {
-		return await (await env.internalNet.fetch(url, init)).text();
+export default function () {
+	return {
+		async invoke(url: string, init: any) {
+			return "hello text";
+		}
 	}
+
 }
+

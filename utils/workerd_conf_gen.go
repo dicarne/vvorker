@@ -52,6 +52,10 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					} else if allowService.Type == "worker" {
 						servicesText = servicesText + allowService.ServiceInjectTemplate
 					}
+
+					WriteFile(filepath.Join(conf.AppConfigInstance.WorkerdDir,
+						defs.WorkerInfoPath,
+						worker.GetUID(), "src", service+".js"), allowService.Script)
 				} else {
 					logrus.Warnf("service %s not found", service)
 				}

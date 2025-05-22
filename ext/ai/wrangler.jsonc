@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "request",
+	"name": "ai",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-05-20",
 	"observability": {
