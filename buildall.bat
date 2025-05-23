@@ -5,12 +5,14 @@ call pnpm run build
 call pnpm run export
 cd ..
 
-cd ext/ai
+cd ext
+
+cd ai
 call pnpm i 
 call pnpm run build
 cd ..
 
-cd ext/pgsql
+cd pgsql
 call pnpm i 
 call pnpm run build
 cd ..
