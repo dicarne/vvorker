@@ -102,7 +102,7 @@ func init() {
 				ossAPI.POST("/upload", oss.UploadFile)
 				ossAPI.POST("/download", oss.DownloadFile)
 				ossAPI.POST("/list-buckets", oss.ListBuckets)
-				// ossAPI.POST("/delete", oss.DeleteFile)
+				ossAPI.POST("/delete", oss.DeleteFile)
 				ossAPI.POST("/list-objects", oss.ListObjects)
 			}
 		}

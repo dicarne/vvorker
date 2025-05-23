@@ -75,4 +75,15 @@ export default class OSS extends WorkerEntrypoint {
 		});
 		return response.json();
 	}
+
+	async deleteObject(fileName: string) {
+		const response = await fetch(`${GO_API_URL}/api/ext/oss/delete`, {
+			method: "POST",
+			headers: {
+				...commonConfig,
+				Object: fileName
+			},
+		});
+		return response.json();
+	}
 }
