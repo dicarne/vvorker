@@ -9,11 +9,31 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// 将字符串转换为驼峰命名
+func toCamelCase(s string) string {
+	var result string
+	capitalizeNext := false
+	for i, char := range s {
+		if char == '-' || char == '_' {
+			capitalizeNext = true
+		} else {
+			if capitalizeNext || i == 0 {
+				result += strings.ToUpper(string(char))
+				capitalizeNext = false
+			} else {
+				result += strings.ToLower(string(char))
+			}
+		}
+	}
+	return result
+}
+
 // 用于生成内部网络绑定的代码。会生成将服务名称改为驼峰命名后的env绑定。
 //
 // @param serviceName 服务名称，例如：test-service
 func GenServiceNetwork(serviceName string) ServiceNetworkTemplate {
-	name := strings.ReplaceAll(serviceName, "-", "_")
+	// 修改为转换为驼峰命名
+	name := toCamelCase(serviceName)
 
 	networkTemplate := template.New("network")
 	networkTemplateW, err := networkTemplate.Parse(`
