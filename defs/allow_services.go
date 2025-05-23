@@ -115,6 +115,19 @@ var AllowWorkersMap = map[string]func(name string, workerBindings template.HTML)
 			WorkerBindingText:     workerBindings,
 		})
 	},
+	"oss": func(name string, workerBindings template.HTML) AllowServiceTemplate {
+		return GenerateExtensionTemplate(AllowServiceTemplate{
+			Name:                  name,
+			Path:                  "oss",
+			BasicServiceTemplate:  commonWorkerTemplate,
+			BasicBindingTemplate:  commonWorkerBindingTemplate,
+			ServiceInjectTemplate: commonServiceInjectTemplate,
+			Type:                  "worker",
+			Script:                ext.ExtOSSScriptDTS,
+			FlagsText:             template.HTML(` "nodejs_compat" `),
+			WorkerBindingText:     workerBindings,
+		})
+	},
 }
 
 type ServiceNetworkTemplate struct {

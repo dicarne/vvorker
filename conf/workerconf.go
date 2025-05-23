@@ -26,6 +26,17 @@ type SQLDBConfig struct {
 	Binding  string `json:"binding"`
 }
 
+type OSSConfig struct {
+	Endpoint        string `json:"endpoint"`
+	Port            int    `json:"port"`
+	AccessKeyId     string `json:"access_key_id"`
+	AccessKeySecret string `json:"access_key_secret"`
+	Binding         string `json:"binding"`
+	Bucket          string `json:"bucket"`
+	UseSSL          bool   `json:"use_ssl"`
+	Region          string `json:"region"`
+}
+
 type WorkerConfig struct {
 	ProjectName        string            `json:"name"`
 	Version            string            `json:"version"`
@@ -35,6 +46,7 @@ type WorkerConfig struct {
 	Vars               json.RawMessage   `json:"vars"`
 	Ai                 []AiConfig        `json:"ai"`
 	PgSql              []SQLDBConfig     `json:"pgsql"`
+	OSS                []OSSConfig       `json:"oss"`
 }
 
 func ParseWorkerConfig(s string) (*WorkerConfig, error) {

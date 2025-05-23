@@ -7,3 +7,6 @@ var ExtAiScript string
 
 //go:embed pgsql/dist/index.js
 var ExtPgsqlScriptDTS string
+
+//go:embed oss/dist/index.js
+var ExtOSSScriptDTS string

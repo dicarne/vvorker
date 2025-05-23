@@ -17,5 +17,10 @@ call pnpm i
 call pnpm run build
 cd ..
 
+cd oss
+call pnpm i 
+call pnpm run build
+cd ..
+
 cd ..
 go build
