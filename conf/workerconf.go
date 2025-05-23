@@ -17,6 +17,15 @@ type AiConfig struct {
 	Binding string `json:"binding"`
 }
 
+type SQLDBConfig struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	Database string `json:"database"`
+	Binding  string `json:"binding"`
+}
+
 type WorkerConfig struct {
 	ProjectName        string            `json:"name"`
 	Version            string            `json:"version"`
@@ -25,6 +34,7 @@ type WorkerConfig struct {
 	CompatibilityFlags []string          `json:"compatibility_flags"`
 	Vars               json.RawMessage   `json:"vars"`
 	Ai                 []AiConfig        `json:"ai"`
+	PgSql              []SQLDBConfig     `json:"pgsql"`
 }
 
 func ParseWorkerConfig(s string) (*WorkerConfig, error) {

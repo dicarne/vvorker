@@ -10,6 +10,10 @@ call pnpm i
 call pnpm run build
 cd ..
 
+cd ext/pgsql
+call pnpm i 
+call pnpm run build
 cd ..
 
+cd ..
 go build

@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"os"
 	"path/filepath"
+	"strconv"
 	"vorker/conf"
 	"vorker/defs"
 	"vorker/entities"
@@ -103,7 +104,38 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 
 					writeFileIfNotExists(filePath, allowExtension.Script)
 				} else {
-					logrus.Warnf("service %s not found", ext)
+					logrus.Warnf("service %v not found", ext)
+				}
+			}
+		}
+
+		if len(workerconfig.PgSql) > 0 {
+			for _, ext := range workerconfig.PgSql {
+				extName := "pgsql"
+				allowExtensionFn, ok := defs.AllowWorkersMap[extName]
+				if ok {
+					if len(ext.Binding) == 0 {
+						ext.Binding = extName
+					}
+					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`
+	( name = "HOST", text = "`+ext.Host+`" ), 
+	( name = "PORT", text = "`+strconv.Itoa(ext.Port)+`" ), 
+	( name = "USER", text = "`+ext.User+`" ),
+	( name = "PASSWORD", text = "`+ext.Password+`" ),
+	( name = "DATABASE", text = "`+ext.Database+`" ),`))
+					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
+					bindingsText = bindingsText + allowExtension.BindingTemplate
+
+					servicesText = servicesText + allowExtension.ServiceInjectTemplate
+
+					// 构建文件路径
+					filePath := filepath.Join(conf.AppConfigInstance.WorkerdDir,
+						defs.WorkerInfoPath,
+						worker.GetUID(), "src", extName+".js")
+
+					writeFileIfNotExists(filePath, allowExtension.Script)
+				} else {
+					logrus.Warnf("service %v not found", ext)
 				}
 			}
 		}

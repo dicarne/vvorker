@@ -19,6 +19,7 @@ type AllowServiceTemplate struct {
 	Type                  string
 	Script                string
 	WorkerBindingText     template.HTML
+	FlagsText             template.HTML
 }
 
 var commonExtensionTemplate = `
@@ -36,6 +37,7 @@ var commonWorkerTemplate = `
    ],
    compatibilityDate = "2025-05-08",
    bindings = [{{.WorkerBindingText}}],
+   compatibilityFlags = [{{.FlagsText}}],
  );
  `
 
@@ -85,20 +87,7 @@ func GenerateExtensionTemplate(temp AllowServiceTemplate) AllowServiceTemplate {
 	return temp
 }
 
-var AllowServicesMap = map[string]func(name string) AllowServiceTemplate{
-	// "ai": func(name string) AllowServiceTemplate {
-	// 	return GenerateExtensionTemplate(AllowServiceTemplate{
-	// 		Name:                  name,
-	// 		Path:                  "ai",
-	// 		BasicServiceTemplate:  commonWorkerTemplate,
-	// 		BasicBindingTemplate:  commonWorkerBindingTemplate,
-	// 		ServiceInjectTemplate: commonServiceInjectTemplate,
-	// 		Type:                  "worker",
-	// 		Script:                ext.ExtAiScript,
-	// 		WorkerBindingText:     `( name = "ai", service = "ai" ),`,
-	// 	})
-	// },
-}
+var AllowServicesMap = map[string]func(name string) AllowServiceTemplate{}
 
 var AllowWorkersMap = map[string]func(name string, workerBindings template.HTML) AllowServiceTemplate{
 	"ai": func(name string, workerBindings template.HTML) AllowServiceTemplate {
@@ -110,6 +99,19 @@ var AllowWorkersMap = map[string]func(name string, workerBindings template.HTML)
 			ServiceInjectTemplate: commonServiceInjectTemplate,
 			Type:                  "worker",
 			Script:                ext.ExtAiScript,
+			WorkerBindingText:     workerBindings,
+		})
+	},
+	"pgsql": func(name string, workerBindings template.HTML) AllowServiceTemplate {
+		return GenerateExtensionTemplate(AllowServiceTemplate{
+			Name:                  name,
+			Path:                  "pgsql",
+			BasicServiceTemplate:  commonWorkerTemplate,
+			BasicBindingTemplate:  commonWorkerBindingTemplate,
+			ServiceInjectTemplate: commonServiceInjectTemplate,
+			Type:                  "worker",
+			Script:                ext.ExtPgsqlScriptDTS,
+			FlagsText:             template.HTML(` "nodejs_compat" `),
 			WorkerBindingText:     workerBindings,
 		})
 	},
