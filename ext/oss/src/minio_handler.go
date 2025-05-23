@@ -161,3 +161,29 @@ func ListBuckets(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"buckets": buckets})
 }
+
+func ListObjects(c *gin.Context) {
+	mc, err := getMinioClient(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
+		return
+	}
+	bucketName := c.GetHeader("Bucket")
+	objectName := c.GetHeader("Path")
+	recursive := c.GetHeader("Recursive")
+	// 调用 ListObjects 方法
+	objectCh := mc.Client.ListObjects(context.Background(), bucketName, minio.ListObjectsOptions{
+		Prefix:    objectName,
+		Recursive: recursive == "true",
+	})
+	// 遍历对象并构建文件列表
+	var files []string
+	for object := range objectCh {
+		if object.Err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": object.Err.Error()})
+			return
+		}
+		files = append(files, object.Key)
+	}
+	c.JSON(http.StatusOK, gin.H{"files": files})
+}

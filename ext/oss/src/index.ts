@@ -63,4 +63,16 @@ export default class OSS extends WorkerEntrypoint {
 		});
 		return response.bytes();
 	}
+
+	async listObjects(path: string, recursive: boolean = false) {
+		const response = await fetch(`${GO_API_URL}/api/ext/oss/list-objects`, {
+			method: "POST",
+			headers: {
+				...commonConfig,
+				Path: path,
+				Recursive: recursive ? "true" : "false",
+			},
+		});
+		return response.json();
+	}
 }
