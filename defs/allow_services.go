@@ -20,7 +20,7 @@ type AllowServiceTemplate struct {
 	Script                string
 }
 
-var commonBasicServiceTemplate = `
+var commonExtensionTemplate = `
 const e{{.Name}} :Workerd.Extension = (
   modules = [
     (name = "e{{.Name}}:binding", esModule = embed "src/{{.Path}}.js", internal = true),
@@ -28,11 +28,26 @@ const e{{.Name}} :Workerd.Extension = (
 );
 `
 
-var commonBasicBindingTemplate = `
-(name = "{{.Name}}", wrapped = (
-	moduleName = "e{{.Name}}:binding"
-	)
-),
+var commonWorkerTemplate = `
+ const w{{.Name}} :Workerd.Worker = (
+   modules = [
+     (name = "{{.Name}}", esModule = embed "src/{{.Path}}.js"),
+   ],
+   compatibilityDate = "2025-05-08",
+   bindings = [],
+ );
+ `
+
+var commonExtensionBindingTemplate = `
+	(name = "{{.Name}}", wrapped = ( moduleName = "e{{.Name}}:binding" )),
+`
+
+var commonWorkerBindingTemplate = `
+	(name = "{{.Name}}", service = "{{.Name}}"),
+`
+
+var commonServiceInjectTemplate = `
+	(name = "{{.Name}}", worker=.w{{.Name}} ),
 `
 
 // 生成简单扩展模板
@@ -72,12 +87,13 @@ func GenerateExtensionTemplate(temp AllowServiceTemplate) AllowServiceTemplate {
 var AllowServicesMap = map[string]func(name string) AllowServiceTemplate{
 	"ai": func(name string) AllowServiceTemplate {
 		return GenerateExtensionTemplate(AllowServiceTemplate{
-			Name:                 name,
-			BasicServiceTemplate: commonBasicServiceTemplate,
-			BasicBindingTemplate: commonBasicBindingTemplate,
-			Type:                 "extension",
-			Script:               ext.ExtAiScript,
-			Path:                 "ai",
+			Name:                  name,
+			Path:                  "ai",
+			BasicServiceTemplate:  commonWorkerTemplate,
+			BasicBindingTemplate:  commonWorkerBindingTemplate,
+			ServiceInjectTemplate: commonServiceInjectTemplate,
+			Type:                  "worker",
+			Script:                ext.ExtAiScript,
 		})
 	},
 }
