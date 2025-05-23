@@ -1,0 +1,163 @@
+package oss
+
+import (
+	"context"
+	"io"
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/sirupsen/logrus"
+)
+
+// MinioClient 定义Minio客户端结构体
+type MinioClient struct {
+	Client *minio.Client
+}
+
+// NewMinioClient 创建新的Minio客户端
+func NewMinioClient(endpoint, accessKeyID, secretAccessKey string, useSSL bool, region string) (*MinioClient, error) {
+	client, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+		Secure: useSSL,
+		Region: region,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &MinioClient{Client: client}, nil
+}
+
+// getMinioClient 从请求头中获取参数并创建 Minio 客户端
+func getMinioClient(c *gin.Context) (*MinioClient, error) {
+	endpoint := c.GetHeader("Endpoint")
+	accessKeyID := c.GetHeader("AccessKeyID")
+	secretAccessKey := c.GetHeader("SecretAccessKey")
+	region := c.GetHeader("Region")
+	useSSLStr := c.GetHeader("UseSSL")
+
+	logrus.Infof("Endpoint: %s, AccessKeyID: %s, SecretAccessKey: %s, UseSSL: %s, Region: %s",
+		endpoint, accessKeyID, secretAccessKey, useSSLStr, region)
+
+	useSSL, err := strconv.ParseBool(useSSLStr)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewMinioClient(endpoint, accessKeyID, secretAccessKey, useSSL, region)
+}
+
+// DownloadFile 下载文件接口
+func DownloadFile(c *gin.Context) {
+	mc, err := getMinioClient(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
+		return
+	}
+
+	bucketName := c.GetHeader("Bucket")
+	objectName := c.GetHeader("Object")
+
+	// 使用 GetObject 获取文件流
+	obj, err := mc.Client.GetObject(context.Background(), bucketName, objectName, minio.GetObjectOptions{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer obj.Close()
+
+	// 获取文件信息，用于设置响应头
+	stat, err := obj.Stat()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 设置响应头
+	c.Header("Content-Type", stat.ContentType)
+	c.Header("Content-Length", strconv.FormatInt(stat.Size, 10))
+	c.Header("Content-Disposition", "attachment; filename="+objectName)
+
+	// 将文件流写入响应体
+	_, err = io.Copy(c.Writer, obj)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 确保所有数据都被刷新到客户端
+	c.Writer.Flush()
+}
+
+// UploadFile 上传文件接口
+func UploadFile(c *gin.Context) {
+	mc, err := getMinioClient(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
+		return
+	}
+
+	bucketName := c.GetHeader("Bucket")
+	objectName := c.GetHeader("Object")
+
+	// 从表单中获取文件
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get file from form: " + err.Error()})
+		return
+	}
+
+	// 打开文件
+	src, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file: " + err.Error()})
+		return
+	}
+	defer src.Close()
+
+	// 上传文件到 MinIO
+	info, err := mc.Client.PutObject(context.Background(), bucketName, objectName, src, file.Size, minio.PutObjectOptions{ContentType: "application/octet-stream"})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload file: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "File uploaded successfully", "info": info})
+}
+
+// DeleteFile 删除文件接口
+func DeleteFile(c *gin.Context) {
+	mc, err := getMinioClient(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
+		return
+	}
+
+	bucketName := c.GetHeader("Bucket")
+	objectName := c.GetHeader("Object")
+
+	err = mc.Client.RemoveObject(context.Background(), bucketName, objectName, minio.RemoveObjectOptions{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "File deleted successfully"})
+}
+
+// ListBuckets 查询bucket接口
+func ListBuckets(c *gin.Context) {
+	mc, err := getMinioClient(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
+		return
+	}
+
+	buckets, err := mc.Client.ListBuckets(context.Background())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"buckets": buckets})
+}

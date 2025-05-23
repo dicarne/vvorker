@@ -156,6 +156,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 	( name = "BUCKET", text = "`+ext.Bucket+`" ),
 	( name = "USE_SSL", text = "`+strconv.FormatBool(ext.UseSSL)+`" ),
 	( name = "REGION", text = "`+ext.Region+`" ),
+	( name = "OSS_AGENT_URL", text = "http://127.0.0.1:`+strconv.Itoa(conf.AppConfigInstance.APIPort)+`" ),
 `))
 					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
 					bindingsText = bindingsText + allowExtension.BindingTemplate

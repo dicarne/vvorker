@@ -9,6 +9,7 @@ import (
 	"time"
 	"vorker/authz"
 	"vorker/conf"
+	oss "vorker/ext/oss/src"
 	"vorker/models"
 	"vorker/rpc"
 	"vorker/services/agent"
@@ -92,6 +93,16 @@ func init() {
 				agentAPI.GET("/nodeinfo", authz.AgentAuthz(), node.GetNodeInfoEndpoint)
 			} else {
 				agentAPI.POST("/notify", authz.AgentAuthz(), agent.NotifyEndpoint)
+			}
+		}
+		extAPI := api.Group("/ext")
+		{
+			ossAPI := extAPI.Group("/oss")
+			{
+				ossAPI.POST("/upload", oss.UploadFile)
+				ossAPI.POST("/download", oss.DownloadFile)
+				ossAPI.POST("/list-buckets", oss.ListBuckets)
+				ossAPI.POST("/delete", oss.DeleteFile)
 			}
 		}
 	}
