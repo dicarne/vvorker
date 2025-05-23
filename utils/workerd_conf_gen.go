@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"html/template"
+	"os"
 	"path/filepath"
 	"vorker/conf"
 	"vorker/defs"
@@ -43,22 +44,37 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 		}
 
 		if len(workerconfig.Extensions) > 0 {
-			for _, service := range workerconfig.Extensions {
-				allowService, ok := defs.AllowServicesMap[service]
+			for _, ext := range workerconfig.Extensions {
+				extName := ext.Name
+				allowExtensionFn, ok := defs.AllowServicesMap[extName]
 				if ok {
-					workerTemplate = workerTemplate + allowService.ExtensionTemplate
-					bindingsText = bindingsText + allowService.BindingTemplate
-					if allowService.Type == "extension" {
-						extensionsText = extensionsText + "." + allowService.Name + ","
-					} else if allowService.Type == "worker" {
-						servicesText = servicesText + allowService.ServiceInjectTemplate
+					if len(ext.Binding) == 0 {
+						ext.Binding = extName
+					}
+					allowExtension := allowExtensionFn(ext.Binding)
+					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
+					bindingsText = bindingsText + allowExtension.BindingTemplate
+					if allowExtension.Type == "extension" {
+						extensionsText = extensionsText + ".e" + allowExtension.Name + ","
+					} else if allowExtension.Type == "worker" {
+						servicesText = servicesText + allowExtension.ServiceInjectTemplate
 					}
 
-					WriteFile(filepath.Join(conf.AppConfigInstance.WorkerdDir,
+					// 构建文件路径
+					filePath := filepath.Join(conf.AppConfigInstance.WorkerdDir,
 						defs.WorkerInfoPath,
-						worker.GetUID(), "src", service+".js"), allowService.Script)
+						worker.GetUID(), "src", extName+".js")
+
+					// 检查文件是否存在
+					if _, err := os.Stat(filePath); os.IsNotExist(err) {
+						// 文件不存在，进行写入操作
+						err := WriteFile(filePath, allowExtension.Script)
+						if err != nil {
+							logrus.Errorf("Failed to write file %s: %v", filePath, err)
+						}
+					}
 				} else {
-					logrus.Warnf("service %s not found", service)
+					logrus.Warnf("service %s not found", ext)
 				}
 			}
 		}

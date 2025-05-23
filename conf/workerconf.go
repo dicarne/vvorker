@@ -5,13 +5,18 @@ import (
 	"errors"
 )
 
+type ExtensionConfig struct {
+	Binding string `json:"binding"`
+	Name    string `json:"name"`
+}
+
 type WorkerConfig struct {
-	ProjectName        string          `json:"name"`
-	Version            string          `json:"version"`
-	Extensions         []string        `json:"extensions"`
-	Services           []string        `json:"services"`
-	CompatibilityFlags []string        `json:"compatibility_flags"`
-	Vars               json.RawMessage `json:"vars"`
+	ProjectName        string            `json:"name"`
+	Version            string            `json:"version"`
+	Extensions         []ExtensionConfig `json:"extensions"`
+	Services           []string          `json:"services"`
+	CompatibilityFlags []string          `json:"compatibility_flags"`
+	Vars               json.RawMessage   `json:"vars"`
 }
 
 func ParseWorkerConfig(s string) (*WorkerConfig, error) {
@@ -30,7 +35,7 @@ func DefaultWorkerConfig() *WorkerConfig {
 	return &WorkerConfig{
 		ProjectName:        "default",
 		Version:            "0.0.1",
-		Extensions:         []string{},
+		Extensions:         []ExtensionConfig{},
 		Services:           []string{},
 		CompatibilityFlags: []string{},
 	}

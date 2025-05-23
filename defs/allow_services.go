@@ -21,16 +21,16 @@ type AllowServiceTemplate struct {
 }
 
 var commonBasicServiceTemplate = `
-const {{.Name}} :Workerd.Extension = (
+const e{{.Name}} :Workerd.Extension = (
   modules = [
-    (name = "{{.Name}}:binding", esModule = embed "src/{{.Name}}.js", internal = true),
+    (name = "e{{.Name}}:binding", esModule = embed "src/{{.Path}}.js", internal = true),
   ],
 );
 `
 
 var commonBasicBindingTemplate = `
 (name = "{{.Name}}", wrapped = (
-	moduleName = "{{.Name}}:binding"
+	moduleName = "e{{.Name}}:binding"
 	)
 ),
 `
@@ -69,15 +69,17 @@ func GenerateExtensionTemplate(temp AllowServiceTemplate) AllowServiceTemplate {
 	return temp
 }
 
-var AllowServicesMap = map[string]AllowServiceTemplate{
-	"ai": GenerateExtensionTemplate(AllowServiceTemplate{
-		Name:                  "ai",
-		BasicServiceTemplate:  commonBasicServiceTemplate,
-		BasicBindingTemplate:  commonBasicBindingTemplate,
-		ServiceInjectTemplate: "",
-		Type:                  "extension",
-		Script:                ext.ExtAiScript,
-	}),
+var AllowServicesMap = map[string]func(name string) AllowServiceTemplate{
+	"ai": func(name string) AllowServiceTemplate {
+		return GenerateExtensionTemplate(AllowServiceTemplate{
+			Name:                 name,
+			BasicServiceTemplate: commonBasicServiceTemplate,
+			BasicBindingTemplate: commonBasicBindingTemplate,
+			Type:                 "extension",
+			Script:               ext.ExtAiScript,
+			Path:                 "ai",
+		})
+	},
 }
 
 type ServiceNetworkTemplate struct {

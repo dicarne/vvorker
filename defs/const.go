@@ -45,7 +45,7 @@ const v{{.Worker.UID}}Worker :Workerd.Worker = (
   modules = [
     (name = "{{.Worker.Entry}}", esModule = embed "src/{{.Worker.Entry}}"),
   ],
-  compatibilityDate = "2024-09-23",
+  compatibilityDate = "2025-05-08",
   bindings = [{{.BindingsText}}],
   compatibilityFlags = [{{.FlagsText}}],
 );
