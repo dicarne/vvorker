@@ -22,6 +22,16 @@ type GenTemplateConfig struct {
 	FlagsText      template.HTML
 }
 
+// 检查文件是否存在，若不存在则写入内容
+func writeFileIfNotExists(filePath string, content string) {
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		err := WriteFile(filePath, content)
+		if err != nil {
+			logrus.Errorf("Failed to write file %s: %v", filePath, err)
+		}
+	}
+}
+
 func BuildCapfile(workers []*entities.Worker) map[string]string {
 	if len(workers) == 0 {
 		return map[string]string{}
@@ -65,14 +75,33 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 						defs.WorkerInfoPath,
 						worker.GetUID(), "src", extName+".js")
 
-					// 检查文件是否存在
-					if _, err := os.Stat(filePath); os.IsNotExist(err) {
-						// 文件不存在，进行写入操作
-						err := WriteFile(filePath, allowExtension.Script)
-						if err != nil {
-							logrus.Errorf("Failed to write file %s: %v", filePath, err)
-						}
+					writeFileIfNotExists(filePath, allowExtension.Script)
+				} else {
+					logrus.Warnf("service %s not found", ext)
+				}
+			}
+		}
+
+		if len(workerconfig.Ai) > 0 {
+			for _, ext := range workerconfig.Ai {
+				extName := "ai"
+				allowExtensionFn, ok := defs.AllowWorkersMap[extName]
+				if ok {
+					if len(ext.Binding) == 0 {
+						ext.Binding = extName
 					}
+					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`( name = "API_KEY", text = "`+ext.ApiKey+`" ), ( name = "BASE_URL", text = "`+ext.BaseUrl+`" ), ( name = "MODEL", text = "`+ext.Model+`" ),`))
+					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
+					bindingsText = bindingsText + allowExtension.BindingTemplate
+
+					servicesText = servicesText + allowExtension.ServiceInjectTemplate
+
+					// 构建文件路径
+					filePath := filepath.Join(conf.AppConfigInstance.WorkerdDir,
+						defs.WorkerInfoPath,
+						worker.GetUID(), "src", extName+".js")
+
+					writeFileIfNotExists(filePath, allowExtension.Script)
 				} else {
 					logrus.Warnf("service %s not found", ext)
 				}

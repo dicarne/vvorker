@@ -10,6 +10,13 @@ type ExtensionConfig struct {
 	Name    string `json:"name"`
 }
 
+type AiConfig struct {
+	Model   string `json:"model"`
+	ApiKey  string `json:"api_key"`
+	BaseUrl string `json:"base_url"`
+	Binding string `json:"binding"`
+}
+
 type WorkerConfig struct {
 	ProjectName        string            `json:"name"`
 	Version            string            `json:"version"`
@@ -17,6 +24,7 @@ type WorkerConfig struct {
 	Services           []string          `json:"services"`
 	CompatibilityFlags []string          `json:"compatibility_flags"`
 	Vars               json.RawMessage   `json:"vars"`
+	Ai                 []AiConfig        `json:"ai"`
 }
 
 func ParseWorkerConfig(s string) (*WorkerConfig, error) {

@@ -18,6 +18,7 @@ type AllowServiceTemplate struct {
 	BasicBindingTemplate  string
 	Type                  string
 	Script                string
+	WorkerBindingText     template.HTML
 }
 
 var commonExtensionTemplate = `
@@ -34,7 +35,7 @@ var commonWorkerTemplate = `
      (name = "{{.Name}}", esModule = embed "src/{{.Path}}.js"),
    ],
    compatibilityDate = "2025-05-08",
-   bindings = [],
+   bindings = [{{.WorkerBindingText}}],
  );
  `
 
@@ -47,7 +48,7 @@ var commonWorkerBindingTemplate = `
 `
 
 var commonServiceInjectTemplate = `
-	(name = "{{.Name}}", worker=.w{{.Name}} ),
+	(name = "{{.Name}}", worker = .w{{.Name}}),
 `
 
 // 生成简单扩展模板
@@ -85,7 +86,22 @@ func GenerateExtensionTemplate(temp AllowServiceTemplate) AllowServiceTemplate {
 }
 
 var AllowServicesMap = map[string]func(name string) AllowServiceTemplate{
-	"ai": func(name string) AllowServiceTemplate {
+	// "ai": func(name string) AllowServiceTemplate {
+	// 	return GenerateExtensionTemplate(AllowServiceTemplate{
+	// 		Name:                  name,
+	// 		Path:                  "ai",
+	// 		BasicServiceTemplate:  commonWorkerTemplate,
+	// 		BasicBindingTemplate:  commonWorkerBindingTemplate,
+	// 		ServiceInjectTemplate: commonServiceInjectTemplate,
+	// 		Type:                  "worker",
+	// 		Script:                ext.ExtAiScript,
+	// 		WorkerBindingText:     `( name = "ai", service = "ai" ),`,
+	// 	})
+	// },
+}
+
+var AllowWorkersMap = map[string]func(name string, workerBindings template.HTML) AllowServiceTemplate{
+	"ai": func(name string, workerBindings template.HTML) AllowServiceTemplate {
 		return GenerateExtensionTemplate(AllowServiceTemplate{
 			Name:                  name,
 			Path:                  "ai",
@@ -94,6 +110,7 @@ var AllowServicesMap = map[string]func(name string) AllowServiceTemplate{
 			ServiceInjectTemplate: commonServiceInjectTemplate,
 			Type:                  "worker",
 			Script:                ext.ExtAiScript,
+			WorkerBindingText:     workerBindings,
 		})
 	},
 }
