@@ -1,7 +1,7 @@
 import { WorkerEntrypoint, env } from "cloudflare:workers";
 let env1 = env as unknown as any
 // 假设Go的接口地址
-const GO_API_URL = env1.OSS_AGENT_URL;
+let GO_API_URL = env1.OSS_AGENT_URL;
 const {
 	ENDPOINT,
 	PORT,
@@ -9,7 +9,8 @@ const {
 	ACCESS_KEY_SECRET,
 	BUCKET,
 	USE_SSL,
-	REGION
+	REGION,
+	RESOURCE_ID
 } = env1;
 
 let commonConfig = {
@@ -19,6 +20,7 @@ let commonConfig = {
 	UseSSL: USE_SSL,
 	Region: REGION,
 	Bucket: BUCKET,
+	ResourceID: RESOURCE_ID,
 }
 
 export default class OSS extends WorkerEntrypoint {

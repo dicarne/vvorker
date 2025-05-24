@@ -37,6 +37,7 @@ type OSSConfig struct {
 	UseSSL          bool   `json:"use_ssl"`
 	Region          string `json:"region"`
 	ResourceID      string `json:"resource_id"`
+	SessionToken    string `json:"session_token"`
 }
 
 type KV struct {

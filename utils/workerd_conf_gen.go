@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"html/template"
 	"os"
 	"path/filepath"
@@ -222,10 +223,9 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					if len(ext.Binding) == 0 {
 						ext.Binding = extName
 					}
+					ossAgentUrl := conf.AppConfigInstance.MasterEndpoint
 					if len(ext.ResourceID) != 0 {
-						ext.Endpoint = "localhost"
-						ext.Port = conf.AppConfigInstance.ClientMinioPort
-						ext.UseSSL = false
+						ossAgentUrl = fmt.Sprintf("http://127.0.0.1:%d", conf.AppConfigInstance.APIPort)
 					}
 					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`
 	( name = "ENDPOINT", text = "`+ext.Endpoint+`" ),
@@ -235,7 +235,8 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 	( name = "BUCKET", text = "`+ext.Bucket+`" ),
 	( name = "USE_SSL", text = "`+strconv.FormatBool(ext.UseSSL)+`" ),
 	( name = "REGION", text = "`+ext.Region+`" ),
-	( name = "OSS_AGENT_URL", text = "http://127.0.0.1:`+strconv.Itoa(conf.AppConfigInstance.APIPort)+`" ),
+	( name = "OSS_AGENT_URL", text = "`+ossAgentUrl+`" ),
+	( name = "RESOURCE_ID", text = "`+ext.ResourceID+`" ),
 `))
 					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
 					bindingsText = bindingsText + allowExtension.BindingTemplate

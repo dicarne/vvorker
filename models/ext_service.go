@@ -1,6 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type KV struct {
 	gorm.Model
@@ -10,13 +14,15 @@ type KV struct {
 
 type OSS struct {
 	gorm.Model
-	UserID    uint64
-	UID       string `gorm:"unique"`
-	AccessKey string
-	SecretKey string
-	Bucket    string
-	Region    string
-	Name      string
+	UserID     uint64
+	UID        string `gorm:"unique"`
+	AccessKey  string
+	SecretKey  string
+	Bucket     string
+	Region     string
+	Name       string
+	Expiration time.Time
+	SessionKey string
 }
 
 type PostgreSQL struct {

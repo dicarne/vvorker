@@ -105,6 +105,10 @@ func init() {
 				ossAPI.POST("/list-buckets", oss.ListBuckets)
 				ossAPI.POST("/delete", oss.DeleteFile)
 				ossAPI.POST("/list-objects", oss.ListObjects)
+
+				if conf.IsMaster() {
+					ossAPI.POST("/create-resource", oss.CreateNewOSSResourcesEndpoint)
+				}
 			}
 		}
 	}
@@ -157,7 +161,6 @@ func Run(f embed.FS) {
 	wg.Go(func() {
 		initTunnelService("redis", conf.AppConfigInstance.ServerRedisPort, conf.AppConfigInstance.ClientRedisPort)
 		initTunnelService("postgresql", conf.AppConfigInstance.ServerPostgresPort, conf.AppConfigInstance.ClientPostgresPort)
-		initTunnelService("minio", conf.AppConfigInstance.ServerMinioPort, conf.AppConfigInstance.ClientMinioPort)
 	})
 	wg.Go(func() {
 		router.Run(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ListenAddr, conf.AppConfigInstance.APIPort))

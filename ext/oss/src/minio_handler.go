@@ -2,6 +2,7 @@ package oss
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -36,11 +37,16 @@ func NewMinioClient(endpoint, accessKeyID, secretAccessKey string, useSSL bool, 
 
 // getMinioClient 从请求头中获取参数并创建 Minio 客户端
 func getMinioClient(c *gin.Context) (*MinioClient, error) {
+	resourceID := c.GetHeader("ResourceID")
 	endpoint := c.GetHeader("Endpoint")
 	accessKeyID := c.GetHeader("AccessKeyID")
 	secretAccessKey := c.GetHeader("SecretAccessKey")
 	region := c.GetHeader("Region")
 	useSSLStr := c.GetHeader("UseSSL")
+	if len(resourceID) != 0 {
+		endpoint = fmt.Sprintf("%s:%d", conf.AppConfigInstance.ServerMinioEndpoint, conf.AppConfigInstance.ServerMinioPort)
+		useSSLStr = fmt.Sprintf("%v", conf.AppConfigInstance.ServerMinioUseSSL)
+	}
 
 	logrus.Infof("Endpoint: %s, AccessKeyID: %s, SecretAccessKey: %s, UseSSL: %s, Region: %s",
 		endpoint, accessKeyID, secretAccessKey, useSSLStr, region)
@@ -193,36 +199,47 @@ func ListObjects(c *gin.Context) {
 }
 
 type CreateNewOSSResourcesRequest struct {
-	UID  string `json:"uid"`
-	Name string `json:"name"`
+	UserID string `json:"user_id"`
+	Name   string `json:"name"`
 }
 
-func CreateNewOSSResources(c *gin.Context) {
+func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 	var req CreateNewOSSResourcesRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	mc, err := getMinioClient(c)
+	// valid
+	if req.UserID == "" || req.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "UID and Name are required"})
+		return
+	}
+	mc, err := NewMinioClient(conf.AppConfigInstance.ServerMinioEndpoint,
+		conf.AppConfigInstance.ServerMinioAccess,
+		conf.AppConfigInstance.ServerMinioSecret,
+		conf.AppConfigInstance.ServerMinioUseSSL,
+		conf.AppConfigInstance.ServerMinioRegion)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
 		return
 	}
 	// 将 req.UID 转换为 uint64 类型
-	userID, err := strconv.ParseUint(req.UID, 10, 64)
+	userID, err := strconv.ParseUint(req.UserID, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to convert UID to uint64: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to convert UserID to uint64: " + err.Error()})
 		return
 	}
 	resource := models.OSS{
 		Name:      req.Name,
 		UserID:    userID,
 		UID:       utils.GenerateUID(),
-		Bucket:    utils.GenerateUID(),
+		Bucket:    "",
 		Region:    conf.AppConfigInstance.ServerMinioRegion,
 		AccessKey: "",
 		SecretKey: "",
 	}
+	resource.Bucket = resource.UID
+
 	// 检查 bucket 是否存在，如果不存在则创建
 	exists, err := mc.Client.BucketExists(context.Background(), resource.Bucket)
 	if err != nil {
@@ -238,14 +255,27 @@ func CreateNewOSSResources(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create bucket: " + err.Error()})
 		return
 	}
+
+	account, err := CreateNewServiceAccount(resource.Bucket)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create service account: " + err.Error()})
+		return
+	}
+
+	resource.AccessKey = account.AccessKey
+	resource.SecretKey = account.SecretKey
+	resource.Expiration = account.Expiration
+
 	// 创建新的 OSS 资源
 	db := database.GetDB()
 	if err := db.Create(&resource).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create OSS resource: " + err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "OSS resource created successfully",
 		"name": resource.Name,
 		"uid":  resource.UID,
 	})
+
 }

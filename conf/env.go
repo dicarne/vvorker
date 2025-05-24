@@ -43,14 +43,21 @@ type AppConfig struct {
 	TunnelToken       string
 	NodeID            string
 
-	ServerMinioPort    int `env:"SERVER_MINIO_PORT" env-default:"9000"`
 	ServerPostgresPort int `env:"SERVER_POSTGRES_PORT" env-default:"5432"`
 	ServerRedisPort    int `env:"SERVER_REDIS_PORT" env-default:"6379"`
 
-	ServerMinioRegion string `env:"SERVER_MINIO_REGION" env-default:"us-east-1"`
+	ServerMinioEndpoint string `env:"SERVER_MINIO_ENDPOINT" env-default:"localhost"` // localhost时为本地
+	ServerMinioPort     int    `env:"SERVER_MINIO_PORT" env-default:"9000"`          // 本地时为9000，远程时为443
 
-	ServerPostgresPassword string `env:"SERVER_POSTGRES_PASSWORD" env-default:"postgres"`
-	ServerPostgresUser     string `env:"SERVER_POSTGRES_USER" env-default:"postgres"`
+	ServerMinioRegion string `env:"SERVER_MINIO_REGION" env-default:"us-east-1"`
+	ServerMinioUseSSL bool   `env:"SERVER_MINIO_USE_SSL" env-default:"false"`
+	ServerMinioAccess string `env:"SERVER_MINIO_ACCESS" env-default:"minioadmin"`
+	ServerMinioSecret string `env:"SERVER_MINIO_SECRET" env-default:"minioadmin"`
+
+	ServerPostgreEndpoint string `env:"SERVER_POSTGRE_ENDPOINT" env-default:"localhost"`
+	ServerPostgrePort     int    `env:"SERVER_POSTGRE_PORT" env-default:"5432"`
+	ServerPostgrePassword string `env:"SERVER_POSTGRE_PASSWORD" env-default:"postgres"`
+	ServerPostgreUser     string `env:"SERVER_POSTGRE_USER" env-default:"postgres"`
 
 	ClientMinioPort    int `env:"CLIENT_MINIO_PORT" env-default:"19000"`
 	ClientPostgresPort int `env:"CLIENT_POSTGRES_PORT" env-default:"15432"`
