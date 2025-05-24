@@ -27,29 +27,31 @@ function config() {
 const cfg = config()
 
 export default class PGSQL extends WorkerEntrypoint {
-	client = new Client({
-		user: cfg.user,
-		host: cfg.host,
-		database: cfg.database,
-		password: cfg.password,
-		port: Number(cfg.port),
-	});
 	constructor(ctx: any, env: any) {
 		super(ctx, env)
 	}
 	async start() {
-		await this.client.connect()
-	}
-	async end() {
-		await this.client.end()
-	}
-	async query(sql: string, params: any[] = []) {
-		const result = await this.client.query(sql, params)
+		const client = new Client({
+			user: cfg.user,
+			host: cfg.host,
+			database: cfg.database,
+			password: cfg.password,
+			port: Number(cfg.port),
+		});
+		await client.connect()
 		return {
-			rows: result.rows,
-			rowCount: result.rowCount,
-			command: result.command,
-			oid: result.oid,
+			end: async () => {
+				await client.end()
+			},
+			query: async (sql: string, params: any[] = []) => {
+				const result = await client.query(sql, params)
+				return {
+					rows: result.rows,
+					rowCount: result.rowCount,
+					command: result.command,
+					oid: result.oid,
+				}
+			}
 		}
 	}
 }
