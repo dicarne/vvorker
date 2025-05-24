@@ -5,6 +5,10 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"vorker/conf"
+	"vorker/models"
+	"vorker/utils"
+	"vorker/utils/database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go/v7"
@@ -186,4 +190,62 @@ func ListObjects(c *gin.Context) {
 		files = append(files, object.Key)
 	}
 	c.JSON(http.StatusOK, gin.H{"files": files})
+}
+
+type CreateNewOSSResourcesRequest struct {
+	UID  string `json:"uid"`
+	Name string `json:"name"`
+}
+
+func CreateNewOSSResources(c *gin.Context) {
+	var req CreateNewOSSResourcesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	mc, err := getMinioClient(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
+		return
+	}
+	// 将 req.UID 转换为 uint64 类型
+	userID, err := strconv.ParseUint(req.UID, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to convert UID to uint64: " + err.Error()})
+		return
+	}
+	resource := models.OSS{
+		Name:      req.Name,
+		UserID:    userID,
+		UID:       utils.GenerateUID(),
+		Bucket:    utils.GenerateUID(),
+		Region:    conf.AppConfigInstance.ServerMinioRegion,
+		AccessKey: "",
+		SecretKey: "",
+	}
+	// 检查 bucket 是否存在，如果不存在则创建
+	exists, err := mc.Client.BucketExists(context.Background(), resource.Bucket)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check bucket existence: " + err.Error()})
+		return
+	}
+	if exists {
+		c.JSON(http.StatusOK, gin.H{"message": "Bucket already exists"})
+		return
+	}
+	err = mc.Client.MakeBucket(context.Background(), resource.Bucket, minio.MakeBucketOptions{Region: conf.AppConfigInstance.ServerMinioRegion})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create bucket: " + err.Error()})
+		return
+	}
+	// 创建新的 OSS 资源
+	db := database.GetDB()
+	if err := db.Create(&resource).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create OSS resource: " + err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "OSS resource created successfully",
+		"name": resource.Name,
+		"uid":  resource.UID,
+	})
 }

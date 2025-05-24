@@ -47,6 +47,8 @@ type AppConfig struct {
 	ServerPostgresPort int `env:"SERVER_POSTGRES_PORT" env-default:"5432"`
 	ServerRedisPort    int `env:"SERVER_REDIS_PORT" env-default:"6379"`
 
+	ServerMinioRegion string `env:"SERVER_MINIO_REGION" env-default:"us-east-1"`
+
 	ServerPostgresPassword string `env:"SERVER_POSTGRES_PASSWORD" env-default:"postgres"`
 	ServerPostgresUser     string `env:"SERVER_POSTGRES_USER" env-default:"postgres"`
 

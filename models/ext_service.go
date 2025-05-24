@@ -16,6 +16,7 @@ type OSS struct {
 	SecretKey string
 	Bucket    string
 	Region    string
+	Name      string
 }
 
 type PostgreSQL struct {
