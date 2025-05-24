@@ -154,9 +154,9 @@ func Run(f embed.FS) {
 		HandleStaticFile(f)
 	}
 	wg.Go(func() {
-		initTunnelService("redis", conf.AppConfigInstance.ServerRedisPort, 16379)
-		initTunnelService("postgresql", conf.AppConfigInstance.ServerPostgresPort, 15432)
-		initTunnelService("minio", conf.AppConfigInstance.ServerMinioPort, 19000)
+		initTunnelService("redis", conf.AppConfigInstance.ServerRedisPort, conf.AppConfigInstance.ClientRedisPort)
+		initTunnelService("postgresql", conf.AppConfigInstance.ServerPostgresPort, conf.AppConfigInstance.ClientPostgresPort)
+		initTunnelService("minio", conf.AppConfigInstance.ServerMinioPort, conf.AppConfigInstance.ClientMinioPort)
 	})
 	wg.Go(func() {
 		router.Run(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ListenAddr, conf.AppConfigInstance.APIPort))

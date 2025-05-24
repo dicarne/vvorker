@@ -45,6 +45,10 @@ type AppConfig struct {
 	ServerMinioPort    int `env:"SERVER_MINIO_PORT" env-default:"9000"`
 	ServerPostgresPort int `env:"SERVER_POSTGRES_PORT" env-default:"5432"`
 	ServerRedisPort    int `env:"SERVER_REDIS_PORT" env-default:"6379"`
+
+	ClientMinioPort    int `env:"CLIENT_MINIO_PORT" env-default:"19000"`
+	ClientPostgresPort int `env:"CLIENT_POSTGRES_PORT" env-default:"15432"`
+	ClientRedisPort    int `env:"CLIENT_REDIS_PORT" env-default:"16379"`
 }
 
 type JwtConfig struct {
