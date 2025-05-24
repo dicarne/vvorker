@@ -148,7 +148,10 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					if len(ext.Binding) == 0 {
 						ext.Binding = extName
 					}
-					allowExtension := allowExtensionFn(ext.Binding, template.HTML(``))
+					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`
+	( name = "ENDPOINT", text = "`+ext.Endpoint+`" ),
+	( name = "PORT", text = "`+strconv.Itoa(ext.Port)+`" ),	
+`))
 					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
 					bindingsText = bindingsText + allowExtension.BindingTemplate
 

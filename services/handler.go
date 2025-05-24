@@ -125,6 +125,21 @@ func InitTunnel(wg *conc.WaitGroup) {
 	wg.Go(litefs.RunService)
 }
 
+// initTunnelService 初始化隧道服务和访客
+func initTunnelService(serviceName string, servicePort int, visitorPort int) error {
+	err := tunnel.GetClient().AddService(serviceName, servicePort)
+	if err != nil {
+		logrus.WithError(err).Errorf("init tunnel for %s service error", serviceName)
+		return err
+	}
+	err = tunnel.GetClient().AddVisitor(serviceName, visitorPort)
+	if err != nil {
+		logrus.WithError(err).Errorf("init tunnel for %s visitor failed", serviceName)
+		return err
+	}
+	return nil
+}
+
 func Run(f embed.FS) {
 	wg := conc.NewWaitGroup()
 	defer wg.Wait()
@@ -138,6 +153,11 @@ func Run(f embed.FS) {
 	if conf.IsMaster() {
 		HandleStaticFile(f)
 	}
+	wg.Go(func() {
+		initTunnelService("redis", conf.AppConfigInstance.ServerRedisPort, 16379)
+		initTunnelService("postgresql", conf.AppConfigInstance.ServerPostgresPort, 15432)
+		initTunnelService("minio", conf.AppConfigInstance.ServerMinioPort, 19000)
+	})
 	wg.Go(func() {
 		router.Run(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ListenAddr, conf.AppConfigInstance.APIPort))
 	})

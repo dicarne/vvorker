@@ -10,7 +10,7 @@ export default class Redis extends WorkerEntrypoint {
 	}
 	async call() {
 		let redis = createClient({
-			url: "redis://127.0.0.1:6379/0"
+			url: `redis://${env.ENDPOINT}:${env.PORT}/0`
 		})
 		let c = await redis.connect()
 		await c.set("key", "hello redis set value")

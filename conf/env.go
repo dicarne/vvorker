@@ -11,37 +11,40 @@ import (
 )
 
 type AppConfig struct {
-	DBPath            string `env:"DB_PATH" env-default:"/workerd/db.sqlite"`
-	WorkerdDir        string `env:"WORKERD_DIR" env-default:"/workerd"`
-	DBType            string `env:"DB_TYPE" env-default:"sqlite"`
-	WorkerLimit       int    `env:"WORKER_LIMIT" env-default:"10000"`
-	WorkerdBinPath    string `env:"WORKERD_BIN_PATH" env-default:"/bin/workerd"`
-	WorkerPort        int    `env:"WORKER_PORT" env-default:"8080"`
-	APIPort           int    `env:"API_PORT" env-default:"8888"`
-	ListenAddr        string `env:"LISTEN_ADDR" env-default:"0.0.0.0"`
-	WorkerURLSuffix   string `env:"WORKER_URL_SUFFIX"`         // master required, e.g. .example.com. for worker show and route
-	Scheme            string `env:"SCHEME" env-default:"http"` // http, https. for public frontend show
-	CookieName        string `env:"COOKIE_NAME" env-default:"authorization"`
-	CookieAge         int    `env:"COOKIE_AGE" env-default:"86400"` // second 86400 = 1 day
-	CookieDomain      string `env:"COOKIE_DOMAIN"`                  // required, e.g. example.com
-	EnableRegister    bool   `env:"ENABLE_REGISTER" env-default:"true"`
-	AgentSecret       string `env:"AGENT_SECRET"` //	required, e.g. 123123123
-	NodeName          string `env:"NODE_NAME" env-default:"default"`
-	MasterEndpoint    string `env:"MASTER_ENDPOINT" env-default:"http://127.0.0.1:8888"` // needed for agent
-	RunMode           string `env:"RUN_MODE" env-default:"master"`                       // master, agent
-	TunnelEntryPort   int    `env:"TUNNEL_ENTRY_PORT" env-default:"10080"`
-	TunnelHost        string `env:"TUNNEL_HOST" env-default:"127.0.0.1"` // for master usually 127.0.0.1, for agent usually master public ip
-	TunnelAPIPort     int    `env:"TUNNEL_API_PORT" env-default:"18080"`
-	DefaultWorkerHost string `env:"DEFAULT_WORKER_HOST" env-default:"localhost"`
-	LitefsPrimaryPort int    `env:"LITEFS_PRIMARY_PORT" env-default:"20202"`
-	LitefsBinPath     string `env:"LITEFS_BIN_PATH" env-default:"/usr/local/bin/litefs"`
-	LitefsDirPath     string `env:"LITEFS_DIR_PATH" env-default:"/app"`
-	LitefsEnabled     bool   `env:"LITEFS_ENABLED" env-default:"false"`
-	EnableAutoSync    bool   `env:"ENABLE_AUTO_SYNC" env-default:"false"`
-	TunnelUsername    string
-	TunnelPassword    string
-	TunnelToken       string
-	NodeID            string
+	DBPath             string `env:"DB_PATH" env-default:"/workerd/db.sqlite"`
+	WorkerdDir         string `env:"WORKERD_DIR" env-default:"/workerd"`
+	DBType             string `env:"DB_TYPE" env-default:"sqlite"`
+	WorkerLimit        int    `env:"WORKER_LIMIT" env-default:"10000"`
+	WorkerdBinPath     string `env:"WORKERD_BIN_PATH" env-default:"/bin/workerd"`
+	WorkerPort         int    `env:"WORKER_PORT" env-default:"8080"`
+	APIPort            int    `env:"API_PORT" env-default:"8888"`
+	ListenAddr         string `env:"LISTEN_ADDR" env-default:"0.0.0.0"`
+	WorkerURLSuffix    string `env:"WORKER_URL_SUFFIX"`         // master required, e.g. .example.com. for worker show and route
+	Scheme             string `env:"SCHEME" env-default:"http"` // http, https. for public frontend show
+	CookieName         string `env:"COOKIE_NAME" env-default:"authorization"`
+	CookieAge          int    `env:"COOKIE_AGE" env-default:"86400"` // second 86400 = 1 day
+	CookieDomain       string `env:"COOKIE_DOMAIN"`                  // required, e.g. example.com
+	EnableRegister     bool   `env:"ENABLE_REGISTER" env-default:"true"`
+	AgentSecret        string `env:"AGENT_SECRET"` //	required, e.g. 123123123
+	NodeName           string `env:"NODE_NAME" env-default:"default"`
+	MasterEndpoint     string `env:"MASTER_ENDPOINT" env-default:"http://127.0.0.1:8888"` // needed for agent
+	RunMode            string `env:"RUN_MODE" env-default:"master"`                       // master, agent
+	TunnelEntryPort    int    `env:"TUNNEL_ENTRY_PORT" env-default:"10080"`
+	TunnelHost         string `env:"TUNNEL_HOST" env-default:"127.0.0.1"` // for master usually 127.0.0.1, for agent usually master public ip
+	TunnelAPIPort      int    `env:"TUNNEL_API_PORT" env-default:"18080"`
+	DefaultWorkerHost  string `env:"DEFAULT_WORKER_HOST" env-default:"localhost"`
+	LitefsPrimaryPort  int    `env:"LITEFS_PRIMARY_PORT" env-default:"20202"`
+	LitefsBinPath      string `env:"LITEFS_BIN_PATH" env-default:"/usr/local/bin/litefs"`
+	LitefsDirPath      string `env:"LITEFS_DIR_PATH" env-default:"/app"`
+	LitefsEnabled      bool   `env:"LITEFS_ENABLED" env-default:"false"`
+	EnableAutoSync     bool   `env:"ENABLE_AUTO_SYNC" env-default:"false"`
+	TunnelUsername     string
+	TunnelPassword     string
+	TunnelToken        string
+	NodeID             string
+	ServerMinioPort    int `env:"SERVER_MINIO_PORT" env-default:"9000"`
+	ServerPostgresPort int `env:"SERVER_POSTGRES_PORT" env-default:"5432"`
+	ServerRedisPort    int `env:"SERVER_REDIS_PORT" env-default:"6379"`
 }
 
 type JwtConfig struct {
