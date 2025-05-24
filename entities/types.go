@@ -106,3 +106,11 @@ type RunWorkerResponse struct {
 	Status  int    `json:"status"` // 0: success, 1: failed
 	RunResp []byte `json:"run_resp"`
 }
+
+type AgentFillWorkerReq struct {
+	UID string `json:"uid"`
+}
+
+type AgentFillWorkerResp struct {
+	NewTemplate string `json:"new_template"`
+}

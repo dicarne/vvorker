@@ -94,3 +94,20 @@ func RPCWrapper() *req.Request {
 			defs.HeaderNodeSecret: conf.RPCToken,
 		})
 }
+
+// func FillWorkerConfig(endpoint string, UID string) (string, error) {
+// 	url := endpoint + "/api/agent/fill-worker-config"
+// 	rtype := entities.AgentFillWorkerResp{}
+
+// 	reqResp, err := RPCWrapper().
+// 		SetBody(&entities.AgentFillWorkerReq{
+// 			UID: UID,
+// 		}).
+// 		SetSuccessResult(&rtype).
+// 		Post(url)
+
+// 	if err != nil || reqResp.StatusCode >= 299 {
+// 		return "", errors.New("error")
+// 	}
+// 	return rtype.NewTemplate, nil
+// }

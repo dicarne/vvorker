@@ -84,9 +84,7 @@ func init() {
 		logrus.Panic(err)
 	}
 
-	RPCToken, err = secret.HashPassword(fmt.Sprintf("%s%s",
-		AppConfigInstance.NodeName,
-		AppConfigInstance.AgentSecret))
+	RPCToken = secret.MD5(fmt.Sprintf("%s%s", AppConfigInstance.NodeName, AppConfigInstance.AgentSecret))
 	AppConfigInstance.TunnelUsername = secret.MD5(AppConfigInstance.AgentSecret +
 		AppConfigInstance.WorkerURLSuffix)
 	AppConfigInstance.TunnelPassword = secret.MD5(AppConfigInstance.AgentSecret +

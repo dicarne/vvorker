@@ -8,7 +8,7 @@ wget https://github.com/protocolbuffers/protobuf/releases/download/v24.0-rc3/pro
 install protoc-gen-go
 
 ```bash
-go get -u github.com/golang/protobuf/protoc-gen-go
+go install github.com/golang/protobuf/protoc-gen-go@latest
 ```
 
 cd to defs directory and run the following command to generate go files from proto files

@@ -1,12 +1,15 @@
 package workerd
 
 import (
+	"encoding/json"
 	"runtime/debug"
 	"strconv"
 	"vorker/common"
+	"vorker/conf"
 	"vorker/defs"
 	"vorker/entities"
 	"vorker/models"
+	"vorker/utils/database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -119,4 +122,96 @@ func AgentSyncWorkers(c *gin.Context) {
 		},
 	}
 	common.RespOK(c, "sync workers success", resp)
+}
+
+func FillWorkerConfig(c *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
+			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+		}
+	}()
+	req := &entities.AgentFillWorkerReq{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		common.RespErr(c, defs.CodeInvalidRequest, err.Error(), nil)
+		return
+	}
+
+	db := database.GetDB()
+	worker := &models.Worker{}
+	con := db.Model(&models.Worker{}).Where(&models.Worker{Worker: &entities.Worker{
+		UID: req.UID,
+	}}).First(worker)
+	if con.Error != nil {
+		common.RespErr(c, defs.CodeInternalError, con.Error.Error(), nil)
+		return
+	}
+	newTemplate := FinishWorkerConfig(worker)
+
+	common.RespOK(c, "fill worker config success", &entities.AgentFillWorkerResp{
+		NewTemplate: newTemplate,
+	})
+}
+
+func FinishWorkerConfig(worker *models.Worker) string {
+	UserID := worker.UserID
+	workerconfig, err := conf.ParseWorkerConfig(worker.Template)
+	if err == nil {
+		db := database.GetDB()
+		for i, ext := range workerconfig.PgSql {
+			if len(ext.ResourceID) != 0 {
+				var pgresources = models.PostgreSQL{}
+				db.Model(&models.PostgreSQL{}).Where(&models.PostgreSQL{UID: ext.ResourceID, UserID: uint64(UserID)}).First(&pgresources)
+				if pgresources.ID != 0 {
+					ext.Database = pgresources.Database
+					ext.Password = conf.AppConfigInstance.ServerPostgresPassword
+					ext.User = conf.AppConfigInstance.ServerPostgresUser
+				} else {
+					ext.ResourceID = ""
+				}
+				workerconfig.PgSql[i] = ext
+			}
+		}
+
+		for i, ext := range workerconfig.KV {
+			if len(ext.ResourceID) != 0 {
+				var kvresources = models.KV{}
+				db.Model(&models.KV{}).Where(&models.KV{UID: ext.ResourceID, UserID: uint64(UserID)}).First(&kvresources)
+				// 配置redis
+				logrus.Printf("kvresources.ID: %v", kvresources.ID)
+				if kvresources.ID != 0 {
+				} else {
+					ext.ResourceID = ""
+				}
+				workerconfig.KV[i] = ext
+			}
+		}
+
+		for i, ext := range workerconfig.OSS {
+			if len(ext.ResourceID) != 0 {
+				var ossresources = models.OSS{}
+				db.Model(&models.OSS{}).Where(&models.OSS{UID: ext.ResourceID, UserID: uint64(UserID)}).First(&ossresources)
+				// 配置oss
+				if ossresources.ID != 0 {
+					ext.Bucket = ossresources.Bucket
+					ext.Region = ossresources.Region
+					ext.AccessKeyId = ossresources.AccessKey
+					ext.AccessKeySecret = ossresources.SecretKey
+				} else {
+					ext.ResourceID = ""
+				}
+				workerconfig.OSS[i] = ext
+			}
+		}
+
+		workerBytes, werr := json.Marshal(workerconfig)
+		if werr != nil {
+			logrus.Errorf("Failed to marshal worker config: %v", werr)
+			return worker.Template
+		} else {
+			return string(workerBytes)
+		}
+
+	}
+	return worker.Template
 }

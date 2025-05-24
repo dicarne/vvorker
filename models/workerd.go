@@ -3,7 +3,6 @@ package models
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -278,67 +277,6 @@ func (w *Worker) Delete() error {
 		&Worker{Worker: &entities.Worker{
 			UID: w.UID,
 		}}).Delete(&Worker{}).Error
-}
-
-func FinishWorkerConfig(worker *Worker) {
-	UserID := worker.UserID
-	workerconfig, err := conf.ParseWorkerConfig(worker.Template)
-	if err == nil {
-		db := database.GetDB()
-		for i, ext := range workerconfig.PgSql {
-			if len(ext.ResourceID) != 0 {
-				var pgresources = PostgreSQL{}
-				db.Model(&PostgreSQL{}).Where(&PostgreSQL{UID: ext.ResourceID, UserID: uint64(UserID)}).First(&pgresources)
-				if pgresources.ID != 0 {
-					ext.Database = pgresources.Database
-					ext.Password = conf.AppConfigInstance.ServerPostgresPassword
-					ext.User = conf.AppConfigInstance.ServerPostgresUser
-				} else {
-					ext.ResourceID = ""
-				}
-				workerconfig.PgSql[i] = ext
-			}
-		}
-
-		for i, ext := range workerconfig.KV {
-			if len(ext.ResourceID) != 0 {
-				var kvresources = KV{}
-				db.Model(&KV{}).Where(&KV{UID: ext.ResourceID, UserID: uint64(UserID)}).First(&kvresources)
-				// 配置redis
-				logrus.Printf("kvresources.ID: %v", kvresources.ID)
-				if kvresources.ID != 0 {
-				} else {
-					ext.ResourceID = ""
-				}
-				workerconfig.KV[i] = ext
-			}
-		}
-
-		for i, ext := range workerconfig.OSS {
-			if len(ext.ResourceID) != 0 {
-				var ossresources = OSS{}
-				db.Model(&OSS{}).Where(&OSS{UID: ext.ResourceID, UserID: uint64(UserID)}).First(&ossresources)
-				// 配置oss
-				if ossresources.ID != 0 {
-					ext.Bucket = ossresources.Bucket
-					ext.Region = ossresources.Region
-					ext.AccessKeyId = ossresources.AccessKey
-					ext.AccessKeySecret = ossresources.SecretKey
-				} else {
-					ext.ResourceID = ""
-				}
-				workerconfig.OSS[i] = ext
-			}
-		}
-
-		workerBytes, werr := json.Marshal(workerconfig)
-		if werr != nil {
-			logrus.Errorf("Failed to marshal worker config: %v", werr)
-		} else {
-			worker.Template = string(workerBytes)
-		}
-
-	}
 }
 
 func (w *Worker) Flush() error {

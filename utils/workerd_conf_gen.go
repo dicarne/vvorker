@@ -12,6 +12,7 @@ import (
 	"vorker/defs"
 	"vorker/entities"
 
+	"github.com/imroc/req/v3"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,6 +34,36 @@ func writeFileIfNotExists(filePath string, content string) {
 	}
 }
 
+func RPCWrapper() *req.Request {
+	return req.C().R().
+		SetHeaders(map[string]string{
+			defs.HeaderNodeName:   conf.AppConfigInstance.NodeName,
+			defs.HeaderNodeSecret: conf.RPCToken,
+		})
+}
+
+func FillWorkerConfig(endpoint string, UID string) (string, error) {
+	url := endpoint + "/api/agent/fill-worker-config"
+
+	rtype := struct {
+		Code int                          `json:"code"`
+		Msg  string                       `json:"msg"`
+		Data entities.AgentFillWorkerResp `json:"data"`
+	}{}
+
+	reqResp, err := RPCWrapper().
+		SetBody(&entities.AgentFillWorkerReq{
+			UID: UID,
+		}).
+		SetSuccessResult(&rtype).
+		Post(url)
+
+	if err != nil || reqResp.StatusCode >= 299 {
+		return "", errors.New(reqResp.Err.Error())
+	}
+	return rtype.Data.NewTemplate, nil
+}
+
 func BuildCapfile(workers []*entities.Worker) map[string]string {
 	if len(workers) == 0 {
 		return map[string]string{}
@@ -43,7 +74,11 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 		writer := new(bytes.Buffer)
 		capTemplate := template.New("capfile")
 		workerTemplate := defs.DefaultTemplate
-		workerconfig, werr := conf.ParseWorkerConfig(worker.Template)
+		newTemplate, ferr := FillWorkerConfig(conf.AppConfigInstance.MasterEndpoint, worker.GetUID())
+		if ferr != nil {
+			logrus.Warnf("new workerconfig error: %v", ferr)
+		}
+		workerconfig, werr := conf.ParseWorkerConfig(newTemplate)
 
 		bindingsText := ""
 		extensionsText := ""

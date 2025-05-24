@@ -91,6 +91,7 @@ func init() {
 				agentAPI.POST("/sync", authz.AgentAuthz(), workerd.AgentSyncWorkers)
 				agentAPI.POST("/add", authz.AgentAuthz(), node.AddEndpoint)
 				agentAPI.GET("/nodeinfo", authz.AgentAuthz(), node.GetNodeInfoEndpoint)
+				agentAPI.POST("/fill-worker-config", authz.AgentAuthz(), workerd.FillWorkerConfig)
 			} else {
 				agentAPI.POST("/notify", authz.AgentAuthz(), agent.NotifyEndpoint)
 			}
