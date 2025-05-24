@@ -3,9 +3,7 @@ package workerd
 import (
 	"runtime/debug"
 	"vorker/common"
-	"vorker/conf"
 	"vorker/models"
-	"vorker/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -74,9 +72,6 @@ func Flush(userID uint, UID string) error {
 	err = worker.Flush()
 	if err != nil {
 		return err
-	}
-	if worker.NodeName == conf.AppConfigInstance.NodeName {
-		utils.GenWorkerConfig(worker.ToEntity())
 	}
 	return nil
 }

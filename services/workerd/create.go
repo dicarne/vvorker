@@ -1,14 +1,10 @@
 package workerd
 
 import (
-	"errors"
 	"runtime/debug"
 	"vorker/common"
-	"vorker/conf"
 	"vorker/entities"
-	"vorker/exec"
 	"vorker/models"
-	"vorker/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -51,13 +47,7 @@ func Create(userID uint, worker *entities.Worker) error {
 		return err
 	}
 
-	if worker.NodeName == conf.AppConfigInstance.NodeName {
-		err := utils.GenWorkerConfig(worker)
-		if err != nil {
-			return errors.New("failed to create worker")
-		}
-		exec.ExecManager.RunCmd(worker.GetUID(), []string{})
-	}
+	Flush(userID, worker.GetUID())
 
 	return nil
 }

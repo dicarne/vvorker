@@ -4,13 +4,13 @@ import "gorm.io/gorm"
 
 type KV struct {
 	gorm.Model
-	UserName string
-	UID      string `gorm:"unique"`
+	UserID uint64
+	UID    string `gorm:"unique"`
 }
 
 type OSS struct {
 	gorm.Model
-	UserName  string
+	UserID    uint64
 	UID       string `gorm:"unique"`
 	AccessKey string
 	SecretKey string
@@ -20,7 +20,7 @@ type OSS struct {
 
 type PostgreSQL struct {
 	gorm.Model
-	UserName string
+	UserID   uint64
 	UID      string `gorm:"unique"`
 	Database string
 }

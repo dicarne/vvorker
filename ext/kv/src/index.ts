@@ -14,6 +14,10 @@ export default class Redis extends WorkerEntrypoint {
 		})
 		let c = await redis.connect()
 		await c.set("key", "hello redis set value")
-		return await c.get("key")
+		return {
+			result: await c.get("key"),
+			endpoint: env.ENDPOINT,
+			port: env.PORT
+		}
 	}
 }
