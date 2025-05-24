@@ -3,23 +3,35 @@ import { createClient } from "redis";
 
 import { WorkerEntrypoint, env } from 'cloudflare:workers'
 
-export default class Redis extends WorkerEntrypoint {
+const eenv = env as unknown as any
 
+eenv.RESOURCE_ID = eenv.RESOURCE_ID || ""
+const prefix = eenv.RESOURCE_ID.length > 0 ? eenv.RESOURCE_ID + ":" : ""
+
+export default class Redis extends WorkerEntrypoint {
+	redis = createClient({
+		url: `redis://${eenv.ENDPOINT}:${eenv.PORT}/0`
+	})
 	constructor(ctx: any, env: any) {
 		super(ctx, env)
 	}
-	async call() {
-		let redis = createClient({
-			url: `redis://${env.ENDPOINT}:${env.PORT}/0`
-		})
-		let c = await redis.connect()
-		await c.set("key", "hello redis set value")
-		let r = await c.get("key")
-		redis.close()
-		return {
-			result: r,
-			endpoint: env.ENDPOINT,
-			port: env.PORT
-		}
+	async start() {
+		await this.redis.connect()
 	}
+	async end() {
+		await this.redis.quit()
+	}
+	async get(key: string) {
+		return await this.redis.get(prefix + key)
+	}
+	async set(key: string, value: string) {
+		return await this.redis.set(prefix + key, value)
+	}
+	async del(key: string) {
+		return await this.redis.del(prefix + key)
+	}
+	async keys(pattern: string) {
+		return await this.redis.keys(prefix + pattern)
+	}
+
 }
