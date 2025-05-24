@@ -26,7 +26,7 @@ const (
 const config :Workerd.Config = (
   services = [
     ( name = "{{.Worker.UID}}", worker = .v{{.Worker.UID}}Worker),
-	( name = "internet", network = (allow = ["public", "private"],)),  # TODO: 这里的网络配置需要根据实际情况进行调整
+	( name = "internet", network = (allow = ["public", "private"],)),
 	{{.ServiceText}}
   ],
 

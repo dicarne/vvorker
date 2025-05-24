@@ -37,6 +37,12 @@ type OSSConfig struct {
 	Region          string `json:"region"`
 }
 
+type KV struct {
+	Endpoint string `json:"endpoint"`
+	Port     int    `json:"port"`
+	Binding  string `json:"binding"`
+}
+
 type WorkerConfig struct {
 	ProjectName        string            `json:"name"`
 	Version            string            `json:"version"`
@@ -47,6 +53,7 @@ type WorkerConfig struct {
 	Ai                 []AiConfig        `json:"ai"`
 	PgSql              []SQLDBConfig     `json:"pgsql"`
 	OSS                []OSSConfig       `json:"oss"`
+	KV                 []KV              `json:"kv"`
 }
 
 func ParseWorkerConfig(s string) (*WorkerConfig, error) {

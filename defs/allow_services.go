@@ -128,6 +128,19 @@ var AllowWorkersMap = map[string]func(name string, workerBindings template.HTML)
 			WorkerBindingText:     workerBindings,
 		})
 	},
+	"kv": func(name string, workerBindings template.HTML) AllowServiceTemplate {
+		return GenerateExtensionTemplate(AllowServiceTemplate{
+			Name:                  name,
+			Path:                  "kv",
+			BasicServiceTemplate:  commonWorkerTemplate,
+			BasicBindingTemplate:  commonWorkerBindingTemplate,
+			ServiceInjectTemplate: commonServiceInjectTemplate,
+			Type:                  "worker",
+			Script:                ext.ExtKVScriptDTS,
+			FlagsText:             template.HTML(` "nodejs_compat" `),
+			WorkerBindingText:     workerBindings,
+		})
+	},
 }
 
 type ServiceNetworkTemplate struct {
