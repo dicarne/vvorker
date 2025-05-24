@@ -1,12 +1,14 @@
 package workerd
 
 import (
+	"encoding/json"
 	"vorker/conf"
 	"vorker/defs"
 	"vorker/entities"
 	"vorker/models"
 	"vorker/rpc"
 	"vorker/utils"
+	"vorker/utils/database"
 
 	"github.com/lucasepe/codename"
 	"github.com/sirupsen/logrus"
@@ -41,9 +43,52 @@ func FillWorkerValue(worker *entities.Worker, keepUID bool, UID string, UserID u
 	if len(worker.Entry) == 0 {
 		worker.Entry = defs.DefaultEntry
 	}
-	// if len(worker.Template) == 0 {
-	// 	worker.Template = defs.DefaultTemplate
-	// }
+	if len(worker.Template) == 0 {
+		workerconfig, err := conf.ParseWorkerConfig(worker.Template)
+		if err != nil {
+			db := database.GetDB()
+			for i, ext := range workerconfig.PgSql {
+				if len(ext.ResourceID) != 0 {
+					var pgresources = models.PostgreSQL{}
+					db.Model(&models.PostgreSQL{}).Where(&models.PostgreSQL{UID: ext.ResourceID}).First(&pgresources)
+					ext.Database = pgresources.Database
+					ext.Password = conf.AppConfigInstance.ServerPostgresPassword
+					ext.User = conf.AppConfigInstance.ServerPostgresUser
+
+					workerconfig.PgSql[i] = ext
+				}
+			}
+
+			for i, ext := range workerconfig.KV {
+				if len(ext.ResourceID) != 0 {
+					var kvresources = models.KV{}
+					db.Model(&models.KV{}).Where(&models.KV{UID: ext.ResourceID}).First(&kvresources)
+					// 配置redis
+					workerconfig.KV[i] = ext
+				}
+			}
+
+			for i, ext := range workerconfig.OSS {
+				if len(ext.ResourceID) != 0 {
+					var ossresources = models.OSS{}
+					db.Model(&models.OSS{}).Where(&models.OSS{UID: ext.ResourceID}).First(&ossresources)
+					// 配置oss
+					ext.Bucket = ossresources.Bucket
+					ext.Region = ossresources.Region
+					ext.AccessKeyId = ossresources.AccessKey
+					ext.AccessKeySecret = ossresources.SecretKey
+					workerconfig.OSS[i] = ext
+				}
+			}
+
+			workerBytes, werr := json.Marshal(workerconfig)
+			if werr != nil {
+				logrus.Errorf("Failed to marshal worker config: %v", werr)
+			} else {
+				worker.Template = string(workerBytes)
+			}
+		}
+	}
 
 	// if the worker name is not unique, use the uid as the name
 	if wl, err :=

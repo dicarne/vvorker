@@ -117,6 +117,10 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					if len(ext.Binding) == 0 {
 						ext.Binding = extName
 					}
+					if len(ext.ResourceID) != 0 {
+						ext.Host = "localhost"
+						ext.Port = conf.AppConfigInstance.ClientPostgresPort
+					}
 					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`
 	( name = "HOST", text = "`+ext.Host+`" ), 
 	( name = "PORT", text = "`+strconv.Itoa(ext.Port)+`" ), 
@@ -148,6 +152,11 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					if len(ext.Binding) == 0 {
 						ext.Binding = extName
 					}
+
+					if len(ext.ResourceID) != 0 {
+						ext.Endpoint = "localhost"
+						ext.Port = conf.AppConfigInstance.ClientRedisPort
+					}
 					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`
 	( name = "ENDPOINT", text = "`+ext.Endpoint+`" ),
 	( name = "PORT", text = "`+strconv.Itoa(ext.Port)+`" ),	
@@ -176,6 +185,11 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 				if ok {
 					if len(ext.Binding) == 0 {
 						ext.Binding = extName
+					}
+					if len(ext.ResourceID) != 0 {
+						ext.Endpoint = "localhost"
+						ext.Port = conf.AppConfigInstance.ClientMinioPort
+						ext.UseSSL = false
 					}
 					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`
 	( name = "ENDPOINT", text = "`+ext.Endpoint+`" ),

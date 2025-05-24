@@ -18,12 +18,13 @@ type AiConfig struct {
 }
 
 type SQLDBConfig struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	User     string `json:"user"`
-	Password string `json:"password"`
-	Database string `json:"database"`
-	Binding  string `json:"binding"`
+	Host       string `json:"host"`
+	Port       int    `json:"port"`
+	User       string `json:"user"`
+	Password   string `json:"password"`
+	Database   string `json:"database"`
+	Binding    string `json:"binding"`
+	ResourceID string `json:"resource_id"`
 }
 
 type OSSConfig struct {
@@ -35,12 +36,14 @@ type OSSConfig struct {
 	Bucket          string `json:"bucket"`
 	UseSSL          bool   `json:"use_ssl"`
 	Region          string `json:"region"`
+	ResourceID      string `json:"resource_id"`
 }
 
 type KV struct {
-	Endpoint string `json:"endpoint"`
-	Port     int    `json:"port"`
-	Binding  string `json:"binding"`
+	Endpoint   string `json:"endpoint"`
+	Port       int    `json:"port"`
+	Binding    string `json:"binding"`
+	ResourceID string `json:"resource_id"`
 }
 
 type WorkerConfig struct {

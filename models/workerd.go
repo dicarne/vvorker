@@ -280,6 +280,7 @@ func (w *Worker) Delete() error {
 }
 
 func (w *Worker) Flush() error {
+	// TODO: 需要读取配置
 	if w.NodeName != conf.AppConfigInstance.NodeName {
 		n, err := GetNodeByNodeName(w.NodeName)
 		if err != nil {
