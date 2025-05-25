@@ -14,6 +14,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/imroc/req/v3 v3.52.0
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.9
 	github.com/lucasepe/codename v0.2.0
 	github.com/minio/madmin-go/v4 v4.0.15
 	github.com/minio/minio-go/v7 v7.0.92
@@ -74,7 +75,6 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/klauspost/reedsolomon v1.12.4 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 	github.com/lufia/plan9stats v0.0.0-20250317134145-8bc96cf8fc35 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect

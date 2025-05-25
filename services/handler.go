@@ -41,6 +41,8 @@ func init() {
 	router.MaxMultipartMemory = 8 << 20 // 8 MiB
 
 	proxy = gin.Default()
+	proxy.Use(modifyProxyRequestHeaders)
+
 	router.Use(utils.CORSMiddlewaire(
 		fmt.Sprintf("%v://%v", conf.AppConfigInstance.Scheme, conf.AppConfigInstance.CookieDomain),
 	))
@@ -238,4 +240,13 @@ func RegisterNodeToMaster() {
 		}
 		time.Sleep(30 * time.Second)
 	}
+}
+
+func modifyProxyRequestHeaders(c *gin.Context) {
+	host := c.Request.Header.Get("Server-Host")
+	if host != "" {
+		c.Request.Header.Set("Host", host)
+		c.Request.Host = host
+	}
+	c.Next()
 }
