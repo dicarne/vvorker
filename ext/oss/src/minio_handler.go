@@ -291,15 +291,18 @@ func DeleteOSSResourcesEndpoint(c *gin.Context) {
 		return
 	}
 
-	db := database.GetDB()
-	var resource models.OSS
-	if err := db.Where("uid = ?", req.UID).First(&resource).Error; err != nil {
-		common.RespErr(c, http.StatusInternalServerError, "Failed to find OSS resource", gin.H{"error": err.Error()})
+	uid := c.GetUint64(common.UIDKey)
+	if uid == 0 {
+		common.RespErr(c, http.StatusBadRequest, "Invalid UID", gin.H{"error": "Invalid UID"})
 		return
 	}
+	condition := models.OSS{UID: req.UID, UserID: uid}
+
+	db := database.GetDB()
+	var resource models.OSS
 	// 删除OSS资源
-	if err := db.Delete(&resource).Error; err != nil {
-		common.RespErr(c, http.StatusInternalServerError, "Failed to delete OSS resource", gin.H{"error": err.Error()})
+	if rr := db.Delete(&resource, condition); rr.Error != nil || rr.RowsAffected == 0 {
+		common.RespErr(c, http.StatusInternalServerError, "Failed to delete OSS resource", gin.H{"error": rr.Error.Error()})
 		return
 	}
 	// 删除Minio中的Bucket

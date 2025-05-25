@@ -184,7 +184,7 @@ func DeletePostgreSQLResourcesEndpoint(c *gin.Context) {
 	condition := models.PostgreSQL{UID: req.UID, UserID: uid}
 
 	// 执行删除操作并处理错误
-	result := db.Model(&models.PostgreSQL{}).Where(condition).Delete(&condition)
+	result := db.Delete(&condition, condition)
 	if result.Error != nil {
 		// 使用 common.RespErr 返回错误响应
 		common.RespErr(c, http.StatusInternalServerError, "Failed to delete PostgreSQL resource", gin.H{"error": result.Error.Error()})

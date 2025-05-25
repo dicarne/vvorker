@@ -48,7 +48,7 @@ func CreateKVResourcesEndpoint(c *gin.Context) {
 
 // 删除指定KV资源
 func DeleteKVResourcesEndpoint(c *gin.Context) {
-	// uid := c.GetUint(common.UIDKey)
+	uid := c.GetUint64(common.UIDKey)
 
 	var req = entities.DeleteResourcesReq{}
 	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {
@@ -61,10 +61,16 @@ func DeleteKVResourcesEndpoint(c *gin.Context) {
 		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": "invalid request"})
 		return
 	}
+
+	condition := models.PostgreSQL{UID: req.UID, UserID: uid}
+
 	db := database.GetDB()
-	db.Model(&models.KV{}).Delete(&models.KV{
-		UID: req.UID,
-	})
+
+	if rr := db.Delete(&condition, condition); rr.Error != nil || rr.RowsAffected == 0 {
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to delete KV resource", gin.H{"error": rr.Error.Error()})
+		return
+	}
 	// 使用 common.RespOK 返回成功响应
 	common.RespOK(c, "KV resource deleted successfully", gin.H{"status": 0})
 }
