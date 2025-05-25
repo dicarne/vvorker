@@ -1,3 +1,5 @@
 ignoredBuiltDependencies:
   - core-js
   - core-js-pure
+onlyBuiltDependencies:
+  - unrs-resolver

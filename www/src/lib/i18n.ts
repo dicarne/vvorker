@@ -21,6 +21,7 @@ const zh = {
   deleteNode: '删除节点',
   resourceName: '资源名称',
   cancel: '取消',
+  id: 'ID',
 
   workerConfirmDelete: '确认删除函数',
   workerDeleteSuccess: '删除成功',
@@ -63,6 +64,7 @@ const en = {
   deleteNode: 'Delete Node',
   resourceName: 'Resource name',
   cancel: 'Cancel',
+  id: 'ID',
 
   workerConfirmDelete: 'Confirm delete worker',
   workerDeleteSuccess: 'Delete worker success',

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ListItem, TextField, ListItemText } from '@mui/material';
 import { getResourceList, deleteResource, createResource } from '@/api/resources';
 import { ResourceData } from '@/types/resources';
-import { Breadcrumb, ButtonGroup, Button, Card, List, Modal, Form } from '@douyinfe/semi-ui';
+import { Breadcrumb, ButtonGroup, Button, Card, List, Modal, Form, Descriptions } from '@douyinfe/semi-ui';
 import { IconHome } from '@douyinfe/semi-icons';
 import { t } from '@/lib/i18n';
 
@@ -34,7 +34,7 @@ export const ResourceList: React.FC<ResourceListProps> = ({ rtype }) => {
     // 页面加载时获取资源列表
     useEffect(() => {
         loadResources();
-    }, []);
+    }, [loadResources]);
 
     // 处理创建资源按钮点击事件
     const handleCreateResource = () => {
@@ -114,11 +114,12 @@ export const ResourceList: React.FC<ResourceListProps> = ({ rtype }) => {
         <div className="m-4">
             <div className="flex justify-between">
                 <Breadcrumb>
-                    <Breadcrumb.Item
+                    {/* <Breadcrumb.Item key={}
                         href="/admin"
                         icon={<IconHome size="small" />}
                     ></Breadcrumb.Item>
-                    <Breadcrumb.Item href="/admin">{rtype.toUpperCase()}</Breadcrumb.Item>
+                    <Breadcrumb.Item href="/admin">{rtype.toUpperCase()}</Breadcrumb.Item> */}
+                    <p>hi</p>
                 </Breadcrumb>
                 <ButtonGroup>
                     <Button onClick={handleCreateResource} disabled={isCreating}>{t.create}</Button>
@@ -132,7 +133,15 @@ export const ResourceList: React.FC<ResourceListProps> = ({ rtype }) => {
                                 <Button onClick={() => handleDeleteClick(resource.uid)} disabled={isDeleting}>{t.delete}</Button>
                             </ButtonGroup>
                         }>
-                            <ListItemText primary={"id: " + resource.uid} style={{ color: "#909090" }} />
+
+                            <Descriptions data={[
+                                {
+
+                                    key: t.id,
+                                    value: resource.uid
+
+                                }
+                            ]} />
                         </Card>
                     </ListItem>
                 ))}
