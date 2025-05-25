@@ -9,6 +9,7 @@ import (
 	"time"
 	"vorker/authz"
 	"vorker/conf"
+	kv "vorker/ext/kv/src"
 	oss "vorker/ext/oss/src"
 	pgsql "vorker/ext/pgsql/src"
 	"vorker/models"
@@ -114,8 +115,17 @@ func init() {
 			}
 			pgsqlAPI := extAPI.Group("/pgsql")
 			{
-				pgsqlAPI.POST("/create-resource", authz.JWTMiddleware(), pgsql.CreateNewPostgreSQLResourcesEndpoint)
-				pgsqlAPI.POST("/delete-resource", authz.JWTMiddleware(), pgsql.DeletePostgreSQLResourcesEndpoint)
+				if conf.IsMaster() {
+					pgsqlAPI.POST("/create-resource", authz.JWTMiddleware(), pgsql.CreateNewPostgreSQLResourcesEndpoint)
+					pgsqlAPI.POST("/delete-resource", authz.JWTMiddleware(), pgsql.DeletePostgreSQLResourcesEndpoint)
+				}
+			}
+			kvAPI := extAPI.Group("/kv")
+			{
+				if conf.IsMaster() {
+					kvAPI.POST("/create-resource", authz.JWTMiddleware(), kv.CreateKVResourcesEndpoint)
+					kvAPI.POST("/delete-resource", authz.JWTMiddleware(), kv.DeleteKVResourcesEndpoint)
+				}
 			}
 		}
 	}
