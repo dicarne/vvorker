@@ -2,12 +2,12 @@ package node
 
 import (
 	"runtime/debug"
-	"vorker/common"
-	"vorker/conf"
-	"vorker/defs"
-	"vorker/entities"
-	"vorker/models"
-	"vorker/rpc"
+	"vvorker/common"
+	"vvorker/conf"
+	"vvorker/defs"
+	"vvorker/entities"
+	"vvorker/models"
+	"vvorker/rpc"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

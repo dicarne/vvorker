@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"syscall"
 	"time"
-	"vorker/conf"
-	"vorker/defs"
+	"vvorker/conf"
+	"vvorker/defs"
 
 	"github.com/sirupsen/logrus"
 )

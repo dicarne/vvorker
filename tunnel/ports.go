@@ -2,8 +2,8 @@ package tunnel
 
 import (
 	"context"
-	"vorker/defs"
-	"vorker/utils"
+	"vvorker/defs"
+	"vvorker/utils"
 )
 
 type PortManager interface {

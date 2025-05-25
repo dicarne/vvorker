@@ -9,9 +9,9 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"vorker/conf"
-	"vorker/defs"
-	"vorker/entities"
+	"vvorker/conf"
+	"vvorker/defs"
+	"vvorker/entities"
 
 	"github.com/imroc/req/v3"
 	"github.com/sirupsen/logrus"

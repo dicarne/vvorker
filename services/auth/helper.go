@@ -2,7 +2,7 @@ package auth
 
 import (
 	"errors"
-	"vorker/entities"
+	"vvorker/entities"
 
 	"github.com/gin-gonic/gin"
 )

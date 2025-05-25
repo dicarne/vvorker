@@ -1,9 +1,9 @@
 package litefs
 
 import (
-	"vorker/common"
-	"vorker/conf"
-	"vorker/tunnel"
+	"vvorker/common"
+	"vvorker/conf"
+	"vvorker/tunnel"
 
 	"github.com/sirupsen/logrus"
 )

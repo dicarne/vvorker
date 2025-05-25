@@ -3,10 +3,10 @@ package workerd
 import (
 	"fmt"
 	"runtime/debug"
-	"vorker/common"
-	"vorker/conf"
-	"vorker/exec"
-	"vorker/models"
+	"vvorker/common"
+	"vvorker/conf"
+	"vvorker/exec"
+	"vvorker/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

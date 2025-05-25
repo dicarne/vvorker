@@ -7,24 +7,24 @@ import (
 	"io/fs"
 	"net/http"
 	"time"
-	"vorker/authz"
-	"vorker/conf"
-	kv "vorker/ext/kv/src"
-	oss "vorker/ext/oss/src"
-	pgsql "vorker/ext/pgsql/src"
-	"vorker/models"
-	"vorker/rpc"
-	"vorker/services/agent"
-	"vorker/services/appconf"
-	"vorker/services/auth"
-	"vorker/services/files"
-	"vorker/services/litefs"
-	"vorker/services/node"
-	proxyService "vorker/services/proxy"
-	"vorker/services/workerd"
-	"vorker/tunnel"
-	"vorker/utils"
-	"vorker/utils/database"
+	"vvorker/authz"
+	"vvorker/conf"
+	kv "vvorker/ext/kv/src"
+	oss "vvorker/ext/oss/src"
+	pgsql "vvorker/ext/pgsql/src"
+	"vvorker/models"
+	"vvorker/rpc"
+	"vvorker/services/agent"
+	"vvorker/services/appconf"
+	"vvorker/services/auth"
+	"vvorker/services/files"
+	"vvorker/services/litefs"
+	"vvorker/services/node"
+	proxyService "vvorker/services/proxy"
+	"vvorker/services/workerd"
+	"vvorker/tunnel"
+	"vvorker/utils"
+	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -84,7 +84,7 @@ func init() {
 				fileAPI.GET("/get/:fileId", files.GetFileEndpoint)
 			}
 			api.GET("/allworkers", authz.JWTMiddleware(), workerd.GetAllWorkersEndpoint)
-			api.GET("/vorker/config", appconf.GetEndpoint)
+			api.GET("/vvorker/config", appconf.GetEndpoint)
 			api.POST("/auth/register", auth.RegisterEndpoint)
 			api.POST("/auth/login", auth.LoginEndpoint)
 			api.GET("/auth/logout", authz.JWTMiddleware(), auth.LogoutEndpoint)

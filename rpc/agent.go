@@ -3,10 +3,10 @@ package rpc
 import (
 	"errors"
 	"fmt"
-	"vorker/conf"
-	"vorker/defs"
-	"vorker/entities"
-	"vorker/utils"
+	"vvorker/conf"
+	"vvorker/defs"
+	"vvorker/entities"
+	"vvorker/utils"
 
 	"github.com/imroc/req/v3"
 	"github.com/samber/lo"

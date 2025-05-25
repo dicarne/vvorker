@@ -3,8 +3,8 @@ package dao
 import (
 	"context"
 	"fmt"
-	"vorker/models"
-	"vorker/utils/database"
+	"vvorker/models"
+	"vvorker/utils/database"
 )
 
 func NewWorkerVersion(version *models.WorkerVersion) error {

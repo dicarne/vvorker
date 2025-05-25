@@ -2,7 +2,7 @@ package utils
 
 import (
 	"testing"
-	"vorker/entities"
+	"vvorker/entities"
 
 	"github.com/stretchr/testify/assert"
 )

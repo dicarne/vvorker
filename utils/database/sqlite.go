@@ -1,9 +1,9 @@
 package database
 
 import (
-	"vorker/conf"
-	"vorker/defs"
-	"vorker/utils"
+	"vvorker/conf"
+	"vvorker/defs"
+	"vvorker/utils"
 
 	"github.com/glebarez/sqlite"
 	"github.com/joho/godotenv"

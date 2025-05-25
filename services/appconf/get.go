@@ -3,9 +3,9 @@ package appconf
 import (
 	"net/http"
 	"runtime/debug"
-	"vorker/common"
-	"vorker/conf"
-	"vorker/models"
+	"vvorker/common"
+	"vvorker/conf"
+	"vvorker/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

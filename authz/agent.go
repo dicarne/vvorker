@@ -2,9 +2,9 @@ package authz
 
 import (
 	"fmt"
-	"vorker/conf"
-	"vorker/defs"
-	"vorker/utils/secret"
+	"vvorker/conf"
+	"vvorker/defs"
+	"vvorker/utils/secret"
 
 	"github.com/gin-gonic/gin"
 )

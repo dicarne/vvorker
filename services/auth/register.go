@@ -2,10 +2,10 @@ package auth
 
 import (
 	"runtime/debug"
-	"vorker/common"
-	"vorker/conf"
-	"vorker/entities"
-	"vorker/models"
+	"vvorker/common"
+	"vvorker/conf"
+	"vvorker/entities"
+	"vvorker/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

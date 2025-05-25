@@ -2,9 +2,9 @@ package models
 
 import (
 	"time"
-	"vorker/conf"
-	"vorker/utils"
-	"vorker/utils/database"
+	"vvorker/conf"
+	"vvorker/utils"
+	"vvorker/utils/database"
 
 	"github.com/sirupsen/logrus"
 )

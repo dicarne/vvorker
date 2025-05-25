@@ -3,9 +3,9 @@ package authz
 import (
 	"strings"
 	"time"
-	"vorker/common"
-	"vorker/conf"
-	"vorker/utils"
+	"vvorker/common"
+	"vvorker/conf"
+	"vvorker/utils"
 
 	"github.com/gin-gonic/gin"
 )

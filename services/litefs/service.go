@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"time"
-	"vorker/conf"
+	"vvorker/conf"
 
 	"github.com/sirupsen/logrus"
 )

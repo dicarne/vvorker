@@ -2,8 +2,8 @@ package main
 
 import (
 	"embed"
-	"vorker/exec"
-	"vorker/services"
+	"vvorker/exec"
+	"vvorker/services"
 
 	"github.com/sirupsen/logrus"
 )

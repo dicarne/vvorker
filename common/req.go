@@ -1,7 +1,7 @@
 package common
 
 import (
-	"vorker/entities"
+	"vvorker/entities"
 )
 
 type Request interface {

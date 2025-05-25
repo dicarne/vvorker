@@ -2,10 +2,10 @@ package agent
 
 import (
 	"runtime/debug"
-	"vorker/common"
-	"vorker/defs"
-	"vorker/entities"
-	"vorker/utils/request"
+	"vvorker/common"
+	"vvorker/defs"
+	"vvorker/entities"
+	"vvorker/utils/request"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

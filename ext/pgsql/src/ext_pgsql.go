@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"vorker/common"
-	"vorker/conf"
-	"vorker/entities"
-	"vorker/models"
-	"vorker/utils"
-	"vorker/utils/database"
+	"vvorker/common"
+	"vvorker/conf"
+	"vvorker/entities"
+	"vvorker/models"
+	"vvorker/utils"
+	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -40,7 +40,7 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 		Name:   req.Name,
 		UID:    utils.GenerateUID(),
 	}
-	pgResource.Database = "vorker_" + pgResource.UID
+	pgResource.Database = "vvorker_" + pgResource.UID
 
 	pgdb, err := sql.Open("postgres",
 		"user="+conf.AppConfigInstance.ServerPostgreUser+
@@ -198,7 +198,7 @@ func DeletePostgreSQLResourcesEndpoint(c *gin.Context) {
 		return
 	}
 
-	pgResourceDatabase := "vorker_" + req.UID
+	pgResourceDatabase := "vvorker_" + req.UID
 
 	pgdb, err := sql.Open("postgres",
 		"user="+conf.AppConfigInstance.ServerPostgreUser+

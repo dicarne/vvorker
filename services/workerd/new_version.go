@@ -1,10 +1,10 @@
 package workerd
 
 import (
-	"vorker/common"
-	"vorker/dao"
-	"vorker/models"
-	"vorker/utils"
+	"vvorker/common"
+	"vvorker/dao"
+	"vvorker/models"
+	"vvorker/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

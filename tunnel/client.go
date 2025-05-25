@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"time"
-	"vorker/conf"
-	"vorker/utils"
+	"vvorker/conf"
+	"vvorker/utils"
 
 	"github.com/fatedier/frp/client"
 	v1 "github.com/fatedier/frp/pkg/config/v1"

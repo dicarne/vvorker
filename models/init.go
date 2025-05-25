@@ -1,9 +1,9 @@
 package models
 
 import (
-	"vorker/conf"
-	"vorker/exec"
-	"vorker/utils"
+	"vvorker/conf"
+	"vvorker/exec"
+	"vvorker/utils"
 
 	"github.com/sirupsen/logrus"
 )

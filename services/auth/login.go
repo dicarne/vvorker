@@ -2,11 +2,11 @@ package auth
 
 import (
 	"runtime/debug"
-	"vorker/authz"
-	"vorker/common"
-	"vorker/entities"
-	"vorker/models"
-	"vorker/utils"
+	"vvorker/authz"
+	"vvorker/common"
+	"vvorker/entities"
+	"vvorker/models"
+	"vvorker/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

@@ -1,9 +1,9 @@
 package agent
 
 import (
-	"vorker/common"
-	"vorker/entities"
-	"vorker/utils"
+	"vvorker/common"
+	"vvorker/entities"
+	"vvorker/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

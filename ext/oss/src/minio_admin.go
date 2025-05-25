@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-	"vorker/conf"
-	"vorker/utils"
+	"vvorker/conf"
+	"vvorker/utils"
 
 	"github.com/minio/madmin-go/v4"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -83,7 +83,7 @@ func CreateNewServiceAccount(bucket string) (ServiceAccount, error) {
 		SecretKey: r.SecretKey,
 		Policy:    policyJSON,
 		// 确保 Name 长度不超过 32 字符
-		Name: truncateName("vorker-bucket-"+bucket, 32),
+		Name: truncateName("vvorker-bucket-"+bucket, 32),
 	})
 
 	if err != nil {

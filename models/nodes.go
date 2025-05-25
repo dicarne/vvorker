@@ -3,11 +3,11 @@ package models
 import (
 	"math/rand"
 	"time"
-	"vorker/conf"
-	"vorker/defs"
-	"vorker/entities"
-	"vorker/utils"
-	"vorker/utils/database"
+	"vvorker/conf"
+	"vvorker/defs"
+	"vvorker/entities"
+	"vvorker/utils"
+	"vvorker/utils/database"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"

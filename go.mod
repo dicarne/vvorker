@@ -1,4 +1,4 @@
-module vorker
+module vvorker
 
 go 1.24.2
 

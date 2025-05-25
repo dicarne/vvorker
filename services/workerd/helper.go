@@ -1,12 +1,12 @@
 package workerd
 
 import (
-	"vorker/conf"
-	"vorker/defs"
-	"vorker/entities"
-	"vorker/models"
-	"vorker/rpc"
-	"vorker/utils"
+	"vvorker/conf"
+	"vvorker/defs"
+	"vvorker/entities"
+	"vvorker/models"
+	"vvorker/rpc"
+	"vvorker/utils"
 
 	"github.com/lucasepe/codename"
 	"github.com/sirupsen/logrus"

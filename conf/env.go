@@ -2,7 +2,7 @@ package conf
 
 import (
 	"fmt"
-	"vorker/utils/secret"
+	"vvorker/utils/secret"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/ilyakaznacheev/cleanenv"

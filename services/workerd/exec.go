@@ -2,9 +2,9 @@ package workerd
 
 import (
 	"runtime/debug"
-	"vorker/common"
-	"vorker/entities"
-	"vorker/models"
+	"vvorker/common"
+	"vvorker/entities"
+	"vvorker/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

@@ -2,7 +2,7 @@ package models
 
 import (
 	"context"
-	"vorker/utils/database"
+	"vvorker/utils/database"
 
 	"gorm.io/gorm"
 )

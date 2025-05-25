@@ -3,12 +3,12 @@ package workerd
 import (
 	"fmt"
 	"runtime"
-	"vorker/common"
-	"vorker/conf"
-	"vorker/entities"
-	"vorker/exec"
-	"vorker/models"
-	"vorker/utils"
+	"vvorker/common"
+	"vvorker/conf"
+	"vvorker/entities"
+	"vvorker/exec"
+	"vvorker/models"
+	"vvorker/utils"
 
 	"github.com/gin-gonic/gin"
 )

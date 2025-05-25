@@ -3,11 +3,11 @@ package workerd
 import (
 	"errors"
 	"path/filepath"
-	"vorker/conf"
-	"vorker/defs"
-	"vorker/entities"
-	"vorker/models"
-	"vorker/utils"
+	"vvorker/conf"
+	"vvorker/defs"
+	"vvorker/entities"
+	"vvorker/models"
+	"vvorker/utils"
 
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"

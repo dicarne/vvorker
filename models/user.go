@@ -1,8 +1,8 @@
 package models
 
 import (
-	"vorker/utils/database"
-	"vorker/utils/secret"
+	"vvorker/utils/database"
+	"vvorker/utils/secret"
 
 	"gorm.io/gorm"
 )

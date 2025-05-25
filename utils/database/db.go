@@ -2,8 +2,8 @@ package database
 
 import (
 	"time"
-	"vorker/conf"
-	"vorker/defs"
+	"vvorker/conf"
+	"vvorker/defs"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"

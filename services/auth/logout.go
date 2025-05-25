@@ -2,8 +2,8 @@ package auth
 
 import (
 	"runtime/debug"
-	"vorker/common"
-	"vorker/conf"
+	"vvorker/common"
+	"vvorker/conf"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

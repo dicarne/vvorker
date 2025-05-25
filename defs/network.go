@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"html/template"
 	"strings"
-	"vorker/conf"
+	"vvorker/conf"
 
 	"github.com/sirupsen/logrus"
 )

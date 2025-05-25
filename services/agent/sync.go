@@ -1,12 +1,12 @@
 package agent
 
 import (
-	"vorker/common"
-	"vorker/conf"
-	"vorker/entities"
-	"vorker/models"
-	"vorker/rpc"
-	"vorker/services/workerd"
+	"vvorker/common"
+	"vvorker/conf"
+	"vvorker/entities"
+	"vvorker/models"
+	"vvorker/rpc"
+	"vvorker/services/workerd"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

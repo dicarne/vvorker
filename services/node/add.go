@@ -2,10 +2,10 @@ package node
 
 import (
 	"runtime/debug"
-	"vorker/common"
-	"vorker/defs"
-	"vorker/entities"
-	"vorker/models"
+	"vvorker/common"
+	"vvorker/defs"
+	"vvorker/entities"
+	"vvorker/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

@@ -3,7 +3,7 @@ package defs
 import (
 	"bytes"
 	"html/template"
-	"vorker/ext"
+	"vvorker/ext"
 
 	"github.com/sirupsen/logrus"
 )
