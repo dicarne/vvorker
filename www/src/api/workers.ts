@@ -41,7 +41,7 @@ export const flushAllWorkers = () => {
 
 export const getAppConfig = () => {
   return api
-    .get<{ data: VorkerSettingsProperties }>(`/api/vorker/config`, {})
+    .get<{ data: VorkerSettingsProperties }>(`/api/vvorker/config`, {})
     .then((res) => res.data.data)
 }
 
