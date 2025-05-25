@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"vorker/common"
 	"vorker/conf"
 	"vorker/entities"
 	"vorker/models"
@@ -64,7 +65,7 @@ func getMinioClient(c *gin.Context) (*MinioClient, error) {
 func DownloadFile(c *gin.Context) {
 	mc, err := getMinioClient(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
+		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
 		return
 	}
 
@@ -74,7 +75,7 @@ func DownloadFile(c *gin.Context) {
 	// 使用 GetObject 获取文件流
 	obj, err := mc.Client.GetObject(context.Background(), bucketName, objectName, minio.GetObjectOptions{})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to get object", gin.H{"error": err.Error()})
 		return
 	}
 	defer obj.Close()
@@ -82,7 +83,7 @@ func DownloadFile(c *gin.Context) {
 	// 获取文件信息，用于设置响应头
 	stat, err := obj.Stat()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to get object stat", gin.H{"error": err.Error()})
 		return
 	}
 
@@ -94,7 +95,7 @@ func DownloadFile(c *gin.Context) {
 	// 将文件流写入响应体
 	_, err = io.Copy(c.Writer, obj)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to copy object to response", gin.H{"error": err.Error()})
 		return
 	}
 
@@ -106,7 +107,7 @@ func DownloadFile(c *gin.Context) {
 func UploadFile(c *gin.Context) {
 	mc, err := getMinioClient(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
+		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
 		return
 	}
 
@@ -116,14 +117,14 @@ func UploadFile(c *gin.Context) {
 	// 从表单中获取文件
 	file, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get file from form: " + err.Error()})
+		common.RespErr(c, http.StatusBadRequest, "Failed to get file from form", gin.H{"error": err.Error()})
 		return
 	}
 
 	// 打开文件
 	src, err := file.Open()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file: " + err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to open file", gin.H{"error": err.Error()})
 		return
 	}
 	defer src.Close()
@@ -131,18 +132,18 @@ func UploadFile(c *gin.Context) {
 	// 上传文件到 MinIO
 	info, err := mc.Client.PutObject(context.Background(), bucketName, objectName, src, file.Size, minio.PutObjectOptions{ContentType: "application/octet-stream"})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload file: " + err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to upload file", gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "File uploaded successfully", "info": info})
+	common.RespOK(c, "File uploaded successfully", gin.H{"info": info})
 }
 
 // DeleteFile 删除文件接口
 func DeleteFile(c *gin.Context) {
 	mc, err := getMinioClient(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
+		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
 		return
 	}
 
@@ -151,32 +152,32 @@ func DeleteFile(c *gin.Context) {
 
 	err = mc.Client.RemoveObject(context.Background(), bucketName, objectName, minio.RemoveObjectOptions{})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to delete file", gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "File deleted successfully"})
+	common.RespOK(c, "File deleted successfully", gin.H{})
 }
 
 // ListBuckets 查询bucket接口
 func ListBuckets(c *gin.Context) {
 	mc, err := getMinioClient(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
+		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
 		return
 	}
 
 	buckets, err := mc.Client.ListBuckets(context.Background())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to list buckets", gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"buckets": buckets})
+	common.RespOK(c, "List buckets successfully", gin.H{"buckets": buckets})
 }
 
 func ListObjects(c *gin.Context) {
 	mc, err := getMinioClient(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
+		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
 		return
 	}
 	bucketName := c.GetHeader("Bucket")
@@ -191,24 +192,24 @@ func ListObjects(c *gin.Context) {
 	var files []string
 	for object := range objectCh {
 		if object.Err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": object.Err.Error()})
+			common.RespErr(c, http.StatusInternalServerError, "Failed to list objects", gin.H{"error": object.Err.Error()})
 			return
 		}
 		files = append(files, object.Key)
 	}
-	c.JSON(http.StatusOK, gin.H{"files": files})
+	common.RespOK(c, "List objects successfully", gin.H{"files": files})
 }
 
 // CreateNewOSSResources 创建新的OSS资源
 func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 	var req entities.CreateNewResourcesRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		common.RespErr(c, http.StatusBadRequest, "Invalid request", gin.H{"error": err.Error()})
 		return
 	}
 	// valid
 	if req.UserID == "" || req.Name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "UID and Name are required"})
+		common.RespErr(c, http.StatusBadRequest, "UID and Name are required", gin.H{"error": "UID and Name are required"})
 		return
 	}
 	mc, err := NewMinioClient(conf.AppConfigInstance.ServerMinioHost,
@@ -217,13 +218,13 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 		conf.AppConfigInstance.ServerMinioUseSSL,
 		conf.AppConfigInstance.ServerMinioRegion)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
+		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
 		return
 	}
 	// 将 req.UID 转换为 uint64 类型
 	userID, err := strconv.ParseUint(req.UserID, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to convert UserID to uint64: " + err.Error()})
+		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": err.Error()})
 		return
 	}
 	resource := models.OSS{
@@ -240,22 +241,22 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 	// 检查 bucket 是否存在，如果不存在则创建
 	exists, err := mc.Client.BucketExists(context.Background(), resource.Bucket)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check bucket existence: " + err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to check bucket existence", gin.H{"error": err.Error()})
 		return
 	}
 	if exists {
-		c.JSON(http.StatusOK, gin.H{"message": "Bucket already exists"})
+		common.RespOK(c, "Bucket already exists", gin.H{})
 		return
 	}
 	err = mc.Client.MakeBucket(context.Background(), resource.Bucket, minio.MakeBucketOptions{Region: conf.AppConfigInstance.ServerMinioRegion})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create bucket: " + err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to create bucket", gin.H{"error": err.Error()})
 		return
 	}
 
 	account, err := CreateNewServiceAccount(resource.Bucket)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create service account: " + err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to create service account", gin.H{"error": err.Error()})
 		return
 	}
 
@@ -266,40 +267,39 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 	// 创建新的 OSS 资源
 	db := database.GetDB()
 	if err := db.Create(&resource).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create OSS resource: " + err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to create OSS resource", gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "OSS resource created successfully",
+	common.RespOK(c, "OSS resource created successfully", gin.H{
 		"name":   resource.Name,
 		"uid":    resource.UID,
 		"status": 0,
 	})
-
 }
 
 // 删除指定OSS资源
 func DeleteOSSResourcesEndpoint(c *gin.Context) {
 	var req entities.DeleteResourcesReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		common.RespErr(c, http.StatusBadRequest, "Invalid request", gin.H{"error": err.Error()})
 		return
 	}
 	// valid
 	if req.UID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "UID is required"})
+		common.RespErr(c, http.StatusBadRequest, "UID is required", gin.H{"error": "UID is required"})
 		return
 	}
 
 	db := database.GetDB()
 	var resource models.OSS
 	if err := db.Where("uid = ?", req.UID).First(&resource).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find OSS resource: " + err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to find OSS resource", gin.H{"error": err.Error()})
 		return
 	}
 	// 删除OSS资源
 	if err := db.Delete(&resource).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete OSS resource: " + err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to delete OSS resource", gin.H{"error": err.Error()})
 		return
 	}
 	// 删除Minio中的Bucket
@@ -318,8 +318,7 @@ func DeleteOSSResourcesEndpoint(c *gin.Context) {
 	// 	return
 	// }
 	DeleteServiceAccount(resource.AccessKey)
-	c.JSON(http.StatusOK, gin.H{
-		"message": "OSS resource deleted successfully",
-		"status":  0,
+	common.RespOK(c, "OSS resource deleted successfully", gin.H{
+		"status": 0,
 	})
 }

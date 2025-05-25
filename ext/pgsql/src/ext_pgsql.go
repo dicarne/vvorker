@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"vorker/common"
 	"vorker/conf"
 	"vorker/entities"
 	"vorker/models"
@@ -18,17 +19,20 @@ import (
 func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 	var req = entities.CreateNewResourcesRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": err.Error()})
 		return
 	}
 	if !req.Validate() {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": "invalid request"})
 		return
 	}
 	db := database.GetDB()
 	userID, err := strconv.ParseUint(req.UserID, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to convert UserID to uint64: " + err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": err.Error()})
 		return
 	}
 	pgResource := &models.PostgreSQL{
@@ -45,14 +49,16 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 			" port="+fmt.Sprintf("%d", conf.AppConfigInstance.ServerPostgrePort)+
 			" sslmode=disable")
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to PostgreSQL: " + err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to connect to PostgreSQL", gin.H{"error": err.Error()})
 		return
 	}
 	defer pgdb.Close()
 
 	_, err = pgdb.Exec("CREATE DATABASE " + pgResource.Database)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create database: " + err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to create database", gin.H{"error": err.Error()})
 		return
 	}
 
@@ -63,21 +69,24 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 	// 创建新用户
 	_, err = pgdb.Exec(fmt.Sprintf("CREATE USER %s WITH PASSWORD '%s'", pgUser, password))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create PostgreSQL user: " + err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to create PostgreSQL user", gin.H{"error": err.Error()})
 		return
 	}
 
 	// 授予用户对数据库的连接权限
 	_, err = pgdb.Exec(fmt.Sprintf("GRANT CONNECT ON DATABASE %s TO %s", pgResource.Database, pgUser))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to grant CONNECT permission: " + err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to grant CONNECT permission", gin.H{"error": err.Error()})
 		return
 	}
 
 	// 切换到新创建的数据库
 	_, err = pgdb.Exec(fmt.Sprintf("REVOKE ALL ON DATABASE %s FROM public", pgResource.Database))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke public access: " + err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to revoke public access", gin.H{"error": err.Error()})
 		return
 	}
 
@@ -93,7 +102,8 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 	)
 	targetPgdb, err := sql.Open("postgres", targetConnStr)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to the new database: " + err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to connect to the new database", gin.H{"error": err.Error()})
 		return
 	}
 	defer targetPgdb.Close()
@@ -105,7 +115,8 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 	    GRANT USAGE ON SCHEMA public TO %s;
 	`, pgUser, pgUser, pgUser))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to grant privileges: " + err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to grant privileges", gin.H{"error": err.Error()})
 		return
 	}
 
@@ -116,7 +127,8 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 	    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE ON SEQUENCES TO %s;
 	`, pgUser, pgUser, pgUser))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to set default privileges: " + err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to set default privileges", gin.H{"error": err.Error()})
 		return
 	}
 
@@ -125,7 +137,8 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 	    GRANT CREATE ON SCHEMA public TO %s;
 	`, pgUser))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to grant CREATE privilege on schema: " + err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to grant CREATE privilege on schema", gin.H{"error": err.Error()})
 		return
 	}
 
@@ -134,46 +147,54 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 	pgResource.Password = password
 
 	if err := db.Create(pgResource).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create PostgreSQL resource: " + err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to create PostgreSQL resource", gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	// 使用 common.RespOK 返回成功响应
+	common.RespOK(c, "success", gin.H{
 		"uid":    pgResource.UID,
 		"status": 0,
 	})
 }
 
 func DeletePostgreSQLResourcesEndpoint(c *gin.Context) {
+	uid := c.GetUint64(common.UIDKey)
+
 	var req = entities.DeleteResourcesReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
+			gin.H{"error": err.Error()})
 		return
 	}
 	if !req.Validate() {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": "invalid request"})
 		return
 	}
 	db := database.GetDB()
 	// 检查 UID 是否为空
 	if req.UID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "UID cannot be empty"})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusBadRequest, "UID cannot be empty", gin.H{"error": "UID cannot be empty"})
 		return
 	}
-
 	// 存储查询条件
-	condition := models.PostgreSQL{UID: req.UID}
+	condition := models.PostgreSQL{UID: req.UID, UserID: uid}
 
 	// 执行删除操作并处理错误
 	result := db.Model(&models.PostgreSQL{}).Where(condition).Delete(&condition)
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete PostgreSQL resource: " + result.Error.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to delete PostgreSQL resource", gin.H{"error": result.Error.Error()})
 		return
 	}
 
 	// 检查是否有记录被删除
 	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "PostgreSQL resource not found"})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusNotFound, "PostgreSQL resource not found", gin.H{"error": "PostgreSQL resource not found"})
 		return
 	}
 
@@ -186,15 +207,18 @@ func DeletePostgreSQLResourcesEndpoint(c *gin.Context) {
 			" port="+fmt.Sprintf("%d", conf.AppConfigInstance.ServerPostgrePort)+
 			" sslmode=disable")
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to PostgreSQL: " + err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to connect to PostgreSQL", gin.H{"error": err.Error()})
 		return
 	}
 	defer pgdb.Close()
 
 	_, err = pgdb.Exec("DROP DATABASE " + pgResourceDatabase)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to drop database: " + err.Error()})
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusInternalServerError, "Failed to drop database", gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": 0})
+	// 使用 common.RespOK 返回成功响应
+	common.RespOK(c, "success", gin.H{"status": 0})
 }
