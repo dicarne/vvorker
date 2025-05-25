@@ -1,202 +1,68 @@
-# Vorker
+# VVorker
 
-Vorker is a simple and powerful self host cloudflare worker alternative which built with cloudflare's [workerd](https://github.com/cloudflare/workerd).
+VVorker 是一个简单强大的自部署 Cloudflare worker 替代系统。本项目基于 [Cloudflare Workerd](https://github.com/cloudflare/workerd) ，并在 [Vorker](https://github.com/VaalaCat/vorker) 的基础上进行改进。由于比 Vorker 多一点功能，因此本项目的名称为 VVorker。由于根据个人需求进行一定程度的魔改，因此难以向上游提交。
 
-Fearues and Issues are welcome!
+## 特色
 
-![](./images/arch.png)
-
-## Features
-
-- [x] User authentication
-- [x] API control
-- [x] Multi worker routing
-- [x] Woker CRUD Management
-- [x] Web UI & Online Editor
-- [x] Multi Node
-- [x] HA support
-- [x] Cloudflare Durable Objects (experimental)
-- [ ] Log
-- [ ] Metrics
-- [ ] Worker version control
+- [x] 用户鉴权及多租户支持
+- [x] 使用 API 控制
+- [x] 基于域名的多 Workers 路由
+- [x] 简单的在线UI，用于配置资源及代码
+- [x] 分布式多节点支持
+- [x] litefs(HA) 支持（实验性）
+- [x] Cloudflare Durable Objects (实验性)
+- [x] 基于 PostgreSQL 的结构化数据库支持
+- [x] 基于 Redis 的 KV 缓存支持
+- [x] 基于 Minio 的对象存储支持
+- [x] 快速绑定内部数据库资源而无需管理AccessKey与SecretKey，即插即用
+- [ ] 全局日志收集
+- [ ] 性能与状态监控
+- [ ] Worker 版本控制，包括灰度发布与测试分支
 - [ ] Worker Debugging
-- [ ] Support KV storage
+- [ ] Git Action 联动部署
+- [ ] 打包某个服务及其所有依赖，用于迁移到其它系统
 
-## Usage
+## 使用方法
 
-### Docker
+控制面板：`http://localhost:8888/admin`
 
-1. Run by docker command or download the docker-compose.yml from repo and execute `docker-compose up -d`.
-
-all envs defined in [env.go](./conf/env.go), you can take a look at it for more details.
-
-```bash
-docker run -dit --name=vorker \
-	-e WORKER_URL_SUFFIX=.example.com \
-	-e COOKIE_DOMAIN=example.com \
-	-e ENABLE_REGISTER=false \
-	-e JWT_SECRET=xxxxxxx \
-	-e AGENT_SECRET=xxxxxxx \
-	-p 8080:8080 \
-	-p 8888:8888 \
-	-p 18080:18080 \
-	-v /tmp/workerd:/workerd \
-	vaalacat/vorker:latest
-
-# this is a example, you can change the env to fit your need
-# for this example, you can visit http://localhost:8888/admin to access the web ui
-# and the worker URL will be: SCHEME://WORKER_NAME.example.com
-```
-
-2. test your workerd, if your vorker is running on localhost, you can use curl to test it.
-
-visit `http://localhost:8888/admin` to control your worker.
+发出请求：
 
 ```bash
-curl localhost:8080 -H "Host: workername" # replace workername with your worker name
+curl localhost:8080 -H "Host: workername.yourdomain.com" # replace workername with your worker name
 ```
 
-4. enjoy your untimate self hosted worker!
+或
 
-## Examples
-
-### Request Proxy Service
-
-This is an example of request proxy service.
-
-You can use it like this:
+```bash
+curl  https://workername.yourdomain.com # replace workername with your worker name
 
 ```
-curl https://worker.example.com/https://google.com
+或
+
+```bash
+curl localhost:8080 -H "Server-Host: workername.yourdomain.com" # replace workername with your worker name
 ```
 
-- Code
+## 安全性
 
-```js
-addEventListener("fetch", (event) => {
-	event.respondWith(handler(event));
-});
+本项目拥有一定的安全性，但由于主要目标是内部网络组网，而非 Cloudflare Workers 那样面向全球开发者服务，因此内部安全措施旨在防止开发者误用而非阻止开发者进行攻击。SQL 与 OSS 等数据库、用户、桶将会自动创建并赋予对应权限，KV 则仅通过Key前缀进行区分。考虑到内部网络的特殊性，Cloudflare Workers 默认只允许互联网访问的策略不太合适（内网服务全是本地地址），因此本项目默认开放一切网络访问权限（未来根据需要可能会提供配置方式）。
 
-async function handler(event) {
-	try {
-		const url = new URL((event.request.url).replace('http','https'));
-		const param = url.pathname.substring(1)
-		if (param.length==0) {
-			return new Response("{\"error\": \"proxy addr nil\"}")
-		}
-		const newHost = new URL(param);
-		
-		url.host = newHost.hostname;
-		return fetch(new Request(newHost, event.request))
-	} catch(e) {
-		return new Response(e.stack, { status: 500 })
-	}
-}
-```
+在设计上，目标内部网络不同服务器间仅有若干端口开放，其他节点无法直接连接数据库，因此数据库只会暴露在主节点中，子节点将通过代理访问数据库。
 
-### Cloudflare Durable Objects
+## Worker 开发
+由于本项目基于 Workerd 生态，因此使用`wrangler`几乎是唯一选择（除非是非常简单的代码）。
 
-> Note: Currently, vorker can use workerd durable objects config, but worked is not ready yet for on disk object, so this is not really durable, when a worker is restarted or migrated, the durable objects will be lost.
+### 使用 Cloudflare `wrangler`
 
-- Template
+以下是一些常用命令。
 
-```capnp
-using Workerd = import "/workerd/workerd.capnp";
-
-const config :Workerd.Config = (
-  services = [
-    (name = "{{.UID}}", worker = .v{{.UID}}Worker),
-  ],
-
-  sockets = [
-    (
-      name = "{{.UID}}",
-      address = "{{.HostName}}:{{.Port}}",
-      http=(),
-      service="{{.UID}}"
-    ),
-  ]
-);
-
-const v{{.UID}}Worker :Workerd.Worker = (
-  modules = [
-    (name = "{{.Entry}}", esModule = embed "src/{{.Entry}}"),
-  ],
-  compatibilityDate = "2024-09-23",
-  durableObjectNamespaces = [
-    (className = "counter", uniqueKey = "xxxxxxx", preventEviction = true),
-  ],
-  durableObjectStorage = (inMemory = void),
-  bindings = [
-    (name = "tests", durableObjectNamespace = "counter"),
-  ],
-);
-```
-
-- Code
-
-```js
-export default {
-  async fetch(request, env) {
-    let ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || request.ip
-    let id = env.tests.idFromName(ip);
-
-    let test = env.tests.get(id);
-    return test.fetch(request)
-  }
-}
-
-export class counter {
-  constructor(controller, env) {
-    this.cnt = 0;
-  }
-
-  async fetch(request) {
-    this.cnt = this.cnt + 1
-    return new Response(this.cnt);
-  }
-}
-```
-
-### Use Cloudflare `wrangler` to build
-
-Run those command in your wrangler project:
-
+输出打包后的代码：
 ```bash
 wrangler deploy --dry-run --outdir dist
 ```
 
-and copy the `dist/index.js` file content to vorker's editor
-
-modify the template to:
-
-```capnp
-using Workerd = import "/workerd/workerd.capnp";
-
-const config :Workerd.Config = (
-  services = [
-    (name = "{{.UID}}", worker = .v{{.UID}}Worker),
-  ],
-
-  sockets = [
-    (
-      name = "{{.UID}}",
-      address = "{{.HostName}}:{{.Port}}",
-      http=(),
-      service="{{.UID}}"
-    ),
-  ]
-);
-
-const v{{.UID}}Worker :Workerd.Worker = (
-  modules = [
-    (name = "{{.Entry}}", esModule = embed "src/{{.Entry}}"),
-  ],
-  compatibilityDate = "2024-09-23",
-);
-```
-
-and click Save, all is done.
+`dist/index.js`应该包含所有你的代码，将其拷贝到 VVorker 中的代码编辑区即可，点击保存后自动生效。
 
 
 ## Screenshots

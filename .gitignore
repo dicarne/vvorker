@@ -6,6 +6,8 @@ workerd/*.sqlite
 bin/workerd*
 vorker
 vorker.exe
+vvorker
+vvorker.exe
 .vscode
 bin/gost
 gost.yaml
