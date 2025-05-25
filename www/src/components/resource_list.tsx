@@ -114,12 +114,11 @@ export const ResourceList: React.FC<ResourceListProps> = ({ rtype }) => {
         <div className="m-4">
             <div className="flex justify-between">
                 <Breadcrumb>
-                    {/* <Breadcrumb.Item key={}
+                    <Breadcrumb.Item
                         href="/admin"
                         icon={<IconHome size="small" />}
                     ></Breadcrumb.Item>
-                    <Breadcrumb.Item href="/admin">{rtype.toUpperCase()}</Breadcrumb.Item> */}
-                    <p>hi</p>
+                    <Breadcrumb.Item href="/admin">{rtype.toUpperCase()}</Breadcrumb.Item>
                 </Breadcrumb>
                 <ButtonGroup>
                     <Button onClick={handleCreateResource} disabled={isCreating}>{t.create}</Button>
