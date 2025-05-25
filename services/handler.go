@@ -100,14 +100,15 @@ func init() {
 		{
 			ossAPI := extAPI.Group("/oss")
 			{
-				ossAPI.POST("/upload", oss.UploadFile)
-				ossAPI.POST("/download", oss.DownloadFile)
-				ossAPI.POST("/list-buckets", oss.ListBuckets)
-				ossAPI.POST("/delete", oss.DeleteFile)
-				ossAPI.POST("/list-objects", oss.ListObjects)
+				ossAPI.POST("/upload", authz.AgentAuthz(), oss.UploadFile)
+				ossAPI.POST("/download", authz.AgentAuthz(), oss.DownloadFile)
+				ossAPI.POST("/list-buckets", authz.AgentAuthz(), oss.ListBuckets)
+				ossAPI.POST("/delete", authz.AgentAuthz(), oss.DeleteFile)
+				ossAPI.POST("/list-objects", authz.AgentAuthz(), oss.ListObjects)
 
 				if conf.IsMaster() {
-					ossAPI.POST("/create-resource", oss.CreateNewOSSResourcesEndpoint)
+					ossAPI.POST("/create-resource", authz.JWTMiddleware(), oss.CreateNewOSSResourcesEndpoint)
+					ossAPI.POST("/delete-resource", authz.JWTMiddleware(), oss.DeleteOSSResourcesEndpoint)
 				}
 			}
 		}

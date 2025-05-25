@@ -10,7 +10,9 @@ const {
 	BUCKET,
 	USE_SSL,
 	REGION,
-	RESOURCE_ID
+	RESOURCE_ID,
+	X_SECRET,
+	X_NODENAME
 } = env1;
 
 let commonConfig = {
@@ -21,6 +23,8 @@ let commonConfig = {
 	Region: REGION,
 	Bucket: BUCKET,
 	ResourceID: RESOURCE_ID,
+	"x-secret": X_SECRET,
+	"x-node-name": X_NODENAME,
 }
 
 export default class OSS extends WorkerEntrypoint {

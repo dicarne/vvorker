@@ -203,6 +203,7 @@ type CreateNewOSSResourcesRequest struct {
 	Name   string `json:"name"`
 }
 
+// CreateNewOSSResources 创建新的OSS资源
 func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 	var req CreateNewOSSResourcesRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -278,4 +279,51 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 		"uid":  resource.UID,
 	})
 
+}
+
+type DeleteOSSResourcesReq struct {
+	UID string `json:"uid"`
+}
+
+// 删除指定OSS资源
+func DeleteOSSResourcesEndpoint(c *gin.Context) {
+	var req DeleteOSSResourcesReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// valid
+	if req.UID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "UID is required"})
+		return
+	}
+
+	db := database.GetDB()
+	var resource models.OSS
+	if err := db.Where("uid = ?", req.UID).First(&resource).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find OSS resource: " + err.Error()})
+		return
+	}
+	// 删除OSS资源
+	if err := db.Delete(&resource).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete OSS resource: " + err.Error()})
+		return
+	}
+	// 删除Minio中的Bucket
+	// mc, err := NewMinioClient(conf.AppConfigInstance.ServerMinioEndpoint,
+	// 	conf.AppConfigInstance.ServerMinioAccess,
+	// 	conf.AppConfigInstance.ServerMinioSecret,
+	// 	conf.AppConfigInstance.ServerMinioUseSSL,
+	// 	conf.AppConfigInstance.ServerMinioRegion)
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
+	// 	return
+	// }
+	// err = mc.Client.RemoveBucket(context.Background(), resource.Bucket)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete bucket: " + err.Error()})
+	// 	return
+	// }
+	DeleteServiceAccount(resource.AccessKey)
+	c.JSON(http.StatusOK, gin.H{"message": "OSS resource deleted successfully"})
 }

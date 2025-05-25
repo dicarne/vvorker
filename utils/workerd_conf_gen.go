@@ -237,6 +237,8 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 	( name = "REGION", text = "`+ext.Region+`" ),
 	( name = "OSS_AGENT_URL", text = "`+ossAgentUrl+`" ),
 	( name = "RESOURCE_ID", text = "`+ext.ResourceID+`" ),
+	( name = "X_SECRET" , text = "`+conf.RPCToken+`" ),
+	( name = "X_NODENAME", text = "`+conf.AppConfigInstance.NodeName+`" ),
 `))
 					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
 					bindingsText = bindingsText + allowExtension.BindingTemplate

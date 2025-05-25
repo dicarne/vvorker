@@ -103,3 +103,26 @@ func truncateName(s string, maxLength int) string {
 	}
 	return s[:maxLength]
 }
+
+func DeleteServiceAccount(accessKey string) error {
+	creds := credentials.NewStaticV4(
+		conf.AppConfigInstance.ServerMinioAccess,
+		conf.AppConfigInstance.ServerMinioSecret,
+		"",
+	)
+	// Use a secure connection.
+	mdmClnt, err := madmin.NewWithOptions(conf.AppConfigInstance.ServerMinioEndpoint, &madmin.Options{
+		Creds:  creds,
+		Secure: conf.AppConfigInstance.ServerMinioUseSSL,
+	})
+	if err != nil {
+		logrus.Errorf("Failed to create madmin client: %v", err)
+		return err
+	}
+	err = mdmClnt.DeleteServiceAccount(context.Background(), accessKey)
+	if err != nil {
+		logrus.Errorf("Failed to delete service account: %v", err)
+		return err
+	}
+	return nil
+}
