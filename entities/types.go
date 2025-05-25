@@ -114,3 +114,38 @@ type AgentFillWorkerReq struct {
 type AgentFillWorkerResp struct {
 	NewTemplate string `json:"new_template"`
 }
+
+type DeleteResourcesReq struct {
+	UID string `json:"uid"`
+}
+
+func (d *DeleteResourcesReq) Validate() bool {
+	if d == nil {
+		return false
+	}
+	if d.UID == "" {
+		return false
+	}
+	if len(d.UID) > 64 {
+		return false
+	}
+	return true
+}
+
+type CreateNewResourcesRequest struct {
+	UserID string `json:"user_id"`
+	Name   string `json:"name"`
+}
+
+func (r *CreateNewResourcesRequest) Validate() bool {
+	if r == nil {
+		return false
+	}
+	if r.UserID == "" || r.Name == "" {
+		return false
+	}
+	if len(r.UserID) > 30 || len(r.Name) > 30 {
+		return false
+	}
+	return true
+}

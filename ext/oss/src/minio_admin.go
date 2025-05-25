@@ -29,7 +29,7 @@ func CreateNewServiceAccount(bucket string) (ServiceAccount, error) {
 		"",
 	)
 
-	mdmClnt, err := madmin.NewWithOptions(conf.AppConfigInstance.ServerMinioEndpoint, &madmin.Options{
+	mdmClnt, err := madmin.NewWithOptions(conf.AppConfigInstance.ServerMinioHost, &madmin.Options{
 		Creds:  creds,
 		Secure: conf.AppConfigInstance.ServerMinioUseSSL,
 	})
@@ -111,7 +111,7 @@ func DeleteServiceAccount(accessKey string) error {
 		"",
 	)
 	// Use a secure connection.
-	mdmClnt, err := madmin.NewWithOptions(conf.AppConfigInstance.ServerMinioEndpoint, &madmin.Options{
+	mdmClnt, err := madmin.NewWithOptions(conf.AppConfigInstance.ServerMinioHost, &madmin.Options{
 		Creds:  creds,
 		Secure: conf.AppConfigInstance.ServerMinioUseSSL,
 	})

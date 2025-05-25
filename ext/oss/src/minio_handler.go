@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"vorker/conf"
+	"vorker/entities"
 	"vorker/models"
 	"vorker/utils"
 	"vorker/utils/database"
@@ -44,7 +45,7 @@ func getMinioClient(c *gin.Context) (*MinioClient, error) {
 	region := c.GetHeader("Region")
 	useSSLStr := c.GetHeader("UseSSL")
 	if len(resourceID) != 0 {
-		endpoint = fmt.Sprintf("%s:%d", conf.AppConfigInstance.ServerMinioEndpoint, conf.AppConfigInstance.ServerMinioPort)
+		endpoint = fmt.Sprintf("%s:%d", conf.AppConfigInstance.ServerMinioHost, conf.AppConfigInstance.ServerMinioPort)
 		useSSLStr = fmt.Sprintf("%v", conf.AppConfigInstance.ServerMinioUseSSL)
 	}
 
@@ -198,14 +199,9 @@ func ListObjects(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"files": files})
 }
 
-type CreateNewOSSResourcesRequest struct {
-	UserID string `json:"user_id"`
-	Name   string `json:"name"`
-}
-
 // CreateNewOSSResources 创建新的OSS资源
 func CreateNewOSSResourcesEndpoint(c *gin.Context) {
-	var req CreateNewOSSResourcesRequest
+	var req entities.CreateNewResourcesRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -215,7 +211,7 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "UID and Name are required"})
 		return
 	}
-	mc, err := NewMinioClient(conf.AppConfigInstance.ServerMinioEndpoint,
+	mc, err := NewMinioClient(conf.AppConfigInstance.ServerMinioHost,
 		conf.AppConfigInstance.ServerMinioAccess,
 		conf.AppConfigInstance.ServerMinioSecret,
 		conf.AppConfigInstance.ServerMinioUseSSL,
@@ -275,19 +271,16 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "OSS resource created successfully",
-		"name": resource.Name,
-		"uid":  resource.UID,
+		"name":   resource.Name,
+		"uid":    resource.UID,
+		"status": 0,
 	})
 
 }
 
-type DeleteOSSResourcesReq struct {
-	UID string `json:"uid"`
-}
-
 // 删除指定OSS资源
 func DeleteOSSResourcesEndpoint(c *gin.Context) {
-	var req DeleteOSSResourcesReq
+	var req entities.DeleteResourcesReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -325,5 +318,8 @@ func DeleteOSSResourcesEndpoint(c *gin.Context) {
 	// 	return
 	// }
 	DeleteServiceAccount(resource.AccessKey)
-	c.JSON(http.StatusOK, gin.H{"message": "OSS resource deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{
+		"message": "OSS resource deleted successfully",
+		"status":  0,
+	})
 }

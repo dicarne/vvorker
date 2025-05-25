@@ -164,8 +164,8 @@ func FinishWorkerConfig(worker *models.Worker) string {
 				db.Model(&models.PostgreSQL{}).Where(&models.PostgreSQL{UID: ext.ResourceID, UserID: uint64(UserID)}).First(&pgresources)
 				if pgresources.ID != 0 {
 					ext.Database = pgresources.Database
-					ext.Password = conf.AppConfigInstance.ServerPostgrePassword
-					ext.User = conf.AppConfigInstance.ServerPostgreUser
+					ext.Password = pgresources.Password
+					ext.User = pgresources.Username
 				} else {
 					ext.ResourceID = ""
 				}

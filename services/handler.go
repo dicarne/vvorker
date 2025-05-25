@@ -10,6 +10,7 @@ import (
 	"vorker/authz"
 	"vorker/conf"
 	oss "vorker/ext/oss/src"
+	pgsql "vorker/ext/pgsql/src"
 	"vorker/models"
 	"vorker/rpc"
 	"vorker/services/agent"
@@ -110,6 +111,11 @@ func init() {
 					ossAPI.POST("/create-resource", authz.JWTMiddleware(), oss.CreateNewOSSResourcesEndpoint)
 					ossAPI.POST("/delete-resource", authz.JWTMiddleware(), oss.DeleteOSSResourcesEndpoint)
 				}
+			}
+			pgsqlAPI := extAPI.Group("/pgsql")
+			{
+				pgsqlAPI.POST("/create-resource", authz.JWTMiddleware(), pgsql.CreateNewPostgreSQLResourcesEndpoint)
+				pgsqlAPI.POST("/delete-resource", authz.JWTMiddleware(), pgsql.DeletePostgreSQLResourcesEndpoint)
 			}
 		}
 	}

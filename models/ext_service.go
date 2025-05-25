@@ -10,6 +10,7 @@ type KV struct {
 	gorm.Model
 	UserID uint64
 	UID    string `gorm:"unique"`
+	Name   string
 }
 
 type OSS struct {
@@ -30,4 +31,7 @@ type PostgreSQL struct {
 	UserID   uint64
 	UID      string `gorm:"unique"`
 	Database string
+	Name     string
+	Username string
+	Password string
 }
