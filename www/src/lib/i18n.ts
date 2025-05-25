@@ -19,6 +19,8 @@ const zh = {
   refresh: '刷新',
   deleteWorker: '删除函数',
   deleteNode: '删除节点',
+  resourceName: '资源名称',
+  cancel: '取消',
 
   workerConfirmDelete: '确认删除函数',
   workerDeleteSuccess: '删除成功',
@@ -36,6 +38,8 @@ const zh = {
   loginFailed: '用户名或密码错误',
   registerSuccess: '注册成功',
   registerFailed: '注册失败',
+
+  warnDeleteResource: "确定要删除这个资源吗？",
 }
 
 const en = {
@@ -57,6 +61,8 @@ const en = {
   refresh: 'Refresh',
   deleteWorker: 'Delete worker',
   deleteNode: 'Delete Node',
+  resourceName: 'Resource name',
+  cancel: 'Cancel',
 
   workerConfirmDelete: 'Confirm delete worker',
   workerDeleteSuccess: 'Delete worker success',
@@ -74,6 +80,8 @@ const en = {
   loginFailed: 'Incorrect username or password',
   registerSuccess: 'Successfully registered',
   registerFailed: 'Failed to register',
+
+  warnDeleteResource: "Are you sure you want to delete this resource?",
 }
 
 export type Key = keyof typeof zh & keyof typeof en

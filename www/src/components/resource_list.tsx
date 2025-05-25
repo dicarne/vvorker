@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Dialog, Button, Card, List, ListItem, ListItemText, IconButton, TextField } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { ListItem, TextField, ListItemText } from '@mui/material';
 import { getResourceList, deleteResource, createResource } from '@/api/resources';
 import { ResourceData } from '@/types/resources';
+import { Breadcrumb, ButtonGroup, Button, Card, List, Modal, Form } from '@douyinfe/semi-ui';
+import { IconHome } from '@douyinfe/semi-icons';
+import { t } from '@/lib/i18n';
 
 const fetchResources = async (type: string) => {
     return await getResourceList(0, 10000, type)
@@ -109,84 +111,67 @@ export const ResourceList: React.FC<ResourceListProps> = ({ rtype }) => {
     };
 
     return (
-        <div>
-            <Button
-                variant="contained"
-                color="primary"
-                onClick={handleCreateResource}
-                disabled={isCreating} // 创建时禁用按钮
-            >
-                创建资源
-            </Button>
+        <div className="m-4">
+            <div className="flex justify-between">
+                <Breadcrumb>
+                    <Breadcrumb.Item
+                        href="/admin"
+                        icon={<IconHome size="small" />}
+                    ></Breadcrumb.Item>
+                    <Breadcrumb.Item href="/admin">{rtype.toUpperCase()}</Breadcrumb.Item>
+                </Breadcrumb>
+                <ButtonGroup>
+                    <Button onClick={handleCreateResource} disabled={isCreating}>{t.create}</Button>
+                </ButtonGroup>
+            </div>
             <List>
                 {resources.map(resource => (
                     <ListItem key={resource.uid}>
-                        <Card sx={{ width: '100%', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <ListItemText primary={resource.name} />
+                        <Card title={resource.name} style={{ width: '100%' }} headerExtraContent={
+                            <ButtonGroup>
+                                <Button onClick={() => handleDeleteClick(resource.uid)} disabled={isDeleting}>{t.delete}</Button>
+                            </ButtonGroup>
+                        }>
                             <ListItemText primary={"id: " + resource.uid} style={{ color: "#909090" }} />
-                            <IconButton
-                                onClick={() => handleDeleteClick(resource.uid)}
-                                disabled={isDeleting} // 删除时禁用按钮
-                            >
-                                <DeleteIcon />
-                            </IconButton>
                         </Card>
                     </ListItem>
                 ))}
             </List>
             {/* 创建资源对话框 */}
-            <Dialog
-                open={openCreateDialog}
-                // 加载时阻止关闭
-                onClose={isCreating ? () => { } : handleCreateCancel}
+            <Modal
+                title={t.create + " " + rtype.toUpperCase()}
+                visible={openCreateDialog}
+                onOk={handleCreateConfirm}
+                onCancel={handleCreateCancel}
+                maskClosable={false}
+                closeOnEsc={true}
             >
                 <div style={{ padding: '16px' }}>
-                    <h2>创建{rtype}</h2>
-                    <TextField
-                        label="资源名称"
+                    {/* <Input
+                        label={t.resourceName}
                         value={newResourceName}
                         onChange={(e) => setNewResourceName(e.target.value)}
                         fullWidth
                         margin="normal"
                         disabled={isCreating} // 加载时禁用输入框
-                    />
-                    <Button
-                        onClick={handleCreateCancel}
-                        disabled={isCreating} // 加载时禁用按钮
-                    >
-                        取消
-                    </Button>
-                    <Button
-                        onClick={handleCreateConfirm}
-                        color="primary"
-                        disabled={isCreating} // 加载时禁用按钮
-                    >
-                        {isCreating ? '创建中...' : '创建'}
-                    </Button>
+                    /> */}
+                    <Form onValueChange={values => setNewResourceName(values.name)}>
+                        <Form.Input field='name' label={t.resourceName} />
+                    </Form>
                 </div>
-            </Dialog>
-            <Dialog
-                open={openDeleteDialog}
-                // 加载时阻止关闭
-                onClose={isDeleting ? () => { } : handleDeleteCancel}
+            </Modal>
+            <Modal
+                title="基本对话框"
+                visible={openDeleteDialog}
+                onOk={handleDeleteConfirm}
+                onCancel={handleDeleteCancel}
+                maskClosable={false}
+                closeOnEsc={true}
             >
                 <div style={{ padding: '16px' }}>
-                    <p>确定要删除这个资源吗？</p>
-                    <Button
-                        onClick={handleDeleteCancel}
-                        disabled={isDeleting} // 加载时禁用按钮
-                    >
-                        取消
-                    </Button>
-                    <Button
-                        onClick={handleDeleteConfirm}
-                        color="error"
-                        disabled={isDeleting} // 加载时禁用按钮
-                    >
-                        {isDeleting ? '删除中...' : '删除'}
-                    </Button>
+                    <p>{t.warnDeleteResource}</p>
                 </div>
-            </Dialog>
+            </Modal>
         </div>
     );
 };
