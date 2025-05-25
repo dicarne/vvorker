@@ -17,6 +17,7 @@ VVorker 是一个简单强大的自部署 Cloudflare worker 替代系统。本�
 - [x] 快速绑定内部数据库资源而无需管理AccessKey与SecretKey，即插即用
 - [ ] 全局日志收集
 - [ ] 性能与状态监控
+- [ ] 对 SQL 的变更支持
 - [ ] Worker 版本控制，包括灰度发布与测试分支
 - [ ] Worker Debugging
 - [ ] Git Action 联动部署
@@ -43,6 +44,8 @@ curl  https://workername.yourdomain.com # replace workername with your worker na
 ```bash
 curl localhost:8080 -H "Server-Host: workername.yourdomain.com" # replace workername with your worker name
 ```
+
+通过环境变量进行配置，可以查看[env.go](./conf/env.go)文件了解更多信息。
 
 ## 安全性
 
@@ -86,3 +89,9 @@ wrangler deploy --dry-run --outdir dist
 - Worker Execution
 
 ![](https://vaala.cat/images/vorkerexec.png)
+
+## 其他
+
+感谢 [Vorker](https://github.com/VaalaCat/vorker) 项目提供的良好基础！是一个我看得懂的好项目。
+
+感谢 AI 提供的代码补全，在 GO 语言上工作良好，80%+ 代码由 AI 生成，请原谅其中的废话注释。
