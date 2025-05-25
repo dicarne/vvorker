@@ -34,7 +34,11 @@ export const DEFAUTL_WORKER_ITEM: WorkerItem = {
     "version": "1.0.0",
     "extensions": [],
     "services": [],
-    "vars": []
+    "vars": {},
+    "ai": [],
+    "oss": [],
+    "pgsql": [],
+    "kv": []
 }
 `
 }

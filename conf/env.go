@@ -43,12 +43,10 @@ type AppConfig struct {
 	TunnelToken       string
 	NodeID            string
 
-	ServerPostgresPort int `env:"SERVER_POSTGRES_PORT" env-default:"5432"`
-	ServerRedisPort    int `env:"SERVER_REDIS_PORT" env-default:"6379"`
+	ServerRedisPort int `env:"SERVER_REDIS_PORT" env-default:"6379"`
 
-	ServerMinioHost string `env:"SERVER_MINIO_HOST" env-default:"localhost"` // localhost时为本地
-	ServerMinioPort int    `env:"SERVER_MINIO_PORT" env-default:"9000"`      // 本地时为9000，远程时为443
-
+	ServerMinioHost   string `env:"SERVER_MINIO_HOST" env-default:"localhost"` // localhost时为本地
+	ServerMinioPort   int    `env:"SERVER_MINIO_PORT" env-default:"9000"`      // 本地时为9000，远程时为443
 	ServerMinioRegion string `env:"SERVER_MINIO_REGION" env-default:"us-east-1"`
 	ServerMinioUseSSL bool   `env:"SERVER_MINIO_USE_SSL" env-default:"false"`
 	ServerMinioAccess string `env:"SERVER_MINIO_ACCESS" env-default:"minioadmin"`

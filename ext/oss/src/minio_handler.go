@@ -207,12 +207,21 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 		common.RespErr(c, http.StatusBadRequest, "Invalid request", gin.H{"error": err.Error()})
 		return
 	}
+	userID := uint64(c.GetUint(common.UIDKey))
+	if userID == 0 {
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": "uid is required"})
+		return
+	}
 	// valid
-	if req.UserID == "" || req.Name == "" {
+	if req.Name == "" {
 		common.RespErr(c, http.StatusBadRequest, "UID and Name are required", gin.H{"error": "UID and Name are required"})
 		return
 	}
-	mc, err := NewMinioClient(conf.AppConfigInstance.ServerMinioHost,
+	mc, err := NewMinioClient(
+		fmt.Sprintf("%s:%d",
+			conf.AppConfigInstance.ServerMinioHost,
+			conf.AppConfigInstance.ServerMinioPort),
 		conf.AppConfigInstance.ServerMinioAccess,
 		conf.AppConfigInstance.ServerMinioSecret,
 		conf.AppConfigInstance.ServerMinioUseSSL,
@@ -221,12 +230,7 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
 		return
 	}
-	// 将 req.UID 转换为 uint64 类型
-	userID, err := strconv.ParseUint(req.UserID, 10, 64)
-	if err != nil {
-		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": err.Error()})
-		return
-	}
+	logrus.Infoln("Create OSS Clinet")
 	resource := models.OSS{
 		Name:      req.Name,
 		UserID:    userID,
@@ -238,27 +242,19 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 	}
 	resource.Bucket = resource.UID
 
-	// 检查 bucket 是否存在，如果不存在则创建
-	exists, err := mc.Client.BucketExists(context.Background(), resource.Bucket)
-	if err != nil {
-		common.RespErr(c, http.StatusInternalServerError, "Failed to check bucket existence", gin.H{"error": err.Error()})
-		return
-	}
-	if exists {
-		common.RespOK(c, "Bucket already exists", gin.H{})
-		return
-	}
 	err = mc.Client.MakeBucket(context.Background(), resource.Bucket, minio.MakeBucketOptions{Region: conf.AppConfigInstance.ServerMinioRegion})
 	if err != nil {
 		common.RespErr(c, http.StatusInternalServerError, "Failed to create bucket", gin.H{"error": err.Error()})
 		return
 	}
+	logrus.Infoln("Make Bucket Success")
 
 	account, err := CreateNewServiceAccount(resource.Bucket)
 	if err != nil {
 		common.RespErr(c, http.StatusInternalServerError, "Failed to create service account", gin.H{"error": err.Error()})
 		return
 	}
+	logrus.Infoln("Create Account Success")
 
 	resource.AccessKey = account.AccessKey
 	resource.SecretKey = account.SecretKey
@@ -270,11 +266,12 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 		common.RespErr(c, http.StatusInternalServerError, "Failed to create OSS resource", gin.H{"error": err.Error()})
 		return
 	}
+	logrus.Infoln("Write To DB Success")
 
-	common.RespOK(c, "OSS resource created successfully", gin.H{
-		"name":   resource.Name,
-		"uid":    resource.UID,
-		"status": 0,
+	common.RespOK(c, "success", entities.CreateNewResourcesResponse{
+		UID:  resource.UID,
+		Name: resource.Name,
+		Type: "oss",
 	})
 }
 
@@ -291,7 +288,7 @@ func DeleteOSSResourcesEndpoint(c *gin.Context) {
 		return
 	}
 
-	uid := c.GetUint64(common.UIDKey)
+	uid := uint64(c.GetUint(common.UIDKey))
 	if uid == 0 {
 		common.RespErr(c, http.StatusBadRequest, "Invalid UID", gin.H{"error": "Invalid UID"})
 		return
@@ -302,7 +299,9 @@ func DeleteOSSResourcesEndpoint(c *gin.Context) {
 	var resource models.OSS
 	// 删除OSS资源
 	if rr := db.Delete(&resource, condition); rr.Error != nil || rr.RowsAffected == 0 {
-		common.RespErr(c, http.StatusInternalServerError, "Failed to delete OSS resource", gin.H{"error": rr.Error.Error()})
+		common.RespOK(c, "success but not delete bucket", entities.DeleteResourcesResp{
+			Status: 0,
+		})
 		return
 	}
 	// 删除Minio中的Bucket
@@ -321,7 +320,7 @@ func DeleteOSSResourcesEndpoint(c *gin.Context) {
 	// 	return
 	// }
 	DeleteServiceAccount(resource.AccessKey)
-	common.RespOK(c, "OSS resource deleted successfully", gin.H{
-		"status": 0,
+	common.RespOK(c, "success", entities.DeleteResourcesResp{
+		Status: 0,
 	})
 }

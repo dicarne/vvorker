@@ -29,10 +29,13 @@ func CreateNewServiceAccount(bucket string) (ServiceAccount, error) {
 		"",
 	)
 
-	mdmClnt, err := madmin.NewWithOptions(conf.AppConfigInstance.ServerMinioHost, &madmin.Options{
-		Creds:  creds,
-		Secure: conf.AppConfigInstance.ServerMinioUseSSL,
-	})
+	mdmClnt, err := madmin.NewWithOptions(fmt.Sprintf("%s:%d",
+		conf.AppConfigInstance.ServerMinioHost,
+		conf.AppConfigInstance.ServerMinioPort),
+		&madmin.Options{
+			Creds:  creds,
+			Secure: conf.AppConfigInstance.ServerMinioUseSSL,
+		})
 	if err != nil {
 		logrus.Errorf("Failed to create madmin client: %v", err)
 		return ServiceAccount{}, err
@@ -111,7 +114,9 @@ func DeleteServiceAccount(accessKey string) error {
 		"",
 	)
 	// Use a secure connection.
-	mdmClnt, err := madmin.NewWithOptions(conf.AppConfigInstance.ServerMinioHost, &madmin.Options{
+	mdmClnt, err := madmin.NewWithOptions(fmt.Sprintf("%s:%d",
+		conf.AppConfigInstance.ServerMinioHost,
+		conf.AppConfigInstance.ServerMinioPort), &madmin.Options{
 		Creds:  creds,
 		Secure: conf.AppConfigInstance.ServerMinioUseSSL,
 	})

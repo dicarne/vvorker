@@ -2,7 +2,6 @@ package kv
 
 import (
 	"net/http"
-	"strconv"
 	"vvorker/common"
 	"vvorker/entities"
 	"vvorker/models"
@@ -26,10 +25,10 @@ func CreateKVResourcesEndpoint(c *gin.Context) {
 		return
 	}
 	db := database.GetDB()
-	userID, err := strconv.ParseUint(req.UserID, 10, 64)
-	if err != nil {
+	userID := uint64(c.GetUint(common.UIDKey))
+	if userID == 0 {
 		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": err.Error()})
+		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": "uid is required"})
 		return
 	}
 	kvResource := &models.KV{
@@ -43,12 +42,16 @@ func CreateKVResourcesEndpoint(c *gin.Context) {
 		return
 	}
 	// 使用 common.RespOK 返回成功响应
-	common.RespOK(c, "KV resource created successfully", gin.H{"uid": kvResource.UID, "status": 0})
+	common.RespOK(c, "success", entities.CreateNewResourcesResponse{
+		UID:  kvResource.UID,
+		Name: kvResource.Name,
+		Type: "kv",
+	})
 }
 
 // 删除指定KV资源
 func DeleteKVResourcesEndpoint(c *gin.Context) {
-	uid := c.GetUint64(common.UIDKey)
+	uid := uint64(c.GetUint(common.UIDKey))
 
 	var req = entities.DeleteResourcesReq{}
 	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {
@@ -62,15 +65,23 @@ func DeleteKVResourcesEndpoint(c *gin.Context) {
 		return
 	}
 
-	condition := models.PostgreSQL{UID: req.UID, UserID: uid}
+	condition := models.KV{UID: req.UID, UserID: uid}
 
 	db := database.GetDB()
 
 	if rr := db.Delete(&condition, condition); rr.Error != nil || rr.RowsAffected == 0 {
 		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusInternalServerError, "Failed to delete KV resource", gin.H{"error": rr.Error.Error()})
+		msg := ""
+		if rr.Error != nil {
+			msg = rr.Error.Error()
+		} else if rr.RowsAffected == 0 {
+			msg = "resource not found"
+		}
+		common.RespErr(c, http.StatusInternalServerError, "Failed to delete KV resource", gin.H{"error": msg})
 		return
 	}
 	// 使用 common.RespOK 返回成功响应
-	common.RespOK(c, "KV resource deleted successfully", gin.H{"status": 0})
+	common.RespOK(c, "success", entities.DeleteResourcesResp{
+		Status: 0,
+	})
 }

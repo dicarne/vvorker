@@ -21,6 +21,7 @@ import (
 	"vvorker/services/litefs"
 	"vvorker/services/node"
 	proxyService "vvorker/services/proxy"
+	"vvorker/services/resource"
 	"vvorker/services/workerd"
 	"vvorker/tunnel"
 	"vvorker/utils"
@@ -88,6 +89,7 @@ func init() {
 			api.POST("/auth/register", auth.RegisterEndpoint)
 			api.POST("/auth/login", auth.LoginEndpoint)
 			api.GET("/auth/logout", authz.JWTMiddleware(), auth.LogoutEndpoint)
+
 		}
 		agentAPI := api.Group("/agent")
 		{
@@ -128,6 +130,10 @@ func init() {
 					kvAPI.POST("/create-resource", authz.JWTMiddleware(), kv.CreateKVResourcesEndpoint)
 					kvAPI.POST("/delete-resource", authz.JWTMiddleware(), kv.DeleteKVResourcesEndpoint)
 				}
+			}
+
+			if conf.IsMaster() {
+				extAPI.POST("/list", authz.JWTMiddleware(), resource.ListResourceEndpoint)
 			}
 		}
 	}
@@ -179,7 +185,7 @@ func Run(f embed.FS) {
 	}
 	wg.Go(func() {
 		initTunnelService("redis", conf.AppConfigInstance.ServerRedisPort, conf.AppConfigInstance.ClientRedisPort)
-		initTunnelService("postgresql", conf.AppConfigInstance.ServerPostgresPort, conf.AppConfigInstance.ClientPostgresPort)
+		initTunnelService("postgresql", conf.AppConfigInstance.ServerPostgrePort, conf.AppConfigInstance.ClientPostgresPort)
 	})
 	wg.Go(func() {
 		router.Run(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ListenAddr, conf.AppConfigInstance.APIPort))

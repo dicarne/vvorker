@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"strconv"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/entities"
@@ -29,10 +28,10 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 		return
 	}
 	db := database.GetDB()
-	userID, err := strconv.ParseUint(req.UserID, 10, 64)
-	if err != nil {
+	userID := uint64(c.GetUint(common.UIDKey))
+	if userID == 0 {
 		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": err.Error()})
+		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": "uid is required"})
 		return
 	}
 	pgResource := &models.PostgreSQL{
@@ -153,14 +152,15 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 	}
 
 	// 使用 common.RespOK 返回成功响应
-	common.RespOK(c, "success", gin.H{
-		"uid":    pgResource.UID,
-		"status": 0,
+	common.RespOK(c, "success", entities.CreateNewResourcesResponse{
+		UID:  pgResource.UID,
+		Name: pgResource.Name,
+		Type: "pgsql",
 	})
 }
 
 func DeletePostgreSQLResourcesEndpoint(c *gin.Context) {
-	uid := c.GetUint64(common.UIDKey)
+	uid := uint64(c.GetUint(common.UIDKey))
 
 	var req = entities.DeleteResourcesReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -208,7 +208,9 @@ func DeletePostgreSQLResourcesEndpoint(c *gin.Context) {
 			" sslmode=disable")
 	if err != nil {
 		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusInternalServerError, "Failed to connect to PostgreSQL", gin.H{"error": err.Error()})
+		common.RespOK(c, "success but not drop db because of unconnected db", entities.DeleteResourcesResp{
+			Status: 0,
+		})
 		return
 	}
 	defer pgdb.Close()
@@ -216,9 +218,13 @@ func DeletePostgreSQLResourcesEndpoint(c *gin.Context) {
 	_, err = pgdb.Exec("DROP DATABASE " + pgResourceDatabase)
 	if err != nil {
 		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusInternalServerError, "Failed to drop database", gin.H{"error": err.Error()})
+		common.RespOK(c, "success but not drop db", entities.DeleteResourcesResp{
+			Status: 0,
+		})
 		return
 	}
 	// 使用 common.RespOK 返回成功响应
-	common.RespOK(c, "success", gin.H{"status": 0})
+	common.RespOK(c, "success", entities.DeleteResourcesResp{
+		Status: 0,
+	})
 }

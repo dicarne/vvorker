@@ -119,6 +119,10 @@ type DeleteResourcesReq struct {
 	UID string `json:"uid"`
 }
 
+type DeleteResourcesResp struct {
+	Status int `json:"status"` // 0: success, 1: failed
+}
+
 func (d *DeleteResourcesReq) Validate() bool {
 	if d == nil {
 		return false
@@ -133,19 +137,25 @@ func (d *DeleteResourcesReq) Validate() bool {
 }
 
 type CreateNewResourcesRequest struct {
-	UserID string `json:"user_id"`
-	Name   string `json:"name"`
+	Name string `json:"name"`
 }
 
 func (r *CreateNewResourcesRequest) Validate() bool {
 	if r == nil {
 		return false
 	}
-	if r.UserID == "" || r.Name == "" {
+	if r.Name == "" {
 		return false
 	}
-	if len(r.UserID) > 30 || len(r.Name) > 30 {
+	if len(r.Name) > 30 {
 		return false
 	}
 	return true
+}
+
+type CreateNewResourcesResponse struct {
+	UID    string `json:"uid"`
+	Status int    `json:"status"` // 0: success, 1: failed
+	Name   string `json:"name"`
+	Type   string `json:"type"`
 }

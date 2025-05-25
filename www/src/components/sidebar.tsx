@@ -5,6 +5,9 @@ import {
   IconHourglass,
   IconSidebar,
   IconMenu,
+  IconArchive,
+  IconLayers,
+  IconServer
 } from '@douyinfe/semi-icons'
 import { useRouter } from 'next/router'
 import { atom } from 'nanostores'
@@ -22,6 +25,9 @@ export const SideBarComponent = ({ selected }: { selected: string }) => {
     workers: '/admin',
     status: '/nodes',
     settings: '/admin',
+    oss: '/oss',
+    kv: '/kv',
+    sql: '/sql'
   } as any
   useEffect(() => {
     if (!expand) {
@@ -38,6 +44,9 @@ export const SideBarComponent = ({ selected }: { selected: string }) => {
         items={[
           { itemKey: 'workers', text: 'Workers', icon: <IconPercentage /> },
           { itemKey: 'status', text: 'Status', icon: <IconHourglass /> },
+          { itemKey: 'sql', text: 'SQL', icon: <IconServer /> },
+          { itemKey: 'oss', text: 'OSS', icon: <IconArchive /> },
+          { itemKey: 'kv', text: 'KV', icon: <IconLayers /> },
           // { itemKey: 'settings', text: 'Settings', icon: <IconWrench /> },
         ]}
         onSelect={(data) => console.log('trigger onSelect: ', data)}
