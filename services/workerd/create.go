@@ -28,28 +28,35 @@ func CreateEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, common.RespMsgInvalidRequest, nil)
 		return
 	}
-	userID := c.GetUint(common.UIDKey)
+	userID := uint64(c.GetUint(common.UIDKey))
 
-	if err := Create(userID, worker); err != nil {
+	newUID, err := Create(uint(userID), worker)
+	if err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}
 
-	common.RespOK(c, "create worker success", nil)
+	common.RespOK(c, "create worker success", gin.H{
+		"UID":  newUID,
+		"Name": worker.GetName(),
+	})
 }
 
 // Create creates a new worker in the database and update the workerd capnp config file
-func Create(userID uint, worker *entities.Worker) error {
+func Create(userID uint, worker *entities.Worker) (string, error) {
 	FillWorkerValue(worker, false, "", userID)
 
 	if err := (&models.Worker{Worker: worker}).Create(); err != nil {
 		logrus.Errorf("failed to create worker, err: %v", err)
-		return err
+		return "", err
 	}
 
-	Flush(userID, worker.GetUID())
-
-	return nil
+	err := Flush(userID, worker.GetUID())
+	if err != nil {
+		logrus.Errorf("failed to flush worker config, err: %v", err)
+		return "", err
+	}
+	return worker.GetUID(), nil
 }
 
 func isCreateParamValidate() bool {

@@ -25,7 +25,7 @@ func AccessKeyMiddleware() func(c *gin.Context) {
 
 		if tokenStr[:4] == "ac::" {
 			if uid, err := access.AccessKeyToUserID(tokenStr); err == nil {
-				c.Set(common.UIDKey, uid)
+				c.Set(common.UIDKey, uint(uid))
 				c.Set("JWT_PASS", true)
 				c.Next()
 				return
