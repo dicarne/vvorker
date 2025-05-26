@@ -3,7 +3,7 @@ let env1 = env as unknown as any
 // 假设Go的接口地址
 let GO_API_URL = env1.OSS_AGENT_URL;
 const {
-	ENDPOINT,
+	HOST,
 	PORT,
 	ACCESS_KEY_ID,
 	ACCESS_KEY_SECRET,
@@ -16,7 +16,7 @@ const {
 } = env1;
 
 let commonConfig = {
-	Endpoint: `${ENDPOINT}:${PORT}`,
+	Endpoint: `${HOST}:${PORT}`,
 	AccessKeyID: ACCESS_KEY_ID,
 	SecretAccessKey: ACCESS_KEY_SECRET,
 	UseSSL: USE_SSL,

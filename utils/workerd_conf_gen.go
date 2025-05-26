@@ -190,11 +190,11 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					}
 
 					if len(ext.ResourceID) != 0 {
-						ext.Endpoint = "localhost"
+						ext.Host = "localhost"
 						ext.Port = conf.AppConfigInstance.ClientRedisPort
 					}
 					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`
-	( name = "ENDPOINT", text = "`+ext.Endpoint+`" ),
+	( name = "HOST", text = "`+ext.Host+`" ),
 	( name = "PORT", text = "`+strconv.Itoa(ext.Port)+`" ),	
 	( name = "RESOURCE_ID", text = "`+ext.ResourceID+`" ),
 `))
@@ -228,7 +228,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 						ossAgentUrl = fmt.Sprintf("http://127.0.0.1:%d", conf.AppConfigInstance.APIPort)
 					}
 					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`
-	( name = "ENDPOINT", text = "`+ext.Endpoint+`" ),
+	( name = "HOST", text = "`+ext.Host+`" ),
 	( name = "PORT", text = "`+strconv.Itoa(ext.Port)+`" ),
 	( name = "ACCESS_KEY_ID", text = "`+ext.AccessKeyId+`" ),
 	( name = "ACCESS_KEY_SECRET", text = "`+ext.AccessKeySecret+`" ),

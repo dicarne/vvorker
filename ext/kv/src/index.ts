@@ -14,7 +14,7 @@ export default class Redis extends WorkerEntrypoint {
 	}
 	async start() {
 		const redis = createClient({
-			url: `redis://${eenv.ENDPOINT}:${eenv.PORT}/0`
+			url: `redis://${eenv.HOST}:${eenv.PORT}/0`
 		})
 		await redis.connect()
 		return {

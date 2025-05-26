@@ -28,7 +28,7 @@ type SQLDBConfig struct {
 }
 
 type OSSConfig struct {
-	Endpoint        string `json:"endpoint"`
+	Host            string `json:"host"`
 	Port            int    `json:"port"`
 	AccessKeyId     string `json:"access_key_id"`
 	AccessKeySecret string `json:"access_key_secret"`
@@ -41,7 +41,7 @@ type OSSConfig struct {
 }
 
 type KV struct {
-	Endpoint   string `json:"endpoint"`
+	Host       string `json:"host"`
 	Port       int    `json:"port"`
 	Binding    string `json:"binding"`
 	ResourceID string `json:"resource_id"`
