@@ -186,7 +186,7 @@ func GetWorkers(userID uint, offset, limit int) ([]*Worker, error) {
 }
 
 func Trans2Entities(workers []*Worker) []*entities.Worker {
-	var entities []*entities.Worker
+	var entities []*entities.Worker = []*entities.Worker{}
 	for _, worker := range workers {
 		entities = append(entities, worker.ToEntity())
 	}
