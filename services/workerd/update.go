@@ -2,7 +2,6 @@ package workerd
 
 import (
 	"fmt"
-	"runtime"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/entities"
@@ -49,7 +48,7 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker) error {
 
 	curNodeName := conf.AppConfigInstance.NodeName
 
-	if workerRecord.NodeName == curNodeName && worker.NodeName != curNodeName || runtime.GOOS == "windows" {
+	if workerRecord.NodeName == curNodeName {
 		exec.ExecManager.ExitCmd(workerRecord.GetUID())
 	}
 

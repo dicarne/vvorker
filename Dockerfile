@@ -122,7 +122,7 @@ RUN chmod +x /bin/*
 
 WORKDIR /app
 
-# COPY vvorker /app/
+COPY .env.sample /app/.env
 
 EXPOSE 8888
 EXPOSE 8080

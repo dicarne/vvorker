@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 
 	"time"
 	"vvorker/conf"
@@ -296,9 +295,8 @@ func (w *Worker) Flush() error {
 	if len(w.TunnelID) == 0 {
 		w.TunnelID = uuid.New().String()
 	}
-	if runtime.GOOS == "windows" {
-		exec.ExecManager.ExitCmd(w.UID)
-	}
+
+	exec.ExecManager.ExitCmd(w.UID)
 
 	if err := w.DeleteFile(); err != nil {
 		return err
@@ -312,9 +310,8 @@ func (w *Worker) Flush() error {
 		return err
 	}
 
-	if runtime.GOOS == "windows" {
-		exec.ExecManager.RunCmd(w.UID, []string{})
-	}
+	exec.ExecManager.RunCmd(w.UID, []string{})
+
 	return nil
 }
 

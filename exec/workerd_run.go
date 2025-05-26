@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"syscall"
 	"time"
 	"vvorker/conf"
@@ -73,10 +72,6 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 			args := []string{"serve",
 				filepath.Join(workerdDir, defs.CapFileName),
 			}
-			// 判断操作系统是否为 Windows
-			if runtime.GOOS != "windows" {
-				args = append(args, "--watch")
-			}
 			args = append(args, "--verbose")
 			args = append(args, argv...)
 
@@ -132,31 +127,28 @@ func (m *execManager) ExitCmd(uid string) {
 		logrus.Warnf("workerd %s is not running, cannot stop it!", uid)
 	}
 
-	// 如果是windows，需要等待workerd退出
-	if runtime.GOOS == "windows" {
-		// 尝试获取进程 ID
-		pid, ok := m.pidMap.Get(uid)
-		if !ok {
-			logrus.Warnf("No process ID found for workerd %s", uid)
-			return
-		} else {
-			logrus.Infof("workerd %s pid is %d", uid, pid)
-		}
+	// 尝试获取进程 ID
+	pid, ok := m.pidMap.Get(uid)
+	if !ok {
+		logrus.Warnf("No process ID found for workerd %s", uid)
+		return
+	} else {
+		logrus.Infof("workerd %s pid is %d", uid, pid)
+	}
 
-		// 获取进程句柄
-		process, err := os.FindProcess(pid)
-		if err != nil {
-			logrus.Errorf("Failed to find process for workerd %s: %v", uid, err)
-			return
-		}
+	// 获取进程句柄
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		logrus.Errorf("Failed to find process for workerd %s: %v", uid, err)
+		return
+	}
 
-		// 等待进程退出
-		_, err = process.Wait()
-		if err != nil {
-			logrus.Errorf("Error waiting for workerd %s to exit: %v", uid, err)
-		} else {
-			logrus.Infof("workerd %s has stopped", uid)
-		}
+	// 等待进程退出
+	_, err = process.Wait()
+	if err != nil {
+		logrus.Errorf("Error waiting for workerd %s to exit: %v", uid, err)
+	} else {
+		logrus.Infof("workerd %s has stopped", uid)
 	}
 
 }
