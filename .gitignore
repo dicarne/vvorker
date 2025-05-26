@@ -3,6 +3,7 @@ workerd/workers
 workerd/*
 workerd/*.sqlite
 .env
+.env.*.local
 bin/workerd*
 vorker
 vorker.exe
@@ -16,3 +17,4 @@ gost.yaml
 node_modules
 tmp
 bin/test.zip
+*.tar

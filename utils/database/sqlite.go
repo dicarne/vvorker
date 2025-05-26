@@ -24,6 +24,8 @@ func initSqlite() {
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 	if err != nil {
 		logrus.Error(err, "Initializing DB Error")
+		logrus.Panicf("DB PATH: %s", dbPath)
+		panic(err)
 	}
 
 	GetManager().SetDB(defs.DBTypeSqlite, db)
