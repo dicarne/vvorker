@@ -13,6 +13,14 @@ import (
 // JWTMiddleware check if authed and set uid to context
 func JWTMiddleware() func(c *gin.Context) {
 	return func(c *gin.Context) {
+		jwtpass, ext := c.Get("JWT_PASS")
+		if ext {
+			if jwtpassb := jwtpass.(bool); jwtpassb {
+				c.Next()
+				return
+			}
+		}
+
 		cookieToken, err := c.Cookie(conf.AppConfigInstance.CookieName)
 		if err == nil {
 			if t, err := utils.ParseToken(cookieToken); err == nil {

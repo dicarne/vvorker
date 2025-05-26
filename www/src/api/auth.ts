@@ -26,3 +26,19 @@ export const logout = () => {
   localStorage.removeItem('token')
   return api.get('/api/auth/logout')
 }
+
+export const createAccessKey = (name: string) => {
+  return api.post('/api/user/create-access-key', {
+    name: name
+  })
+}
+
+export const getAccessKeys = () => {
+  return api.post('/api/user/access-keys')
+}
+
+export const deleteAccessKey = (access_key: string) => {
+  return api.post('/api/user/delete-access-key', {
+    key: access_key
+  }) 
+}

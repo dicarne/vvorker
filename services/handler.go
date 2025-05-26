@@ -14,6 +14,7 @@ import (
 	pgsql "vvorker/ext/pgsql/src"
 	"vvorker/models"
 	"vvorker/rpc"
+	"vvorker/services/access"
 	"vvorker/services/agent"
 	"vvorker/services/appconf"
 	"vvorker/services/auth"
@@ -54,7 +55,7 @@ func init() {
 	api := router.Group("/api")
 	{
 		if conf.IsMaster() {
-			workerApi := api.Group("/worker", authz.JWTMiddleware())
+			workerApi := api.Group("/worker", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
 			{
 				workerApi.GET("/:uid", workerd.GetWorkerEndpoint)
 				workerApi.GET("/flush/:uid", workerd.FlushEndpoint)
@@ -64,7 +65,7 @@ func init() {
 				workerApi.PATCH("/:uid", workerd.UpdateEndpoint)
 				workerApi.DELETE("/:uid", workerd.DeleteEndpoint)
 			}
-			workersApi := api.Group("/workers", authz.JWTMiddleware())
+			workersApi := api.Group("/workers", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
 			{
 				workersApi.GET("/flush", workerd.FlushAllEndpoint)
 				workersApi.GET("/:offset/:limit", workerd.GetWorkersEndpoint)
@@ -72,19 +73,22 @@ func init() {
 			userApi := api.Group("/user", authz.JWTMiddleware())
 			{
 				userApi.GET("/info", auth.GetUserEndpoint)
+				userApi.POST("/create-access-key", access.CreateAccessKeyEndpoint)
+				userApi.POST("/access-keys", access.GetAccessKeysEndpoint)
+				userApi.POST("/delete-access-key", access.DeleteAccessKeyEndpoint)
 			}
-			nodeAPI := api.Group("/node")
+			nodeAPI := api.Group("/node", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
 			{
-				nodeAPI.GET("/all", authz.JWTMiddleware(), node.UserGetNodesEndpoint)
-				nodeAPI.GET("/sync/:nodename", authz.JWTMiddleware(), node.SyncNodeEndpoint)
-				nodeAPI.DELETE("/:nodename", authz.JWTMiddleware(), node.LeaveEndpoint)
+				nodeAPI.GET("/all", node.UserGetNodesEndpoint)
+				nodeAPI.GET("/sync/:nodename", node.SyncNodeEndpoint)
+				nodeAPI.DELETE("/:nodename", node.LeaveEndpoint)
 			}
-			fileAPI := api.Group("/file", authz.JWTMiddleware())
+			fileAPI := api.Group("/file", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
 			{
 				fileAPI.POST("/upload", files.UploadFileEndpoint)
 				fileAPI.GET("/get/:fileId", files.GetFileEndpoint)
 			}
-			api.GET("/allworkers", authz.JWTMiddleware(), workerd.GetAllWorkersEndpoint)
+			api.GET("/allworkers", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), workerd.GetAllWorkersEndpoint)
 			api.GET("/vvorker/config", appconf.GetEndpoint)
 			api.POST("/auth/register", auth.RegisterEndpoint)
 			api.POST("/auth/login", auth.LoginEndpoint)
@@ -204,6 +208,7 @@ func HandleStaticFile(f embed.FS) {
 	router.StaticFileFS("/worker", "worker.html", http.FS(fp))
 	router.StaticFileFS("/index", "index.html", http.FS(fp))
 	router.StaticFileFS("/nodes", "nodes.html", http.FS(fp))
+	router.StaticFileFS("/user", "user.html", http.FS(fp))
 
 	router.StaticFileFS("/sql", "sql.html", http.FS(fp))
 	router.StaticFileFS("/oss", "oss.html", http.FS(fp))

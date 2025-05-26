@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"net/http"
 	"vvorker/common"
 	"vvorker/models"
 	"vvorker/utils/database"
@@ -30,11 +31,11 @@ func ListResourceEndpoint(c *gin.Context) {
 
 	request := ListResourceRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		c.JSON(400, gin.H{"code": 1, "msg": err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "List resource failed.", gin.H{"error": err.Error()})
 		return
 	}
 	if uid == 0 {
-		c.JSON(400, gin.H{"code": 1, "msg": "uid is required"})
+		common.RespErr(c, http.StatusInternalServerError, "uid is required.", gin.H{"error": "uid is required"})
 		return
 	}
 	db := database.GetDB()

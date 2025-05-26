@@ -7,7 +7,8 @@ import {
   IconMenu,
   IconArchive,
   IconLayers,
-  IconServer
+  IconServer,
+  IconUser,
 } from '@douyinfe/semi-icons'
 import { useRouter } from 'next/router'
 import { atom } from 'nanostores'
@@ -27,7 +28,8 @@ export const SideBarComponent = ({ selected }: { selected: string }) => {
     settings: '/admin',
     oss: '/oss',
     kv: '/kv',
-    sql: '/sql'
+    sql: '/sql',
+    user: '/user'
   } as any
   useEffect(() => {
     if (!expand) {
@@ -47,6 +49,7 @@ export const SideBarComponent = ({ selected }: { selected: string }) => {
           { itemKey: 'sql', text: 'SQL', icon: <IconServer /> },
           { itemKey: 'oss', text: 'OSS', icon: <IconArchive /> },
           { itemKey: 'kv', text: 'KV', icon: <IconLayers /> },
+          { itemKey: 'user', text: 'User', icon: <IconUser /> }
           // { itemKey: 'settings', text: 'Settings', icon: <IconWrench /> },
         ]}
         onSelect={(data) => console.log('trigger onSelect: ', data)}

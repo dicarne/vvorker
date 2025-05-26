@@ -3,8 +3,6 @@ package secret
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"fmt"
-	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -21,15 +19,7 @@ func CheckPasswordHash(password, hash string) bool {
 	if result, ok := cache[cacheKey]; ok {
 		return result
 	}
-
-	fmt.Println("====================================")
-	fmt.Printf("password: %s, hash: %s\n", password, hash)
-
-	start := time.Now()
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	elapsed := time.Since(start)
-	fmt.Printf("bcrypt.CompareHashAndPassword took %s\n", elapsed)
-
 	result := err == nil
 	cache[cacheKey] = result
 	return result
