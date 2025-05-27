@@ -12,6 +12,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type UpdateWorkerReq struct {
+	*entities.Worker
+	Detail map[string]interface{} `json:"detail"`
+}
+
 func UpdateEndpoint(c *gin.Context) {
 	UID := c.Param("uid")
 	if len(UID) == 0 {
@@ -19,7 +24,7 @@ func UpdateEndpoint(c *gin.Context) {
 		return
 	}
 
-	var worker *entities.Worker
+	var worker *UpdateWorkerReq
 	if err := c.ShouldBindJSON(&worker); err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
@@ -27,10 +32,12 @@ func UpdateEndpoint(c *gin.Context) {
 
 	userID := c.GetUint(common.UIDKey)
 
-	if err := UpdateWorker(userID, UID, worker); err != nil {
+	if err := UpdateWorker(userID, UID, worker.Worker); err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}
+
+	models.UpdateWorkerInformationByUID(worker.UID, worker.Detail)
 
 	common.RespOK(c, "update worker success", nil)
 }

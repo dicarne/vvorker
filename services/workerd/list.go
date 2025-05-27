@@ -89,7 +89,15 @@ func GetWorkerEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}
-	common.RespOK(c, "get workers success", models.Trans2Entities([]*models.Worker{worker}))
+	// common.RespOK(c, "get workers success", models.Trans2Entities([]*models.Worker{worker}))
+
+	detail, _ := models.GetWorkerInformationByUID(worker.UID)
+
+	r := models.WorkerDetailed{
+		Worker: models.Trans2Entities([]*models.Worker{worker})[0],
+		Detail: detail,
+	}
+	common.RespOK(c, "get workers success", []models.WorkerDetailed{r})
 }
 
 func AgentSyncWorkers(c *gin.Context) {

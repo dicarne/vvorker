@@ -31,6 +31,8 @@ func DeleteEndpoint(c *gin.Context) {
 		return
 	}
 
+	models.DeleteWorkerInformationByUID(UID)
+
 	common.RespOK(c, "delete worker success", nil)
 }
 
