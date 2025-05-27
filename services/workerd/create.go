@@ -17,7 +17,7 @@ func CreateEndpoint(c *gin.Context) {
 			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
 		}
 	}()
-	worker := &models.WorkerDetailed{}
+	worker := &models.Worker{}
 
 	if err := c.BindJSON(worker); err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
@@ -35,13 +35,6 @@ func CreateEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}
-
-	if worker.Detail == nil {
-		worker.Detail = &models.WorkerInformation{
-			UID: newUID,
-		}
-	}
-	models.CreateWorkerInformation(worker.Detail)
 
 	common.RespOK(c, "create worker success", gin.H{
 		"UID":  newUID,

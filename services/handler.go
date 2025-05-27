@@ -65,6 +65,10 @@ func init() {
 				workerApi.POST("/version/:workerId/:fileId", workerd.NewVersionEndpoint)
 				workerApi.PATCH("/:uid", workerd.UpdateEndpoint)
 				workerApi.DELETE("/:uid", workerd.DeleteEndpoint)
+
+				workerApi.GET("/information/:id", workerd.GetWorkerInformationByIDEndpoint)
+				workerApi.PATCH("/information/:id", workerd.UpdateWorkerInformationEndpoint)
+				workerApi.DELETE("/information/:id", workerd.DeleteWorkerInformationEndpoint)
 			}
 			workersApi := api.Group("/workers", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
 			{

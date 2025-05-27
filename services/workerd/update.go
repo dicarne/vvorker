@@ -37,8 +37,6 @@ func UpdateEndpoint(c *gin.Context) {
 		return
 	}
 
-	models.UpdateWorkerInformationByUID(worker.UID, worker.Detail)
-
 	common.RespOK(c, "update worker success", nil)
 }
 

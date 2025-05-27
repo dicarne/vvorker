@@ -80,6 +80,27 @@ func GetWorkerByUID(userID uint, uid string) (*Worker, error) {
 	return &worker, nil
 }
 
+func HasWorker(userID uint, uid string) bool {
+	var worker Worker
+	db := database.GetDB()
+
+	if err := db.Where(&Worker{
+		Worker: &entities.Worker{
+			UserID: uint64(userID),
+		},
+	}).Where(
+		&Worker{
+			Worker: &entities.Worker{
+				UID: uid,
+			},
+		},
+	).Select("UID").First(&worker).Error; err != nil {
+		return false
+	}
+	fmt.Printf("worker: %v", worker)
+	return true
+}
+
 func AdminGetWorkerByName(name string) (*Worker, error) {
 	var worker Worker
 	db := database.GetDB()
