@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 	"vvorker/conf"
+	"vvorker/exec"
 	"vvorker/utils"
 	"vvorker/utils/database"
 
@@ -12,7 +13,7 @@ import (
 func MigrateNormalModel() {
 	normalModels := []interface{}{
 		&User{}, &Worker{}, &WorkerVersion{}, &File{}, &KV{}, &OSS{}, &PostgreSQL{}, &AccessKey{},
-		&WorkerInformation{},
+		&WorkerInformation{}, &exec.WorkerLog{},
 	}
 	if conf.AppConfigInstance.LitefsEnabled {
 		if !conf.IsMaster() {

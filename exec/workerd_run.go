@@ -9,8 +9,10 @@ import (
 	"time"
 	"vvorker/conf"
 	"vvorker/defs"
+	"vvorker/utils/database"
 
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type execManager struct {
@@ -26,6 +28,27 @@ type execManager struct {
 
 var ExecManager *execManager
 
+type WorkerLogData struct {
+	UID    string `gorm:"index"`
+	Output string
+	Time   time.Time `gorm:"index"`
+	Type   string    `gorm:"index"`
+}
+
+// 定义合并后的日志模型
+type WorkerLog struct {
+	gorm.Model
+	*WorkerLogData
+}
+
+var (
+	// 合并后的日志 channel，用于异步处理
+	workerLogChan = make(chan WorkerLog, 1000)
+	// 批量插入的大小
+	batchSize = 100
+)
+
+// 初始化时启动合并后的日志处理 goroutine
 func init() {
 	ExecManager = &execManager{
 		signMap:    new(defs.SyncMap[string, bool]),
@@ -33,6 +56,40 @@ func init() {
 		pidMap:     new(defs.SyncMap[string, int]),
 		runningMap: new(defs.SyncMap[string, bool]), // 初始化运行状态映射
 	}
+
+	go processWorkerLogs()
+}
+
+// 处理合并后日志的函数
+func processWorkerLogs() {
+	var logs []WorkerLog
+	for {
+		select {
+		case log := <-workerLogChan:
+			logs = append(logs, log)
+			if len(logs) >= batchSize {
+				// 批量插入数据库
+				if err := dbCreateWorkerLogs(logs); err != nil {
+					logrus.Errorf("Failed to batch insert worker logs: %v", err)
+				}
+				logs = nil
+			}
+		case <-time.After(2 * time.Second):
+			if len(logs) > 0 {
+				// 定时批量插入
+				if err := dbCreateWorkerLogs(logs); err != nil {
+					logrus.Errorf("Failed to batch insert worker logs: %v", err)
+				}
+				logs = nil
+			}
+		}
+	}
+}
+
+// 批量插入合并后日志到数据库的函数
+func dbCreateWorkerLogs(logs []WorkerLog) error {
+	db := database.GetDB()
+	return db.CreateInBatches(logs, len(logs)).Error
 }
 
 func (m *execManager) RunCmd(uid string, argv []string) {
@@ -78,8 +135,22 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 			cmd := exec.CommandContext(ctx, conf.AppConfigInstance.WorkerdBinPath, args...)
 			cmd.Dir = workerdDir
 			cmd.SysProcAttr = &syscall.SysProcAttr{}
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
+
+			// 创建一个管道来捕获标准输出
+			stdoutPipe, err := cmd.StdoutPipe()
+			if err != nil {
+				logrus.Errorf("Failed to create stdout pipe for workerd %s: %v", uid, err)
+				time.Sleep(3 * time.Second)
+				continue
+			}
+
+			// 创建一个管道来捕获错误输出
+			stderrPipe, err := cmd.StderrPipe()
+			if err != nil {
+				logrus.Errorf("Failed to create stderr pipe for workerd %s: %v", uid, err)
+				time.Sleep(3 * time.Second)
+				continue
+			}
 
 			if err := cmd.Start(); err != nil {
 				logrus.Errorf("Failed to start workerd %s: %v", uid, err)
@@ -88,6 +159,58 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 			}
 			// 保存进程 ID
 			m.pidMap.Set(uid, cmd.Process.Pid)
+
+			// 读取标准输出并发送到 channel
+			go func(uid string) {
+				buf := make([]byte, 1024)
+				for {
+					select {
+					case <-ctx.Done(): // 监听上下文取消信号
+						return
+					default:
+						n, err := stdoutPipe.Read(buf)
+						if n > 0 {
+							workerLogChan <- WorkerLog{
+								WorkerLogData: &WorkerLogData{
+									UID:    uid,
+									Output: string(buf[:n]),
+									Time:   time.Now(),
+									Type:   "stdout",
+								},
+							}
+						}
+						if err != nil {
+							break
+						}
+					}
+				}
+			}(uid)
+
+			// 读取错误输出并发送到 channel
+			go func(uid string) {
+				buf := make([]byte, 1024)
+				for {
+					select {
+					case <-ctx.Done(): // 监听上下文取消信号
+						return
+					default:
+						n, err := stderrPipe.Read(buf)
+						if n > 0 {
+							workerLogChan <- WorkerLog{
+								WorkerLogData: &WorkerLogData{
+									UID:    uid,
+									Output: string(buf[:n]),
+									Time:   time.Now(),
+									Type:   "error",
+								},
+							}
+						}
+						if err != nil {
+							break
+						}
+					}
+				}
+			}(uid)
 
 			if err := cmd.Wait(); err != nil {
 				logrus.Errorf("Workerd %s exited with error: %v", uid, err)
@@ -150,7 +273,6 @@ func (m *execManager) ExitCmd(uid string) {
 	} else {
 		logrus.Infof("workerd %s has stopped", uid)
 	}
-
 }
 
 func (m *execManager) ExitAllCmd() {
