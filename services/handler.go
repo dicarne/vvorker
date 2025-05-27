@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"strings"
 	"time"
 	"vvorker/authz"
 	"vvorker/conf"
@@ -258,10 +259,34 @@ func RegisterNodeToMaster() {
 }
 
 func modifyProxyRequestHeaders(c *gin.Context) {
-	host := c.Request.Header.Get("Server-Host")
-	if host != "" {
-		c.Request.Header.Set("Host", host)
-		c.Request.Host = host
+	if conf.AppConfigInstance.WorkerHostMode == "path" {
+		// 此时，URL的第一段会被提取出来作为host name，并在传下去的url中去掉这一段
+		// 按照 / 切分
+		url := c.Request.URL.Path
+		// 去掉开头的 /
+		if len(url) > 0 && url[0] == '/' {
+			url = url[1:]
+		}
+		// 按 / 分割路径
+		parts := strings.SplitN(url, "/", 2)
+		if len(parts) > 0 && parts[0] != "" {
+			// 提取第一段作为主机名
+			host := parts[0] + conf.AppConfigInstance.WorkerURLSuffix
+			c.Request.Header.Set("Host", host)
+			c.Request.Host = host
+			// 去掉第一段后的路径
+			if len(parts) > 1 {
+				c.Request.URL.Path = "/" + parts[1]
+			} else {
+				c.Request.URL.Path = "/"
+			}
+		}
+	} else {
+		host := c.Request.Header.Get("Server-Host")
+		if host != "" {
+			c.Request.Header.Set("Host", host)
+			c.Request.Host = host
+		}
 	}
 	c.Next()
 }

@@ -42,6 +42,7 @@ type AppConfig struct {
 	TunnelPassword    string
 	TunnelToken       string
 	NodeID            string
+	WorkerHostMode    string `env:"WORKER_HOST_MODE" env-default:"host"` // host path  // host 模式需要使用域名进行访问，path则url的第一段为服务名（不包含域名后缀
 
 	ServerRedisPort int `env:"SERVER_REDIS_PORT" env-default:"6379"`
 
