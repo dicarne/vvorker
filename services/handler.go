@@ -68,7 +68,6 @@ func init() {
 
 				workerApi.GET("/information/:id", workerd.GetWorkerInformationByIDEndpoint)
 				workerApi.PATCH("/information/:id", workerd.UpdateWorkerInformationEndpoint)
-				workerApi.DELETE("/information/:id", workerd.DeleteWorkerInformationEndpoint)
 
 				workerApi.POST("/logs/:uid", workerd.GetWorkerLogsEndpoint)
 			}
