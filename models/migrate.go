@@ -13,7 +13,7 @@ import (
 func MigrateNormalModel() {
 	normalModels := []interface{}{
 		&User{}, &Worker{}, &WorkerVersion{}, &File{}, &KV{}, &OSS{}, &PostgreSQL{}, &AccessKey{},
-		&WorkerInformation{}, &exec.WorkerLog{},
+		&WorkerInformation{}, &exec.WorkerLog{}, &ResponseLog{},
 	}
 	if conf.AppConfigInstance.LitefsEnabled {
 		if !conf.IsMaster() {
