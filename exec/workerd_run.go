@@ -100,14 +100,11 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 
 	c := make(chan struct{})
 	m.chanMap.Set(uid, c)
-	m.runningMap.Set(uid, true) // 标记 worker 为运行状态
-
 	ctx, cancel := context.WithCancel(context.Background())
 
 	go func(ctx context.Context, uid string, argv []string, m *execManager) {
 		defer func(uid string, m *execManager) {
 			m.signMap.Delete(uid)
-			m.runningMap.Set(uid, false) // 标记 worker 为停止状态
 		}(uid, m)
 
 		logrus.Infof("workerd %s running!", uid)
@@ -140,23 +137,21 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 			stdoutPipe, err := cmd.StdoutPipe()
 			if err != nil {
 				logrus.Errorf("Failed to create stdout pipe for workerd %s: %v", uid, err)
-				time.Sleep(3 * time.Second)
-				continue
 			}
 
 			// 创建一个管道来捕获错误输出
 			stderrPipe, err := cmd.StderrPipe()
 			if err != nil {
 				logrus.Errorf("Failed to create stderr pipe for workerd %s: %v", uid, err)
-				time.Sleep(3 * time.Second)
-				continue
 			}
 
 			if err := cmd.Start(); err != nil {
 				logrus.Errorf("Failed to start workerd %s: %v", uid, err)
-				time.Sleep(3 * time.Second)
+				m.runningMap.Set(uid, false)
+
 				continue
 			}
+
 			// 保存进程 ID
 			m.pidMap.Set(uid, cmd.Process.Pid)
 
@@ -180,7 +175,7 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 							}
 						}
 						if err != nil {
-							break
+							return
 						}
 					}
 				}
@@ -206,14 +201,16 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 							}
 						}
 						if err != nil {
-							break
+							return
 						}
 					}
 				}
 			}(uid)
+			m.runningMap.Set(uid, true)
 
 			if err := cmd.Wait(); err != nil {
 				logrus.Errorf("Workerd %s exited with error: %v", uid, err)
+				m.runningMap.Set(uid, false)
 			}
 
 			if exit, ok := m.signMap.Get(uid); ok && exit {
@@ -279,4 +276,15 @@ func (m *execManager) ExitAllCmd() {
 	for uid := range m.chanMap.ToMap() {
 		m.ExitCmd(uid)
 	}
+}
+
+func (m *execManager) GetWorkerStatusByUID(uid string) int {
+	mu, ok := m.runningMap.Get(uid)
+	if !ok {
+		return 0
+	}
+	if mu {
+		return 1
+	}
+	return 0
 }

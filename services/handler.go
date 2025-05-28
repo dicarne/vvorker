@@ -70,6 +70,7 @@ func init() {
 				workerApi.PATCH("/information/:id", workerd.UpdateWorkerInformationEndpoint)
 
 				workerApi.POST("/logs/:uid", workerd.GetWorkerLogsEndpoint)
+				workerApi.POST("/status", workerd.GetWorkersStatusByUIDEndpoint)
 			}
 			workersApi := api.Group("/workers", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
 			{
