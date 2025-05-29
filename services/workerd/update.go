@@ -14,7 +14,6 @@ import (
 
 type UpdateWorkerReq struct {
 	*entities.Worker
-	Detail map[string]interface{} `json:"detail"`
 }
 
 func UpdateEndpoint(c *gin.Context) {

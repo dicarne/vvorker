@@ -1,0 +1,26 @@
+{
+  "name": "@dicarne/vvcli",
+  "version": "1.0.0",
+  "description": "cli for vvorker",
+  "bin": {
+    "vvcli": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/cli.ts"
+  },
+  "keywords": [],
+  "author": "dicarne",
+  "license": "ISC",
+  "packageManager": "pnpm@10.11.0",
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.15.24",
+    "axios": "^1.9.0",
+    "commander": "^14.0.0",
+    "fs-extra": "^11.3.0",
+    "inquirer": "^12.6.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
