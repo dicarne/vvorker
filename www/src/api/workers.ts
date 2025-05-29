@@ -28,7 +28,7 @@ export const deleteWorker = (uid: string) => {
 }
 
 export const updateWorker = (uid: string, worker: WorkerItem) => {
-  return api.patch(`/api/worker/${uid}`, worker).then((res) => res.data)
+  return api.post(`/api/worker/${uid}`, worker).then((res) => res.data)
 }
 
 export const flushWorker = (uid: string) => {

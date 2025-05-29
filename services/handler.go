@@ -63,11 +63,11 @@ func init() {
 				workerApi.GET("/run/:uid", workerd.RunWorkerEndpoint)
 				workerApi.POST("/create", workerd.CreateEndpoint)
 				workerApi.POST("/version/:workerId/:fileId", workerd.NewVersionEndpoint)
-				workerApi.PATCH("/:uid", workerd.UpdateEndpoint)
+				workerApi.POST("/:uid", workerd.UpdateEndpoint)
 				workerApi.DELETE("/:uid", workerd.DeleteEndpoint)
 
 				workerApi.GET("/information/:id", workerd.GetWorkerInformationByIDEndpoint)
-				workerApi.PATCH("/information/:id", workerd.UpdateWorkerInformationEndpoint)
+				workerApi.POST("/information/:id", workerd.UpdateWorkerInformationEndpoint)
 
 				workerApi.POST("/logs/:uid", workerd.GetWorkerLogsEndpoint)
 				workerApi.POST("/status", workerd.GetWorkersStatusByUIDEndpoint)
