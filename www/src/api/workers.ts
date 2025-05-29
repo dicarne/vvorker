@@ -48,3 +48,9 @@ export const getAppConfig = () => {
 export const runWorker = (uid: string) => {
   return api.get(`/api/worker/run/${uid}`, {}).then((res) => res.data)
 }
+
+export const getWorkersStatus = (uids: string[]) => {
+  return api
+   .post(`/api/workers/status`, { uids })
+   .then((res) => res.data.data)
+}
