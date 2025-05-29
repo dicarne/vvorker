@@ -22,6 +22,7 @@ func GetWorkersEndpoint(c *gin.Context) {
 			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
 		}
 	}()
+
 	offsetStr := c.Param("offset")
 	if len(offsetStr) == 0 {
 		common.RespErr(c, common.RespCodeInvalidRequest, "offset is empty", nil)
@@ -80,6 +81,37 @@ func GetWorkerEndpoint(c *gin.Context) {
 	}()
 	userID := c.GetUint(common.UIDKey)
 	uid := c.Param("uid")
+	if len(uid) == 0 {
+		common.RespErr(c, common.RespCodeInvalidRequest, "uid is empty", nil)
+		return
+	}
+	worker, err := models.GetWorkerByUID(userID, uid)
+	if err != nil {
+		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
+		return
+	}
+	common.RespOK(c, "get workers success", models.Trans2Entities([]*models.Worker{worker}))
+}
+
+type GetWorkerEndpointJSONReq struct {
+	UID string `json:"uid"`
+}
+
+func GetWorkerEndpointJSON(c *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
+			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+		}
+	}()
+	userID := c.GetUint(common.UIDKey)
+	req := &GetWorkerEndpointJSONReq{}
+	if err := json.NewDecoder(c.Request.Body).Decode(req); err != nil {
+		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
+		return
+	}
+	uid := req.UID
+
 	if len(uid) == 0 {
 		common.RespErr(c, common.RespCodeInvalidRequest, "uid is empty", nil)
 		return

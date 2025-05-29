@@ -2,6 +2,7 @@ package workerd
 
 import (
 	"fmt"
+	"runtime/debug"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/entities"
@@ -10,6 +11,7 @@ import (
 	"vvorker/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type UpdateWorkerReq struct {
@@ -17,6 +19,13 @@ type UpdateWorkerReq struct {
 }
 
 func UpdateEndpoint(c *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
+			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+		}
+	}()
+
 	UID := c.Param("uid")
 	if len(UID) == 0 {
 		common.RespErr(c, common.RespCodeInvalidRequest, "uid is empty", nil)
@@ -29,6 +38,34 @@ func UpdateEndpoint(c *gin.Context) {
 		return
 	}
 
+	userID := c.GetUint(common.UIDKey)
+
+	if err := UpdateWorker(userID, UID, worker.Worker); err != nil {
+		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
+		return
+	}
+
+	common.RespOK(c, "update worker success", nil)
+}
+
+func UpdateEndpointJSON(c *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
+			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+		}
+	}()
+
+	var worker *UpdateWorkerReq
+	if err := c.ShouldBindJSON(&worker); err != nil {
+		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
+		return
+	}
+	UID := worker.UID
+	if len(UID) == 0 {
+		common.RespErr(c, common.RespCodeInvalidRequest, "uid is empty", nil)
+		return
+	}
 	userID := c.GetUint(common.UIDKey)
 
 	if err := UpdateWorker(userID, UID, worker.Worker); err != nil {

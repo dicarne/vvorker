@@ -185,10 +185,12 @@ program
     }
 
 
-    let resp = await axios.get(`${config.url}/api/worker/${uid}`, {
+    let resp = await axios.post(`${config.url}/api/worker/v2/get-worker`, {
+      uid: uid,
+    }, {
       headers: {
         'Authorization': `Bearer ${token}`,
-      }
+      },
     })
     let prev = resp.data.data[0]
 
@@ -200,12 +202,11 @@ program
     prev.ExternalPath = undefined;
     prev.TunnelID = undefined;
 
-    resp = await axios.post(`${config.url}/api/worker/${uid}`, prev, {
+    resp = await axios.post(`${config.url}/api/worker/v2/update-worker`, prev, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
-      },
-      data: JSON.stringify(prev)
+      }
     })
     if (resp.data.code === 0) {
       console.log('部署成功');

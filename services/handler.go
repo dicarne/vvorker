@@ -74,6 +74,12 @@ func init() {
 
 				workerApi.GET("/analyse/group-by-time", proxyService.GetWorkerRequestStatsByTime)
 				workerApi.GET("/analyse/by-time", proxyService.GetWorkerRequestStats)
+
+				workerV2 := workerApi.Group("/v2")
+				{
+					workerV2.POST("/get-worker", workerd.GetWorkerEndpointJSON)
+					workerV2.POST("/update-worker", workerd.UpdateEndpointJSON)
+				}
 			}
 			workersApi := api.Group("/workers", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
 			{
