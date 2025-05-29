@@ -5,6 +5,8 @@ const (
 	WorkerInfoPath = "workers"
 	WorkerCodePath = "src"
 	DBTypeSqlite   = "sqlite"
+	DBTypeMysql    = "mysql"
+	DBTypePostgres = "pgsql"
 
 	DefaultHostName     = "localhost"
 	DefaultNodeName     = "default"

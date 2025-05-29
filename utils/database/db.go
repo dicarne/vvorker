@@ -34,7 +34,10 @@ func InitDB() {
 	switch conf.AppConfigInstance.DBType {
 	case defs.DBTypeSqlite:
 		initSqlite()
+	case defs.DBTypePostgres:
+		initPgsql()
 	}
+
 	close(DBManagerInstance.ch)
 }
 
@@ -74,6 +77,8 @@ func GetDB() *gorm.DB {
 	switch conf.AppConfigInstance.DBType {
 	case defs.DBTypeSqlite:
 		return mgr.GetSqlite()
+	case defs.DBTypePostgres:
+		return mgr.GetDB(defs.DBTypePostgres)
 	}
 	return nil
 }
