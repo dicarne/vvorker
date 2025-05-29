@@ -155,7 +155,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					}
 					if len(ext.ResourceID) != 0 {
 						ext.Host = "localhost"
-						ext.Port = conf.AppConfigInstance.ClientPostgresPort
+						ext.Port = conf.AppConfigInstance.ClientPostgrePort
 					}
 					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`
 	( name = "HOST", text = "`+ext.Host+`" ), 

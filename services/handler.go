@@ -198,8 +198,10 @@ func Run(f embed.FS) {
 		HandleStaticFile(f)
 	}
 	wg.Go(func() {
-		initTunnelService("redis", conf.AppConfigInstance.ServerRedisPort, conf.AppConfigInstance.ClientRedisPort)
-		initTunnelService("postgresql", conf.AppConfigInstance.ServerPostgrePort, conf.AppConfigInstance.ClientPostgresPort)
+		proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerPostgreHost, conf.AppConfigInstance.ServerPostgrePort), fmt.Sprintf(":%d", 13420))
+		proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerRedisHost, conf.AppConfigInstance.ServerRedisPort), fmt.Sprintf(":%d", 13421))
+		initTunnelService("postgresql", 13420, conf.AppConfigInstance.ClientPostgrePort)
+		initTunnelService("redis", 13421, conf.AppConfigInstance.ClientRedisPort)
 	})
 	wg.Go(func() {
 		router.Run(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ListenAddr, conf.AppConfigInstance.APIPort))

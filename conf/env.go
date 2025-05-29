@@ -44,7 +44,8 @@ type AppConfig struct {
 	NodeID            string
 	WorkerHostMode    string `env:"WORKER_HOST_MODE" env-default:"host"` // host path  // host 模式需要使用域名进行访问，path则url的第一段为服务名（不包含域名后缀
 
-	ServerRedisPort int `env:"SERVER_REDIS_PORT" env-default:"6379"`
+	ServerRedisHost string `env:"SERVER_REDIS_HOST" env-default:"localhost"`
+	ServerRedisPort int    `env:"SERVER_REDIS_PORT" env-default:"6379"`
 
 	ServerMinioHost   string `env:"SERVER_MINIO_HOST" env-default:"localhost"` // localhost时为本地
 	ServerMinioPort   int    `env:"SERVER_MINIO_PORT" env-default:"9000"`      // 本地时为9000，远程时为443
@@ -58,9 +59,9 @@ type AppConfig struct {
 	ServerPostgrePassword string `env:"SERVER_POSTGRE_PASSWORD" env-default:"postgres"`
 	ServerPostgreUser     string `env:"SERVER_POSTGRE_USER" env-default:"postgres"`
 
-	ClientMinioPort    int `env:"CLIENT_MINIO_PORT" env-default:"19000"`
-	ClientPostgresPort int `env:"CLIENT_POSTGRES_PORT" env-default:"15432"`
-	ClientRedisPort    int `env:"CLIENT_REDIS_PORT" env-default:"16379"`
+	ClientMinioPort   int `env:"CLIENT_MINIO_PORT" env-default:"19000"`
+	ClientPostgrePort int `env:"CLIENT_POSTGRE_PORT" env-default:"15432"`
+	ClientRedisPort   int `env:"CLIENT_REDIS_PORT" env-default:"16379"`
 }
 
 type JwtConfig struct {
