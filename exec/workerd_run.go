@@ -9,6 +9,7 @@ import (
 	"time"
 	"vvorker/conf"
 	"vvorker/defs"
+	"vvorker/utils"
 	"vvorker/utils/database"
 
 	"github.com/sirupsen/logrus"
@@ -33,6 +34,7 @@ type WorkerLogData struct {
 	Output string
 	Time   time.Time `gorm:"index"`
 	Type   string    `gorm:"index"`
+	LogUID string    `gorm:"index"`
 }
 
 // 定义合并后的日志模型
@@ -171,6 +173,7 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 									Output: string(buf[:n]),
 									Time:   time.Now(),
 									Type:   "stdout",
+									LogUID: utils.GenerateUID(),
 								},
 							}
 						}
@@ -197,6 +200,7 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 									Output: string(buf[:n]),
 									Time:   time.Now(),
 									Type:   "error",
+									LogUID: utils.GenerateUID(),
 								},
 							}
 						}
