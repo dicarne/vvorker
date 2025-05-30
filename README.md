@@ -10,7 +10,6 @@ VVorker 是一个简单强大的自部署 Cloudflare worker 替代系统。本�
 - [x] 简单的在线UI，用于配置资源及代码
 - [x] 分布式多节点支持
 - [x] litefs(HA) 支持（实验性）
-- [x] Cloudflare Durable Objects (实验性)
 - [x] 基于 PostgreSQL 的结构化数据库支持
 - [x] 基于 Redis 的 KV 缓存支持
 - [x] 基于 Minio 的对象存储支持
@@ -18,10 +17,11 @@ VVorker 是一个简单强大的自部署 Cloudflare worker 替代系统。本�
 - [x] 全局日志收集
 - [x] 性能与状态监控
 - [x] 命令行工具`vvcli`快速部署 Worker
-- [ ] 对 SQL 的变更支持
+- [x] 打包某个服务及其所有依赖，用于迁移到其它系统
+- [ ] 对 SQL 的变更支持（当前可以自行创建表，但没有比较自动化的流程）
 - [ ] Worker 版本控制，包括灰度发布与测试分支
 - [ ] Worker Debugging
-- [ ] 打包某个服务及其所有依赖，用于迁移到其它系统
+- [ ] Cloudflare Durable Objects (实验性)
 
 ## 使用方法
 
