@@ -15,29 +15,12 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
-	var req = entities.CreateNewResourcesRequest{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": err.Error()})
-		return
-	}
-	if !req.Validate() {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": "invalid request"})
-		return
-	}
-	db := database.GetDB()
-	userID := uint64(c.GetUint(common.UIDKey))
-	if userID == 0 {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": "uid is required"})
-		return
-	}
+// CreatePostgreSQLDatabase 创建 PostgreSQL 数据库及相关用户，并授予权限
+func CreatePostgreSQLDatabase(userID uint64, UID string, req entities.CreateNewResourcesRequest) (*models.PostgreSQL, error) {
 	pgResource := &models.PostgreSQL{
 		UserID: userID,
 		Name:   req.Name,
-		UID:    utils.GenerateUID(),
+		UID:    UID,
 	}
 	pgResource.Database = "vvorker_" + pgResource.UID
 
@@ -48,17 +31,13 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 			" port="+fmt.Sprintf("%d", conf.AppConfigInstance.ServerPostgrePort)+
 			" sslmode=disable")
 	if err != nil {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusInternalServerError, "Failed to connect to PostgreSQL", gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 	defer pgdb.Close()
 
 	_, err = pgdb.Exec("CREATE DATABASE " + pgResource.Database)
 	if err != nil {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusInternalServerError, "Failed to create database", gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
 	// 生成随机密码
@@ -68,25 +47,19 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 	// 创建新用户
 	_, err = pgdb.Exec(fmt.Sprintf("CREATE USER %s WITH PASSWORD '%s'", pgUser, password))
 	if err != nil {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusInternalServerError, "Failed to create PostgreSQL user", gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
 	// 授予用户对数据库的连接权限
 	_, err = pgdb.Exec(fmt.Sprintf("GRANT CONNECT ON DATABASE %s TO %s", pgResource.Database, pgUser))
 	if err != nil {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusInternalServerError, "Failed to grant CONNECT permission", gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
 	// 切换到新创建的数据库
 	_, err = pgdb.Exec(fmt.Sprintf("REVOKE ALL ON DATABASE %s FROM public", pgResource.Database))
 	if err != nil {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusInternalServerError, "Failed to revoke public access", gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
 	// 授予用户对数据库的所有表的增删改查权限
@@ -101,9 +74,7 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 	)
 	targetPgdb, err := sql.Open("postgres", targetConnStr)
 	if err != nil {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusInternalServerError, "Failed to connect to the new database", gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 	defer targetPgdb.Close()
 
@@ -114,9 +85,7 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 	    GRANT USAGE ON SCHEMA public TO %s;
 	`, pgUser, pgUser, pgUser))
 	if err != nil {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusInternalServerError, "Failed to grant privileges", gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
 	// 设置默认权限，确保未来创建的对象也被授予权限
@@ -126,9 +95,7 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 	    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE ON SEQUENCES TO %s;
 	`, pgUser, pgUser, pgUser))
 	if err != nil {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusInternalServerError, "Failed to set default privileges", gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
 	// 授予用户创建表、视图、函数等权限
@@ -136,16 +103,46 @@ func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
 	    GRANT CREATE ON SCHEMA public TO %s;
 	`, pgUser))
 	if err != nil {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusInternalServerError, "Failed to grant CREATE privilege on schema", gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
 
 	// 保存用户信息到 pgResource
 	pgResource.Username = pgUser
 	pgResource.Password = password
 
+	db := database.GetDB()
 	if err := db.Create(pgResource).Error; err != nil {
+		// 使用 common.RespErr 返回错误响应
+		return nil, err
+	}
+
+	return pgResource, nil
+}
+
+func CreateNewPostgreSQLResourcesEndpoint(c *gin.Context) {
+	var req = entities.CreateNewResourcesRequest{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": err.Error()})
+		return
+	}
+	if !req.Validate() {
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": "invalid request"})
+		return
+	}
+
+	userID := uint64(c.GetUint(common.UIDKey))
+	if userID == 0 {
+		// 使用 common.RespErr 返回错误响应
+		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": "uid is required"})
+		return
+	}
+	UID := utils.GenerateUID()
+
+	// 调用提取的函数创建数据库
+	pgResource, err := CreatePostgreSQLDatabase(userID, UID, req)
+	if err != nil {
 		// 使用 common.RespErr 返回错误响应
 		common.RespErr(c, http.StatusInternalServerError, "Failed to create PostgreSQL resource", gin.H{"error": err.Error()})
 		return
@@ -227,4 +224,21 @@ func DeletePostgreSQLResourcesEndpoint(c *gin.Context) {
 	common.RespOK(c, "success", entities.DeleteResourcesResp{
 		Status: 0,
 	})
+}
+
+func RecoverPGSQL(userID uint64, pgResource *models.PostgreSQL) (*models.PostgreSQL, error) {
+	pgResource.UserID = userID
+	db := database.GetDB()
+	// 如果有，则更新，如果无，则调用新增接口
+	if err := db.Where("uid =?", pgResource.UID).First(&models.PostgreSQL{}).Error; err != nil {
+		pg, err := CreatePostgreSQLDatabase(userID, pgResource.UID, entities.CreateNewResourcesRequest{Name: pgResource.Name})
+		return pg, err
+	} else {
+		pgResource.Password = ""
+		pgResource.Username = ""
+		pgResource.Database = ""
+		db.Where("uid =?", pgResource.UID).Updates(pgResource)
+	}
+
+	return pgResource, nil
 }

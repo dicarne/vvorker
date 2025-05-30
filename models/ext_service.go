@@ -8,9 +8,10 @@ import (
 
 type KV struct {
 	gorm.Model
-	UserID uint64
-	UID    string `gorm:"unique"`
-	Name   string
+	UserID   uint64
+	UID      string `gorm:"unique"`
+	Name     string
+	Password string
 }
 
 type OSS struct {

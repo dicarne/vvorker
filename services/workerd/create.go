@@ -5,6 +5,7 @@ import (
 	"vvorker/common"
 	"vvorker/entities"
 	"vvorker/models"
+	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -57,6 +58,23 @@ func Create(userID uint, worker *entities.Worker) (string, error) {
 		return "", err
 	}
 	return worker.GetUID(), nil
+}
+
+func Recover(userID uint, worker *entities.Worker) error {
+	db := database.GetDB()
+	worker.UserID = uint64(userID)
+	w2 := models.Worker{}
+	if err := db.Where("uid = ?", worker.GetUID()).Assign(worker).FirstOrCreate(&w2).Error; err != nil {
+		logrus.Errorf("failed to create or update worker, err: %v", err)
+		return err
+	}
+	worker = w2.Worker
+	err := Flush(userID, worker.GetUID())
+	if err != nil {
+		logrus.Errorf("failed to flush worker config, err: %v", err)
+		return err
+	}
+	return nil
 }
 
 func isCreateParamValidate() bool {

@@ -218,6 +218,21 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 		common.RespErr(c, http.StatusBadRequest, "UID and Name are required", gin.H{"error": "UID and Name are required"})
 		return
 	}
+
+	uid := utils.GenerateUID()
+	resource, err := CreateOSS(userID, req, uid)
+	if err != nil {
+		common.RespErr(c, http.StatusInternalServerError, "Failed to create OSS resource", gin.H{"error": err.Error()})
+		return
+	}
+	common.RespOK(c, "success", entities.CreateNewResourcesResponse{
+		UID:  resource.UID,
+		Name: resource.Name,
+		Type: "oss",
+	})
+}
+
+func CreateOSS(userID uint64, req entities.CreateNewResourcesRequest, uid string) (*models.OSS, error) {
 	mc, err := NewMinioClient(
 		fmt.Sprintf("%s:%d",
 			conf.AppConfigInstance.ServerMinioHost,
@@ -227,14 +242,13 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 		conf.AppConfigInstance.ServerMinioUseSSL,
 		conf.AppConfigInstance.ServerMinioRegion)
 	if err != nil {
-		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
-	logrus.Infoln("Create OSS Clinet")
+
 	resource := models.OSS{
 		Name:      req.Name,
 		UserID:    userID,
-		UID:       utils.GenerateUID(),
+		UID:       uid,
 		Bucket:    "",
 		Region:    conf.AppConfigInstance.ServerMinioRegion,
 		AccessKey: "",
@@ -244,17 +258,13 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 
 	err = mc.Client.MakeBucket(context.Background(), resource.Bucket, minio.MakeBucketOptions{Region: conf.AppConfigInstance.ServerMinioRegion})
 	if err != nil {
-		common.RespErr(c, http.StatusInternalServerError, "Failed to create bucket", gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
-	logrus.Infoln("Make Bucket Success")
 
 	account, err := CreateNewServiceAccount(resource.Bucket)
 	if err != nil {
-		common.RespErr(c, http.StatusInternalServerError, "Failed to create service account", gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
-	logrus.Infoln("Create Account Success")
 
 	resource.AccessKey = account.AccessKey
 	resource.SecretKey = account.SecretKey
@@ -263,16 +273,9 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 	// 创建新的 OSS 资源
 	db := database.GetDB()
 	if err := db.Create(&resource).Error; err != nil {
-		common.RespErr(c, http.StatusInternalServerError, "Failed to create OSS resource", gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
-	logrus.Infoln("Write To DB Success")
-
-	common.RespOK(c, "success", entities.CreateNewResourcesResponse{
-		UID:  resource.UID,
-		Name: resource.Name,
-		Type: "oss",
-	})
+	return &resource, nil
 }
 
 // 删除指定OSS资源
@@ -304,23 +307,33 @@ func DeleteOSSResourcesEndpoint(c *gin.Context) {
 		})
 		return
 	}
-	// 删除Minio中的Bucket
-	// mc, err := NewMinioClient(conf.AppConfigInstance.ServerMinioEndpoint,
-	// 	conf.AppConfigInstance.ServerMinioAccess,
-	// 	conf.AppConfigInstance.ServerMinioSecret,
-	// 	conf.AppConfigInstance.ServerMinioUseSSL,
-	// 	conf.AppConfigInstance.ServerMinioRegion)
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create Minio client: " + err.Error()})
-	// 	return
-	// }
-	// err = mc.Client.RemoveBucket(context.Background(), resource.Bucket)
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete bucket: " + err.Error()})
-	// 	return
-	// }
 	DeleteServiceAccount(resource.AccessKey)
 	common.RespOK(c, "success", entities.DeleteResourcesResp{
 		Status: 0,
 	})
+}
+
+func RecoverOSS(userID uint64, oss *models.OSS) error {
+	oss.UserID = userID
+	db := database.GetDB()
+	oss2 := models.OSS{}
+	// 如果有，则更新，如果无，则调用新增接口
+	if err := db.Where("uid = ?", oss.UID).First(&models.OSS{}).Error; err != nil {
+		oss.SecretKey = ""
+		oss.AccessKey = ""
+		oss.SessionKey = ""
+		_, err := CreateOSS(userID, entities.CreateNewResourcesRequest{Name: oss.Name}, oss.UID)
+		if err != nil {
+			return err
+		}
+
+	} else {
+		oss.SecretKey = ""
+		oss.AccessKey = ""
+		oss.SessionKey = ""
+		if err := db.Where("uid = ?", oss.UID).Assign(oss).FirstOrCreate(&oss2).Error; err != nil {
+			return err
+		}
+	}
+	return nil
 }

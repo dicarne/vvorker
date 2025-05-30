@@ -24,19 +24,14 @@ func CreateKVResourcesEndpoint(c *gin.Context) {
 		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": "invalid request"})
 		return
 	}
-	db := database.GetDB()
 	userID := uint64(c.GetUint(common.UIDKey))
 	if userID == 0 {
 		// 使用 common.RespErr 返回错误响应
 		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": "uid is required"})
 		return
 	}
-	kvResource := &models.KV{
-		UserID: userID,
-		Name:   req.Name,
-		UID:    utils.GenerateUID(),
-	}
-	if err := db.Create(kvResource).Error; err != nil {
+	kvResource, err := CreateKV(userID, req.Name)
+	if err != nil {
 		// 使用 common.RespErr 返回错误响应
 		common.RespErr(c, http.StatusInternalServerError, "Failed to create KV resource", gin.H{"error": err.Error()})
 		return
@@ -47,6 +42,28 @@ func CreateKVResourcesEndpoint(c *gin.Context) {
 		Name: kvResource.Name,
 		Type: "kv",
 	})
+}
+
+func CreateKV(userID uint64, name string) (*models.KV, error) {
+	kvModel := &models.KV{}
+	kvModel.UserID = userID
+	kvModel.Name = name
+	kvModel.UID = utils.GenerateUID()
+	if err := database.GetDB().Create(kvModel).Error; err != nil {
+		return nil, err
+	}
+	return kvModel, nil
+}
+
+func RecoverKV(userID uint64, kv *models.KV) error {
+	kv.UserID = userID
+	db := database.GetDB()
+	nkv := models.KV{}
+	// 如果有，则更新，如果无，则新增
+	if err := db.Where("uid = ?", kv.UID).Assign(kv).FirstOrCreate(&nkv).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 // 删除指定KV资源

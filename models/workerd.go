@@ -131,6 +131,19 @@ func GetWorkersByNames(userID uint, names []string) ([]*Worker, error) {
 	return workers, nil
 }
 
+func GetWorkersByUIDs(userID uint, uids []string) ([]*Worker, error) {
+	var workers []*Worker
+	db := database.GetDB()
+	if err := db.Where(&Worker{
+		Worker: &entities.Worker{
+			UserID: uint64(userID),
+		},
+	}).Where("uid in (?)", uids).Find(&workers).Error; err != nil {
+		return nil, err
+	}
+	return workers, nil
+}
+
 func AdminGetWorkersByNames(names []string) ([]*Worker, error) {
 	var workers []*Worker
 	db := database.GetDB()

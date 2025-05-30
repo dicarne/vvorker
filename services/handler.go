@@ -19,6 +19,7 @@ import (
 	"vvorker/services/agent"
 	"vvorker/services/appconf"
 	"vvorker/services/auth"
+	"vvorker/services/export"
 	"vvorker/services/files"
 	"vvorker/services/litefs"
 	"vvorker/services/node"
@@ -79,6 +80,9 @@ func init() {
 				{
 					workerV2.POST("/get-worker", workerd.GetWorkerEndpointJSON)
 					workerV2.POST("/update-worker", workerd.UpdateEndpointJSON)
+
+					workerV2.POST("/export-workers", export.ExportResourcesConfigEndpoint)
+					workerV2.POST("/import-workers", export.ImportResourcesConfigEndpoint)
 				}
 			}
 			workersApi := api.Group("/workers", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
