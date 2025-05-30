@@ -176,6 +176,7 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 									LogUID: utils.GenerateUID(),
 								},
 							}
+							logrus.Infof("workerd %s stdout: %s", uid, string(buf[:n]))
 						}
 						if err != nil {
 							return
@@ -203,6 +204,7 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 									LogUID: utils.GenerateUID(),
 								},
 							}
+							logrus.Errorf("workerd %s error: %s", uid, string(buf[:n]))
 						}
 						if err != nil {
 							return
