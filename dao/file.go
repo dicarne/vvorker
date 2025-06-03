@@ -8,9 +8,9 @@ import (
 	"vvorker/utils/database"
 )
 
-func SaveFile(c context.Context, file *models.File) error {
+func SaveFile(c context.Context, file *models.File) (*models.File, error) {
 	if file == nil {
-		return fmt.Errorf("file is nil")
+		return nil, fmt.Errorf("file is nil")
 	}
 
 	if file.UID == "" {
@@ -18,7 +18,7 @@ func SaveFile(c context.Context, file *models.File) error {
 	}
 
 	db := database.GetDB()
-	return db.Save(file).Error
+	return file, db.Save(file).Error
 }
 
 func GetFileByHashAndCreator(c context.Context, hash string, creator uint) (*models.File, error) {

@@ -257,6 +257,32 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 			}
 		}
 
+		if len(workerconfig.Assets) > 0 {
+			for _, ext := range workerconfig.Assets {
+				extName := "assets"
+				allowExtensionFn, ok := defs.AllowWorkersMap[extName]
+				if ok {
+					if len(ext.Binding) == 0 {
+						ext.Binding = extName
+					}
+					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`( name = "WORKER_UID", text = "`+worker.UID+`" ),`))
+					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
+					bindingsText = bindingsText + allowExtension.BindingTemplate
+
+					servicesText = servicesText + allowExtension.ServiceInjectTemplate
+
+					// 构建文件路径
+					filePath := filepath.Join(conf.AppConfigInstance.WorkerdDir,
+						defs.WorkerInfoPath,
+						worker.GetUID(), "src", extName+".js")
+
+					writeFileIfNotExists(filePath, allowExtension.Script)
+				} else {
+					logrus.Warnf("service %v not found", ext)
+				}
+			}
+		}
+
 		if len(workerconfig.Services) > 0 {
 			for _, service := range workerconfig.Services {
 				netw := defs.GenServiceNetwork(service)

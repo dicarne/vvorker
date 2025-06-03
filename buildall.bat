@@ -27,5 +27,10 @@ call pnpm i
 call pnpm run build
 cd ..
 
+cd assets
+call pnpm i 
+call pnpm run build
+cd ..
+
 cd ..
 go build

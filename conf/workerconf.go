@@ -47,6 +47,11 @@ type KV struct {
 	ResourceID string `json:"resource_id"`
 }
 
+type Assets struct {
+	Binding   string `json:"binding"`
+	Directory string `json:"directory"`
+}
+
 type WorkerConfig struct {
 	ProjectName        string            `json:"name"`
 	Version            string            `json:"version"`
@@ -58,6 +63,7 @@ type WorkerConfig struct {
 	PgSql              []SQLDBConfig     `json:"pgsql"`
 	OSS                []OSSConfig       `json:"oss"`
 	KV                 []KV              `json:"kv"`
+	Assets             []Assets          `json:"assets"`
 }
 
 func ParseWorkerConfig(s string) (*WorkerConfig, error) {

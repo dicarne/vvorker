@@ -78,7 +78,7 @@ func UploadFileEndpoint(c *gin.Context) {
 		return
 	}
 
-	err = dao.SaveFile(c, &models.File{
+	fileRecord, err = dao.SaveFile(c, &models.File{
 		CreatedBy: uid,
 		Hash:      hash,
 		Mimetype:  contentType,

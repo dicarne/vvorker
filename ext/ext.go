@@ -6,10 +6,13 @@ import _ "embed"
 var ExtAiScript string
 
 //go:embed pgsql/dist/index.js
-var ExtPgsqlScriptDTS string
+var ExtPgsqlScript string
 
 //go:embed oss/dist/index.js
-var ExtOSSScriptDTS string
+var ExtOSSScript string
 
 //go:embed kv/dist/index.js
-var ExtKVScriptDTS string
+var ExtKVScript string
+
+//go:embed assets/dist/index.js
+var ExtAssetsScript string

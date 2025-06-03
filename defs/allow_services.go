@@ -110,7 +110,7 @@ var AllowWorkersMap = map[string]func(name string, workerBindings template.HTML)
 			BasicBindingTemplate:  commonWorkerBindingTemplate,
 			ServiceInjectTemplate: commonServiceInjectTemplate,
 			Type:                  "worker",
-			Script:                ext.ExtPgsqlScriptDTS,
+			Script:                ext.ExtPgsqlScript,
 			FlagsText:             template.HTML(` "nodejs_compat" `),
 			WorkerBindingText:     workerBindings,
 		})
@@ -123,7 +123,7 @@ var AllowWorkersMap = map[string]func(name string, workerBindings template.HTML)
 			BasicBindingTemplate:  commonWorkerBindingTemplate,
 			ServiceInjectTemplate: commonServiceInjectTemplate,
 			Type:                  "worker",
-			Script:                ext.ExtOSSScriptDTS,
+			Script:                ext.ExtOSSScript,
 			FlagsText:             template.HTML(` "nodejs_compat" `),
 			WorkerBindingText:     workerBindings,
 		})
@@ -136,8 +136,21 @@ var AllowWorkersMap = map[string]func(name string, workerBindings template.HTML)
 			BasicBindingTemplate:  commonWorkerBindingTemplate,
 			ServiceInjectTemplate: commonServiceInjectTemplate,
 			Type:                  "worker",
-			Script:                ext.ExtKVScriptDTS,
+			Script:                ext.ExtKVScript,
 			FlagsText:             template.HTML(` "nodejs_compat" `),
+			WorkerBindingText:     workerBindings,
+		})
+	},
+	"assets": func(name string, workerBindings template.HTML) AllowServiceTemplate {
+		return GenerateExtensionTemplate(AllowServiceTemplate{
+			Name:                  name,
+			Path:                  "assets",
+			BasicServiceTemplate:  commonWorkerTemplate,
+			BasicBindingTemplate:  commonWorkerBindingTemplate,
+			ServiceInjectTemplate: commonServiceInjectTemplate,
+			Type:                  "worker",
+			Script:                ext.ExtAssetsScript,
+			FlagsText:             template.HTML(``),
 			WorkerBindingText:     workerBindings,
 		})
 	},
