@@ -265,7 +265,12 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					if len(ext.Binding) == 0 {
 						ext.Binding = extName
 					}
-					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`( name = "WORKER_UID", text = "`+worker.UID+`" ),`))
+					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`
+	( name = "WORKER_UID", text = "`+worker.UID+`" ),
+	( name = "MASTER_ENDPOINT", text = "`+conf.AppConfigInstance.MasterEndpoint+`" ),
+	( name = "X_SECRET" , text = "`+conf.RPCToken+`" ),
+	( name = "X_NODENAME", text = "`+conf.AppConfigInstance.NodeName+`" ),
+`))
 					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
 					bindingsText = bindingsText + allowExtension.BindingTemplate
 

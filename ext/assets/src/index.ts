@@ -1,13 +1,24 @@
 // filepath: src/index.ts
 
-import { WorkerEntrypoint, env } from 'cloudflare:workers'
+import { env } from 'cloudflare:workers'
 
 const eenv = env as unknown as any
 
-eenv.RESOURCE_ID = eenv.RESOURCE_ID || ""
+let commonConfig = {
+	"x-secret": eenv.X_SECRET,
+	"x-node-name": eenv.X_NODENAME,
+}
 
 export default {
 	async fetch(request: any, env: any) {
-		return new Response("Hello, World!")
+		const url = new URL(request.url);
+		return fetch(`${eenv.MASTER_ENDPOINT}/api/ext/assets/get-assets`, {
+			method: "GET",
+			headers: {
+				...commonConfig,
+				"vvorker-asset-path": url.pathname,
+				"vvorker-asset-worker-uid": eenv.WORKER_UID,
+			}
+		})
 	},
 };

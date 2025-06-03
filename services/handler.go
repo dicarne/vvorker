@@ -10,6 +10,7 @@ import (
 	"time"
 	"vvorker/authz"
 	"vvorker/conf"
+	assets "vvorker/ext/assets/src"
 	kv "vvorker/ext/kv/src"
 	oss "vvorker/ext/oss/src"
 	pgsql "vvorker/ext/pgsql/src"
@@ -137,27 +138,34 @@ func init() {
 				ossAPI.POST("/list-objects", authz.AgentAuthz(), oss.ListObjects)
 
 				if conf.IsMaster() {
-					ossAPI.POST("/create-resource", authz.JWTMiddleware(), oss.CreateNewOSSResourcesEndpoint)
-					ossAPI.POST("/delete-resource", authz.JWTMiddleware(), oss.DeleteOSSResourcesEndpoint)
+					ossAPI.POST("/create-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), oss.CreateNewOSSResourcesEndpoint)
+					ossAPI.POST("/delete-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), oss.DeleteOSSResourcesEndpoint)
 				}
 			}
 			pgsqlAPI := extAPI.Group("/pgsql")
 			{
 				if conf.IsMaster() {
-					pgsqlAPI.POST("/create-resource", authz.JWTMiddleware(), pgsql.CreateNewPostgreSQLResourcesEndpoint)
-					pgsqlAPI.POST("/delete-resource", authz.JWTMiddleware(), pgsql.DeletePostgreSQLResourcesEndpoint)
+					pgsqlAPI.POST("/create-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.CreateNewPostgreSQLResourcesEndpoint)
+					pgsqlAPI.POST("/delete-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.DeletePostgreSQLResourcesEndpoint)
 				}
 			}
 			kvAPI := extAPI.Group("/kv")
 			{
 				if conf.IsMaster() {
-					kvAPI.POST("/create-resource", authz.JWTMiddleware(), kv.CreateKVResourcesEndpoint)
-					kvAPI.POST("/delete-resource", authz.JWTMiddleware(), kv.DeleteKVResourcesEndpoint)
+					kvAPI.POST("/create-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), kv.CreateKVResourcesEndpoint)
+					kvAPI.POST("/delete-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), kv.DeleteKVResourcesEndpoint)
+				}
+			}
+			assetsAPI := extAPI.Group("/assets")
+			{
+				if conf.IsMaster() {
+					assetsAPI.POST("/create-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), assets.UploadAssetsEndpoint)
+					assetsAPI.GET("/get-assets", authz.AgentAuthz(), assets.GetAssetsEndpoint)
 				}
 			}
 
 			if conf.IsMaster() {
-				extAPI.POST("/list", authz.JWTMiddleware(), resource.ListResourceEndpoint)
+				extAPI.POST("/list", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), resource.ListResourceEndpoint)
 			}
 		}
 	}

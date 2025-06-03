@@ -36,3 +36,15 @@ type PostgreSQL struct {
 	Username string
 	Password string
 }
+
+type Assets struct {
+	gorm.Model
+	UserID    uint64
+	UID       string `gorm:"unique"`
+	WorkerUID string
+	Name      string
+	MIME      string
+	Hash      string
+	Path      string `gorm:"index"`
+	// Data      []byte
+}
