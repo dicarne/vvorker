@@ -8,9 +8,10 @@ import (
 
 type ResponseLog struct {
 	gorm.Model
-	WorkerUID string `gorm:"index"`
-	Method    string
-	Path      string
-	Status    int
-	Time      time.Time `gorm:"index"`
+	WorkerUID  string `gorm:"index"`
+	Method     string
+	Path       string
+	Status     int
+	Time       time.Time `gorm:"index"`
+	DurationMS int64
 }
