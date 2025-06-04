@@ -5,10 +5,12 @@
   "bin": {
     "vvcli": "./dist/cli.js"
   },
+  "main": "dist/cli.js",
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/cli.ts",
-    "publish": "npm publish --access=public"
+    "publish": "npm publish --access=public",
+    "preinstall": "npm run build"
   },
   "keywords": [],
   "author": "dicarne",
