@@ -83,7 +83,7 @@ export function WorkersComponent() {
 
   const handleOpenWorker = useCallback(
     (item: WorkerItem) => {
-      if (user?.url_type === "host") {
+      if (appConf?.UrlType === "host") {
         window.open(
           `${appConf?.Scheme}://${item.Name}${appConf?.WorkerURLSuffix}/`,
           '_blank'
@@ -95,7 +95,7 @@ export function WorkersComponent() {
         )
       }
     },
-    [appConf?.Scheme, appConf?.WorkerURLSuffix, appConf?.ApiUrl]
+    [appConf?.Scheme, appConf?.WorkerURLSuffix, appConf?.ApiUrl, appConf?.UrlType]
   )
 
   const handleDeleteWorker = useCallback(
