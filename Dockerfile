@@ -88,6 +88,7 @@ RUN cd /app/ext/ai && pnpm i && pnpm run build
 RUN cd /app/ext/kv && pnpm i && pnpm run build
 RUN cd /app/ext/oss && pnpm i && pnpm run build
 RUN cd /app/ext/pgsql && pnpm i && pnpm run build
+RUN cd /app/ext/assets && pnpm i && pnpm run build
 
 # 执行 go build 命令，-o 指定输出的二进制文件名称
 RUN go build -o vvorker .
