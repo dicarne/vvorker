@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"mime"
 	"vvorker/models"
 	"vvorker/utils/database"
 
@@ -63,7 +64,7 @@ func UploadAssetsEndpoint(c *gin.Context) {
 	}
 	nkv := models.Assets{}
 	// 如果有，则更新，如果无，则新增
-	if err := db.Where("uid = ?", req.UID).Assign(&asset).FirstOrCreate(&nkv).Error; err != nil {
+	if err := db.Where("path = ?", req.Path).Where("worker_uid", req.WorkerUID).Assign(&asset).FirstOrCreate(&nkv).Error; err != nil {
 		c.JSON(500, gin.H{"error": "Failed to save asset"})
 		return
 	}
@@ -104,5 +105,11 @@ func GetAssetsEndpoint(c *gin.Context) {
 		return
 	}
 
-	c.Data(200, file.Mimetype, file.Data)
+	mimeType := mime.TypeByExtension(file.Mimetype)
+	if mimeType == "" {
+		// 如果没有匹配的 MIME 类型，默认使用 application/octet-stream
+		mimeType = "application/octet-stream"
+	}
+
+	c.Data(200, mimeType, file.Data)
 }

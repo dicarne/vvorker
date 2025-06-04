@@ -22,4 +22,6 @@ export interface UserInfo {
 	userName: string;
 	email: string;
 	role: string;
+	url_type: string;
+	api_url: string;
 }

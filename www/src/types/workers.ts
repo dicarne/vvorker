@@ -51,4 +51,6 @@ export interface VorkerSettingsProperties {
   WorkerURLSuffix: string
   Scheme: string
   EnableRegister: boolean
+  UrlType: string
+  ApiUrl: string
 }

@@ -16,15 +16,27 @@ program
   .description('初始化VVorker项目')
   .action(async (projectName) => {
     // 交互式输入uid
-    const { uid } = await inquirer.prompt([{
+    const { uid, projtype } = await inquirer.prompt([{
       type: 'input',
       name: 'uid',
       message: '请输入vvorker平台worker的uid:',
-    }])
+    }, {
+      type: 'list',
+      name: 'projtype',
+      message: '请选择工程类型',
+      choices: [
+        { name: "纯Worker工程", value: "worker", description: "纯Worker工程" },
+        { name: "Vue工程", value: "vue", description: "Vue工程，前后端分离" },
+      ],
+      default: 'worker'
+    },])
 
     const jsonData = {
       "name": projectName,
-      uid,
+      "project": {
+        "uid": uid,
+        "type": projtype
+      },
       "version": "1.0.0",
       "extensions": [],
       "services": [],
@@ -37,14 +49,16 @@ program
 
     // 如果当前文件夹下不存在package.json 
     if (!fs.existsSync('package.json')) {
-      // 创建项目目录
-      await fs.ensureDir(projectName);
 
-      // 定义要写入的 JSON 数据
+      if (projtype === "worker") {
+        // 创建项目目录
+        await fs.ensureDir(projectName);
 
-      const gitignoreContent = `node_modules\n`
+        // 定义要写入的 JSON 数据
 
-      const defaultJSCode = `
+        const gitignoreContent = `node_modules\n`
+
+        const defaultJSCode = `
 export default {
   async fetch(req, env) {
     try {
@@ -57,64 +71,86 @@ export default {
 };
     `
 
-      const packageJson = {
-        "name": projectName,
-        "version": "1.0.0",
-        "description": "",
-        "private": true,
-        "scripts": {
-          "deploy": "vvcli deploy",
-          "dev": "wrangler dev",
-          "start": "wrangler dev",
-          "test": "vitest",
-          "cf-typegen": "wrangler types",
-          "build": "wrangler deploy --dry-run --outdir dist"
-        },
-        "devDependencies": {
-          "@cloudflare/vitest-pool-workers": "^0.8.19",
-          "typescript": "^5.5.2",
-          "vitest": "~3.0.7",
-          "wrangler": "^4.15.2"
-        },
-      }
-
-      const wranglerConfig =
-      {
-        "$schema": "node_modules/wrangler/config-schema.json",
-        "name": projectName,
-        "main": "src/index.ts",
-        "compatibility_date": "2025-05-20",
-        "observability": {
-          "enabled": true
+        const packageJson = {
+          "name": projectName,
+          "version": "1.0.0",
+          "description": "",
+          "private": true,
+          "scripts": {
+            "deploy": "vvcli deploy",
+            "dev": "wrangler dev",
+            "start": "wrangler dev",
+            "test": "vitest",
+            "cf-typegen": "wrangler types",
+            "build": "wrangler deploy --dry-run --outdir dist"
+          },
+          "devDependencies": {
+            "@cloudflare/vitest-pool-workers": "^0.8.19",
+            "typescript": "^5.5.2",
+            "vitest": "~3.0.7",
+            "wrangler": "^4.15.2"
+          },
         }
+
+        const wranglerConfig =
+        {
+          "$schema": "node_modules/wrangler/config-schema.json",
+          "name": projectName,
+          "main": "src/index.ts",
+          "compatibility_date": "2025-05-20",
+          "observability": {
+            "enabled": true
+          }
+        }
+
+        const jsonFilePath = `${projectName}/vvorker.json`;
+        await fs.writeJson(jsonFilePath, jsonData, { spaces: 2 });
+
+        const gitignoreFilePath = `${projectName}/.gitignore`;
+        await fs.writeFile(gitignoreFilePath, gitignoreContent);
+
+        const jsFilePath = `${projectName}/src/index.ts`;
+        await fs.ensureDir(`${projectName}/src`);
+        await fs.writeFile(jsFilePath, defaultJSCode);
+
+        const packageJsonFilePath = `${projectName}/package.json`;
+        await fs.writeJson(packageJsonFilePath, packageJson, { spaces: 2 });
+
+        const wranglerConfigFilePath = `${projectName}/wrangler.jsonc`;
+        await fs.writeJson(wranglerConfigFilePath, wranglerConfig);
+
+        console.log(`项目 ${projectName} 初始化完成`);
+        console.log(`请执行以下命令开始开发：`);
+        console.log(`  cd ${projectName}`);
+        console.log(`  pnpm install`);
+      } else if (projtype === "vue") {
+        await new Promise((resolve, reject) => {
+          // npm create cloudflare@latest -- my-vue-app --framework=vue
+          const child = spawn('pnpm', ['create', 'build', "cloudflare@latest", "--", projectName, "--framework=vue"], { stdio: 'inherit', shell: true });
+          child.on('close', (code) => {
+            if (code === 0) {
+              resolve(code);
+            } else {
+              reject(new Error(`pnpm run build exited with code ${code}`));
+            }
+          });
+          child.on('error', (error) => {
+            reject(error);
+          });
+        });
       }
 
-      const jsonFilePath = `${projectName}/vvorker.json`;
+      const jsonFilePath = `vvorker.json`;
       await fs.writeJson(jsonFilePath, jsonData, { spaces: 2 });
-
-      const gitignoreFilePath = `${projectName}/.gitignore`;
-      await fs.writeFile(gitignoreFilePath, gitignoreContent);
-
-      const jsFilePath = `${projectName}/src/index.ts`;
-      await fs.ensureDir(`${projectName}/src`);
-      await fs.writeFile(jsFilePath, defaultJSCode);
-
-      const packageJsonFilePath = `${projectName}/package.json`;
-      await fs.writeJson(packageJsonFilePath, packageJson, { spaces: 2 });
-
-      const wranglerConfigFilePath = `${projectName}/wrangler.jsonc`;
-      await fs.writeJson(wranglerConfigFilePath, wranglerConfig);
-
       console.log(`项目 ${projectName} 初始化完成`);
-      console.log(`请执行以下命令开始开发：`);
-      console.log(`  cd ${projectName}`);
-      console.log(`  pnpm install`);
     } else {
       if (fs.existsSync('wrangler.jsonc')) {
         let wrtxt = await fs.readFile('wrangler.jsonc', 'utf-8');
         let jsonb = await json5.parse(wrtxt);
         wrtxt = wrtxt.replace(`"name": "${jsonb.name}"`, `"name": "${projectName}"`)
         await fs.writeFile('wrangler.jsonc', wrtxt);
+      } else {
+
       }
       // 读取package.json，并将name改为proj name
       const packageJson = await fs.readJson('package.json');
@@ -144,7 +180,7 @@ program
       return;
     }
 
-    const uid = vvorkerJson.uid;
+    const uid = vvorkerJson.project?.uid ?? vvorkerJson.uid;
     if (!uid) {
       console.error('uid不能为空');
       return;
@@ -197,62 +233,64 @@ program
 
     let jsFilePath = "";
     if (vvorkerJson.assets && vvorkerJson.assets.length > 0) {
-      jsFilePath = `${process.cwd()}/dist/${packageJson.name}/index.js`;
+      if (vvorkerJson.project?.type === "vue") {
+        jsFilePath = `${process.cwd()}/dist/${packageJson.name}/index.js`;
 
-      let wwwAssetsPath = path.join(process.cwd(), "dist", "client")
-      // walk wwwAssetsPath，调用接口上传每一个文件
-      const walk = async (dir: string) => {
-        const files = fs.readdirSync(dir);
-        for (let file of files) {
-          const filePath = path.join(dir, file);
-          const stat = fs.statSync(filePath);
-          if (stat.isDirectory()) {
-            walk(filePath);
-          } else {
-            const fileContent = fs.readFileSync(filePath);
-            const fileBase64 = Buffer.from(fileContent).toString('base64');
-            const fileUrl = filePath.replace(wwwAssetsPath, '').replace(/\\/g, '/');
-            console.log(fileUrl);
+        let wwwAssetsPath = path.join(process.cwd(), "dist", "client")
+        // walk wwwAssetsPath，调用接口上传每一个文件
+        const walk = async (dir: string) => {
+          const files = fs.readdirSync(dir);
+          for (let file of files) {
+            const filePath = path.join(dir, file);
+            const stat = fs.statSync(filePath);
+            if (stat.isDirectory()) {
+              walk(filePath);
+            } else {
+              const fileContent = fs.readFileSync(filePath);
+              const fileBase64 = Buffer.from(fileContent).toString('base64');
+              const fileUrl = filePath.replace(wwwAssetsPath, '').replace(/\\/g, '/');
+              console.log(fileUrl);
 
-            // 创建 FormData 对象
-            const formData = new FormData();
-            // 将文件数据添加到 FormData 中
-            formData.append('file', new Blob([fileContent]), fileUrl);
+              // 创建 FormData 对象
+              const formData = new FormData();
+              // 将文件数据添加到 FormData 中
+              formData.append('file', new Blob([fileContent]), fileUrl);
 
-            let up1 = await axios.post(`${config.url}/api/file/upload`, formData, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                // 设置 Content-Type 为 multipart/form-data
-                'Content-Type': 'multipart/form-data'
-              },
-            })
+              let up1 = await axios.post(`${config.url}/api/file/upload`, formData, {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  // 设置 Content-Type 为 multipart/form-data
+                  'Content-Type': 'multipart/form-data'
+                },
+              })
 
-            if (up1.status !== 200) {
-              throw new Error(`上传失败：${fileUrl} ${up1.status} ${up1.statusText}`);
+              if (up1.status !== 200) {
+                throw new Error(`上传失败：${fileUrl} ${up1.status} ${up1.statusText}`);
+              }
+
+              let fileuid = up1.data.data.fileId;
+
+              let resp = await axios.post(`${config.url}/api/ext/assets/create-assets`, {
+                uid: fileuid,
+                "worker_uid": uid,
+                "path": fileUrl,
+              }, {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                },
+              })
+
+              if (resp.status != 200) {
+                console.log(`上传失败：${fileUrl} ${resp.status} ${resp.statusText}`);
+                throw new Error(`上传失败：${fileUrl}`);
+              }
+
+
             }
-
-            let fileuid = up1.data.data.fileId;
-
-            let resp = await axios.post(`${config.url}/api/ext/assets/create-assets`, {
-              uid: fileuid,
-              "worker_uid": uid,
-              "path": fileUrl,
-            }, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            })
-
-            if (resp.status != 200) {
-              console.log(`上传失败：${fileUrl} ${resp.status} ${resp.statusText}`);
-              throw new Error(`上传失败：${fileUrl}`);
-            }
-
-
           }
         }
+        await walk(wwwAssetsPath);
       }
-      await walk(wwwAssetsPath);
 
     } else {
       jsFilePath = `${process.cwd()}/dist/index.js`;

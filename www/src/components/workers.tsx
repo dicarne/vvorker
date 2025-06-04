@@ -20,20 +20,18 @@ import { useCallback, useEffect, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useStore } from '@nanostores/react'
 import { $code, $vorkerSettings } from '@/store/workers'
-import ColorHash from 'color-hash'
-import { Router, useRouter } from 'next/router'
+import { useRouter } from 'next/router'
 import {
   IconEdit,
   IconHome,
   IconLink,
   IconMore,
-  IconTreeTriangleDown,
   IconTreeTriangleRight,
 } from '@douyinfe/semi-icons'
 import { CH } from '@/lib/color'
-import { it } from 'node:test'
 import dynamic from 'next/dynamic'
 import { t } from '@/lib/i18n'
+import { $user } from '@/store/userState';
 
 const MonacoEditor = dynamic(
   import('./editor').then((m) => m.MonacoEditor),
@@ -81,14 +79,23 @@ export function WorkersComponent() {
     Toast.info(t.workerSyncSuccess)
   })
 
+  const user = useStore($user);
+
   const handleOpenWorker = useCallback(
     (item: WorkerItem) => {
-      window.open(
-        `${appConf?.Scheme}://${item.Name}${appConf?.WorkerURLSuffix}`,
-        '_blank'
-      )
+      if (user?.url_type === "host") {
+        window.open(
+          `${appConf?.Scheme}://${item.Name}${appConf?.WorkerURLSuffix}`,
+          '_blank'
+        )
+      } else {
+        window.open(
+          `${appConf?.Scheme}://${appConf?.ApiUrl}/${item.Name}`,
+          '_blank'
+        )
+      }
     },
-    [appConf?.Scheme, appConf?.WorkerURLSuffix]
+    [appConf?.Scheme, appConf?.WorkerURLSuffix, appConf?.ApiUrl]
   )
 
   const handleDeleteWorker = useCallback(

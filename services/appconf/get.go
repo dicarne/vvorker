@@ -1,6 +1,7 @@
 package appconf
 
 import (
+	"fmt"
 	"net/http"
 	"runtime/debug"
 	"vvorker/common"
@@ -29,6 +30,8 @@ func GetEndpoint(c *gin.Context) {
 			"WorkerURLSuffix": conf.AppConfigInstance.WorkerURLSuffix,
 			"Scheme":          conf.AppConfigInstance.Scheme,
 			"EnableRegister":  conf.AppConfigInstance.EnableRegister || num == 0,
+			"UrlType":         conf.AppConfigInstance.WorkerHostMode,
+			"ApiUrl":          fmt.Sprintf("%s:%d", conf.AppConfigInstance.DefaultWorkerHost, conf.AppConfigInstance.WorkerPort),
 		},
 	})
 }
