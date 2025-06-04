@@ -85,12 +85,12 @@ export function WorkersComponent() {
     (item: WorkerItem) => {
       if (user?.url_type === "host") {
         window.open(
-          `${appConf?.Scheme}://${item.Name}${appConf?.WorkerURLSuffix}`,
+          `${appConf?.Scheme}://${item.Name}${appConf?.WorkerURLSuffix}/`,
           '_blank'
         )
       } else {
         window.open(
-          `${appConf?.Scheme}://${appConf?.ApiUrl}/${item.Name}`,
+          `${appConf?.Scheme}://${appConf?.ApiUrl}/${item.Name}/`,
           '_blank'
         )
       }
