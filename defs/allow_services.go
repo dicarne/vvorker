@@ -154,6 +154,19 @@ var AllowWorkersMap = map[string]func(name string, workerBindings template.HTML)
 			WorkerBindingText:     workerBindings,
 		})
 	},
+	"task": func(name string, workerBindings template.HTML) AllowServiceTemplate {
+		return GenerateExtensionTemplate(AllowServiceTemplate{
+			Name:                  name,
+			Path:                  "task",
+			BasicServiceTemplate:  commonWorkerTemplate,
+			BasicBindingTemplate:  commonWorkerBindingTemplate,
+			ServiceInjectTemplate: commonServiceInjectTemplate,
+			Type:                  "worker",
+			Script:                ext.ExtTaskScript,
+			FlagsText:             template.HTML(``),
+			WorkerBindingText:     workerBindings,
+		})
+	},
 }
 
 type ServiceNetworkTemplate struct {

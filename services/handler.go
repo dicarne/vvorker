@@ -26,6 +26,7 @@ import (
 	"vvorker/services/node"
 	proxyService "vvorker/services/proxy"
 	"vvorker/services/resource"
+	"vvorker/services/task"
 	"vvorker/services/workerd"
 	"vvorker/tunnel"
 	"vvorker/utils"
@@ -161,6 +162,18 @@ func init() {
 				if conf.IsMaster() {
 					assetsAPI.POST("/create-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), assets.UploadAssetsEndpoint)
 					assetsAPI.GET("/get-assets", authz.AgentAuthz(), assets.GetAssetsEndpoint)
+				}
+			}
+			taskAPI := extAPI.Group("/task")
+			{
+				if conf.IsMaster() {
+					taskAPI.POST("/create", authz.AgentAuthz(), task.CreateTaskEndpoint)
+					taskAPI.POST("/cancel", authz.AgentAuthz(), task.CancelTaskEndpoint)
+					taskAPI.POST("/check", authz.AgentAuthz(), task.CheckInterruptTaskEndpoint)
+					taskAPI.POST("/log", authz.AgentAuthz(), task.LogTaskEndpoint)
+					taskAPI.POST("/logs", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), task.GetLogsEndpoint)
+					taskAPI.POST("/complete", authz.AgentAuthz(), task.CompleteTaskEndpoint)
+					taskAPI.POST("/list", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), task.ListTaskEndpoint)
 				}
 			}
 

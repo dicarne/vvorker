@@ -1,5 +1,5 @@
 import api from './http'
-import { VorkerSettingsProperties, WorkerItem } from '@/types/workers'
+import { Task, TaskLog, VorkerSettingsProperties, WorkerItem } from '@/types/workers'
 
 export const getWorker = (uid: string) => {
   return api
@@ -51,6 +51,25 @@ export const runWorker = (uid: string) => {
 
 export const getWorkersStatus = (uids: string[]) => {
   return api
-   .post(`/api/workers/status`, { uids })
-   .then((res) => res.data.data)
+    .post(`/api/workers/status`, { uids })
+    .then((res) => res.data.data)
+}
+
+
+export const listTasks = (page: number, page_size: number) => {
+  return api.post<{
+    data: {
+      total: number,
+      tasks: Task[]
+    }
+  }>('/api/ext/task/list', { page, page_size })
+}
+
+export const getLogs = (worker_uid: string, trace_id: string, page: number, page_size: number) => {
+  return api.post<{
+    data: {
+      total: number,
+      logs: TaskLog[]
+    }
+  }>('/api/ext/task/logs', { trace_id, page, page_size, worker_uid })
 }

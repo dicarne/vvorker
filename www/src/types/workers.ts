@@ -54,3 +54,19 @@ export interface VorkerSettingsProperties {
   UrlType: string
   ApiUrl: string
 }
+
+export interface Task {
+  worker_uid: string
+  trace_id: string
+  status: "completed" | "running" | "canceled" | "failed"
+  start_time: string
+  end_time: string
+  worker_name: string
+}
+
+
+export interface TaskLog {
+  time: string
+  content: string
+  type: string
+}

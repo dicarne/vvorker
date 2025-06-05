@@ -26,6 +26,7 @@ export const SideBarComponent = ({ selected }: { selected: string }) => {
     workers: '/admin',
     status: '/nodes',
     settings: '/admin',
+    task: '/task',
     oss: '/oss',
     kv: '/kv',
     sql: '/sql',
@@ -46,10 +47,12 @@ export const SideBarComponent = ({ selected }: { selected: string }) => {
         items={[
           { itemKey: 'workers', text: 'Workers', icon: <IconPercentage /> },
           { itemKey: 'status', text: 'Status', icon: <IconHourglass /> },
+          { itemKey: 'task', text: 'Task', icon: <IconMenu /> },
           { itemKey: 'sql', text: 'SQL', icon: <IconServer /> },
           { itemKey: 'oss', text: 'OSS', icon: <IconArchive /> },
           { itemKey: 'kv', text: 'KV', icon: <IconLayers /> },
-          { itemKey: 'user', text: 'User', icon: <IconUser /> }
+          { itemKey: 'user', text: 'User', icon: <IconUser /> },
+          
           // { itemKey: 'settings', text: 'Settings', icon: <IconWrench /> },
         ]}
         onSelect={(data) => console.log('trigger onSelect: ', data)}

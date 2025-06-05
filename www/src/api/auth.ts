@@ -40,5 +40,6 @@ export const getAccessKeys = () => {
 export const deleteAccessKey = (access_key: string) => {
   return api.post('/api/user/delete-access-key', {
     key: access_key
-  }) 
+  })
 }
+

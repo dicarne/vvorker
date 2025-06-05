@@ -52,6 +52,10 @@ type Assets struct {
 	Directory string `json:"directory"`
 }
 
+type Task struct {
+	Binding string `json:"binding"`
+}
+
 type WorkerConfig struct {
 	ProjectName        string            `json:"name"`
 	Version            string            `json:"version"`
@@ -64,6 +68,7 @@ type WorkerConfig struct {
 	OSS                []OSSConfig       `json:"oss"`
 	KV                 []KV              `json:"kv"`
 	Assets             []Assets          `json:"assets"`
+	Task               []Task            `json:"task"`
 }
 
 func ParseWorkerConfig(s string) (*WorkerConfig, error) {

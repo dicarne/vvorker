@@ -16,3 +16,6 @@ var ExtKVScript string
 
 //go:embed assets/dist/index.js
 var ExtAssetsScript string
+
+//go:embed task/dist/index.js
+var ExtTaskScript string
