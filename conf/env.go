@@ -18,6 +18,7 @@ type AppConfig struct {
 	WorkerdBinPath    string `env:"WORKERD_BIN_PATH" env-default:"/bin/workerd"`
 	WorkerPort        int    `env:"WORKER_PORT" env-default:"8080"`
 	APIPort           int    `env:"API_PORT" env-default:"8888"`
+	APIWebBaseURL     string `env:"API_WEB_BASE_URL"`
 	ListenAddr        string `env:"LISTEN_ADDR" env-default:"0.0.0.0"`
 	WorkerURLSuffix   string `env:"WORKER_URL_SUFFIX"`         // master required, e.g. .example.com. for worker show and route
 	Scheme            string `env:"SCHEME" env-default:"http"` // http, https. for public frontend show
