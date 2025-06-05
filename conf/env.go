@@ -45,6 +45,8 @@ type AppConfig struct {
 	NodeID            string
 	WorkerHostMode    string `env:"WORKER_HOST_MODE" env-default:"host"` // host path  // host 模式需要使用域名进行访问，path则url的第一段为服务名（不包含域名后缀
 
+	AdminAPIProxy bool `env:"ADMIN_API_PROXY" env-default:"false"` // 允许admin页面代理api请求，这可能会导致路径冲突，并且WORKER_HOST_MODE必须为path
+
 	ServerRedisHost string `env:"SERVER_REDIS_HOST" env-default:"localhost"`
 	ServerRedisPort int    `env:"SERVER_REDIS_PORT" env-default:"6379"`
 

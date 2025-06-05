@@ -46,7 +46,7 @@ func init() {
 	router.MaxMultipartMemory = 8 << 20 // 8 MiB
 
 	proxy = gin.Default()
-	proxy.Use(modifyProxyRequestHeaders)
+	proxy.Use(modifyProxyRequestHeadersMid)
 
 	router.Use(utils.CORSMiddlewaire(
 		fmt.Sprintf("%v://%v", conf.AppConfigInstance.Scheme, conf.AppConfigInstance.CookieDomain),
@@ -244,6 +244,17 @@ func HandleStaticFile(f embed.FS) {
 	router.StaticFileFS("/oss", "oss.html", http.FS(fp))
 	router.StaticFileFS("/kv", "kv.html", http.FS(fp))
 	router.NoRoute(func(c *gin.Context) {
+		if conf.AppConfigInstance.AdminAPIProxy {
+			if conf.AppConfigInstance.WorkerHostMode != "path" {
+				logrus.Println("admin api proxy only support path mode")
+			}
+			_, err := http.FS(fp).Open(c.Request.URL.Path)
+			if err != nil {
+				modifyProxyRequestHeaders(c)
+				proxyService.Endpoint(c)
+				return
+			}
+		}
 		c.FileFromFS(c.Request.URL.Path, http.FS(fp))
 	})
 }
@@ -317,5 +328,9 @@ func modifyProxyRequestHeaders(c *gin.Context) {
 			c.Request.Host = host
 		}
 	}
+}
+
+func modifyProxyRequestHeadersMid(c *gin.Context) {
+	modifyProxyRequestHeaders(c)
 	c.Next()
 }
