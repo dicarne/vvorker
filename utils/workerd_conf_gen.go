@@ -299,7 +299,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 
 		if len(workerconfig.CompatibilityFlags) > 0 {
 			for _, flag := range workerconfig.CompatibilityFlags {
-				flagsText = flagsText + flag + ","
+				flagsText = flagsText + "\"" + flag + "\","
 			}
 		}
 
