@@ -28,7 +28,11 @@ const (
 const config :Workerd.Config = (
   services = [
     ( name = "{{.Worker.UID}}", worker = .v{{.Worker.UID}}Worker),
-	( name = "internet", network = (allow = ["public", "private"],)),
+	( 
+		name = "internet", 
+		network = (allow = ["public", "private"],
+	 	tlsOptions = (trustBrowserCas = true)
+	)),
 	{{.ServiceText}}
   ],
 
