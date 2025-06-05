@@ -8,6 +8,44 @@ import { spawn } from 'node:child_process';
 
 import json5 from 'json5'
 
+interface EnvConfig {
+  url?: string;
+  token?: string;
+}
+
+interface Config {
+  current_env: string;
+  env: { [key: string]: EnvConfig };
+}
+
+function getToken() {
+  let env = config.current_env ?? "default";
+  return config.env[env]?.token;
+}
+
+function getUrl() {
+  let env = config.current_env ?? "default";
+  return config.env[env]?.url;
+}
+
+function ensureEnv(env: string) {
+  if (!config.env) {
+    config.env = {
+
+    }
+  }
+  if (!config.env[env]) {
+    config.env[env] = {
+    }
+  }
+}
+
+function setUrl(url: string) {
+  let env = config.current_env ?? "default";
+  ensureEnv(env);
+  config.env[env].url = url;
+}
+
 const program = new Command();
 
 // 初始化项目命令
@@ -167,7 +205,7 @@ program
   .command('deploy')
   .description('部署到vvorker')
   .action(async () => {
-    if (!config.url) {
+    if (!getUrl()) {
       console.error('请先配置vvorker平台的url');
       return;
     }
@@ -186,7 +224,7 @@ program
       return;
     }
 
-    const token = config.token;
+    const token = getToken();
     if (!token) {
       console.error('token不能为空');
       console.error('请先配置token');
@@ -194,8 +232,8 @@ program
       return;
     }
     // url join
-    if (config.url.endsWith('/')) {
-      config.url = config.url.slice(0, -1);
+    if (getUrl()!.endsWith('/')) {
+      setUrl(getUrl()!.slice(0, -1));
     }
     // 运行 pnpm run build 命令
     // 如果存在pnpm-lock.yaml，则使用pnpm
@@ -256,7 +294,7 @@ program
               // 将文件数据添加到 FormData 中
               formData.append('file', new Blob([fileContent]), fileUrl);
 
-              let up1 = await axios.post(`${config.url}/api/file/upload`, formData, {
+              let up1 = await axios.post(`${getUrl()}/api/file/upload`, formData, {
                 headers: {
                   'Authorization': `Bearer ${token}`,
                   // 设置 Content-Type 为 multipart/form-data
@@ -270,7 +308,7 @@ program
 
               let fileuid = up1.data.data.fileId;
 
-              let resp = await axios.post(`${config.url}/api/ext/assets/create-assets`, {
+              let resp = await axios.post(`${getUrl()}/api/ext/assets/create-assets`, {
                 uid: fileuid,
                 "worker_uid": uid,
                 "path": fileUrl,
@@ -307,7 +345,7 @@ program
 
 
 
-    let resp = await axios.post(`${config.url}/api/worker/v2/get-worker`, {
+    let resp = await axios.post(`${getUrl()}/api/worker/v2/get-worker`, {
       uid: uid,
     }, {
       headers: {
@@ -324,7 +362,7 @@ program
     prev.ExternalPath = undefined;
     prev.TunnelID = undefined;
 
-    resp = await axios.post(`${config.url}/api/worker/v2/update-worker`, prev, {
+    resp = await axios.post(`${getUrl()}/api/worker/v2/update-worker`, prev, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -348,7 +386,7 @@ if (!fs.existsSync(configFilePath)) {
 }
 
 // 读取配置文件
-const config = JSON.parse(fs.readFileSync(configFilePath, 'utf-8'));
+const config = JSON.parse(fs.readFileSync(configFilePath, 'utf-8')) as Config;
 
 
 // 配置命令：通用配置命令，支持配置不同的键值对
@@ -360,7 +398,14 @@ cmd_config.command('set <key> <value>')
   .description('设置配置项')
   .action((key, value) => {
     // 根据传入的 key 设置对应的配置项
-    config[key] = value;
+    if (key === 'url') {
+      setUrl(value);
+    } else if (key === 'env') {
+      config.current_env = value;
+    } else if (key === 'token') {
+      ensureEnv(config.current_env ?? "default");
+      config.env[config.current_env ?? "default"].token = value;
+    }
     fs.writeFileSync(configFilePath, JSON.stringify(config));
     console.log('配置成功');
   })
