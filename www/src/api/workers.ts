@@ -73,3 +73,7 @@ export const getLogs = (worker_uid: string, trace_id: string, page: number, page
     }
   }>('/api/ext/task/logs', { trace_id, page, page_size, worker_uid })
 }
+
+export const interruptTask = (trace_id: string, worker_uid: string) => {
+  return api.post('/api/ext/task/cancel', { trace_id, worker_uid })
+}

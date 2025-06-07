@@ -168,7 +168,7 @@ func init() {
 			{
 				if conf.IsMaster() {
 					taskAPI.POST("/create", authz.AgentAuthz(), task.CreateTaskEndpoint)
-					taskAPI.POST("/cancel", authz.AgentAuthz(), task.CancelTaskEndpoint)
+					taskAPI.POST("/cancel", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), task.CancelTaskEndpoint)
 					taskAPI.POST("/check", authz.AgentAuthz(), task.CheckInterruptTaskEndpoint)
 					taskAPI.POST("/log", authz.AgentAuthz(), task.LogTaskEndpoint)
 					taskAPI.POST("/logs", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), task.GetLogsEndpoint)

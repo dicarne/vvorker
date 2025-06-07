@@ -229,6 +229,7 @@ func ListTaskEndpoint(c *gin.Context) {
 		Select("tasks.*, workers.name as worker_name").
 		Joins("JOIN workers ON tasks.worker_uid = workers.uid").
 		Where("workers.user_id = ?", userID).
+		Order("tasks.start_time desc").
 		// Where("tasks.worker_uid = ?", req.WorkerUID).
 		Offset((req.Page - 1) * req.PageSize).
 		Limit(req.PageSize).
@@ -280,7 +281,7 @@ func GetLogsEndpoint(c *gin.Context) {
 	}
 
 	var logs []models.TaskLog
-	if err := db.Where(&models.TaskLog{TraceID: req.TraceID}).Offset((req.Page - 1) * req.PageSize).
+	if err := db.Where(&models.TaskLog{TraceID: req.TraceID}).Order("time desc").Offset((req.Page - 1) * req.PageSize).
 		Limit(req.PageSize).
 		Find(&logs).Error; err != nil {
 		common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
