@@ -116,17 +116,22 @@ export const WorkerEditComponent = () => {
   }, [worker])
 
   useEffect(() => {
-    if (code && editItem)
-      setEditItem((item) => ({
-        ...item,
-        Template: templateContent,
-        Code: Buffer.from(code).toString('base64'),
-      }))
-  }, [code, editItem, templateContent])
+    if (code && editItem) {
+      const newCode = Buffer.from(code).toString('base64');
+      // 检查 Code 或 Template 是否发生变化
+      if (editItem.Code !== newCode || editItem.Template !== templateContent) {
+        setEditItem((item) => ({
+          ...item,
+          Template: templateContent,
+          Code: newCode,
+        }));
+      }
+    }
+  }, [code, editItem, templateContent]);
 
-  useEffect(() => {
-    worker?.Code
-  })
+  // useEffect(() => {
+  //   worker?.Code
+  // })
 
   const [activeTab, setActiveTab] = useState('code'); // 新增：记录当前激活的标签页
   const intervalRef = useRef<number | null>(null); // 新增：用于存储定时器 ID
