@@ -70,3 +70,17 @@ export interface TaskLog {
   content: string
   type: string
 }
+
+// 参考 Go 语言的 WorkerLogData 结构体定义 TypeScript 接口
+export interface WorkerLog {
+  // 工作者的唯一标识符
+  uid: string;
+  // 日志输出内容
+  output: string;
+  // 日志记录时间，在 TypeScript 里用字符串表示日期时间
+  time: string;
+  // 日志类型
+  type: string;
+  // 日志的唯一标识符
+  log_uid: string;
+}

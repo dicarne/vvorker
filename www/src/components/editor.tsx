@@ -5,7 +5,7 @@ import { $code } from '@/store/workers'
 
 loader.config({
   paths: {
-    vs: 'https://fastly.jsdelivr.net/npm/monaco-editor@0.36.1/min/vs',
+    vs: 'monaco-assets/vs',
   },
 })
 

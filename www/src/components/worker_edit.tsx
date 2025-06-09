@@ -10,6 +10,9 @@ import {
   Tabs,
   Toast,
   Typography,
+  Pagination,
+  List,
+  Tag
 } from '@douyinfe/semi-ui'
 import { DEFAUTL_WORKER_ITEM, WorkerItem } from '@/types/workers'
 import * as api from '@/api/workers'
@@ -17,23 +20,41 @@ import { useRouter } from 'next/router'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { $code, $vorkerSettings } from '@/store/workers'
 import { useStore } from '@nanostores/react'
-import { useEffect, useState } from 'react'
 import { IconArticle, IconHome } from '@douyinfe/semi-icons'
 import { getNodes } from '@/api/nodes'
 import dynamic from 'next/dynamic'
 import { i18n } from '@/lib/i18n'
 import { TemplateEditor } from './template_editor'
+import type { TaskLog, WorkerLog } from '@/types/workers';
+import { useEffect, useState, useCallback, useRef } from 'react'
 
 const MonacoEditor = dynamic(
   import('./editor').then((m) => m.MonacoEditor),
   { ssr: false }
 )
 
+// 定义时间格式化函数
+const formatDate = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
 export const WorkerEditComponent = () => {
   const router = useRouter()
   const { UID } = router.query
   const [editItem, setEditItem] = useState(DEFAUTL_WORKER_ITEM)
   const [templateContent, setTemplateContent] = useState('')
+  const [logs, setLogs] = useState<WorkerLog[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [errorLogs, setErrorLogs] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(50);
+  const [totalLogs, setTotalLogs] = useState(0);
 
   const appConf = useStore($vorkerSettings)
   const code = useStore($code)
@@ -107,6 +128,50 @@ export const WorkerEditComponent = () => {
     worker?.Code
   })
 
+  const [activeTab, setActiveTab] = useState('code'); // 新增：记录当前激活的标签页
+  const intervalRef = useRef<number | null>(null); // 新增：用于存储定时器 ID
+
+  const fetchLogs = useCallback(async (_page: number, _page_size: number) => {
+    if (!UID) return;
+    setLoadingLogs(true);
+    try {
+      const data = (await api.getWorkerLogs(UID as string, _page, _page_size)).data.data;
+      setLogs(data.logs);
+      setTotalLogs(data.total);
+    }
+    catch (err) {
+      setErrorLogs('Failed to fetch logs');
+    }
+    finally {
+      setLoadingLogs(false);
+    }
+  }, [UID]);
+
+  // 新增：当标签页变化时，处理定时器
+  useEffect(() => {
+    if (activeTab === 'logs') {
+      // 每秒刷新日志
+      intervalRef.current = window.setInterval(() => {
+        fetchLogs(page, pageSize);
+      }, 1000);
+    } else {
+      // 清除定时器
+      if (intervalRef.current) {
+        window.clearInterval(intervalRef.current);
+      }
+    }
+    // 组件卸载时清除定时器
+    return () => {
+      if (intervalRef.current) {
+        window.clearInterval(intervalRef.current);
+      }
+    };
+  }, [activeTab, page, pageSize, fetchLogs]);
+
+  useEffect(() => {
+    fetchLogs(page, pageSize);
+  }, [page, pageSize, fetchLogs]);
+
   const workerURL = `${appConf?.Scheme}://${editItem.Name}${appConf?.WorkerURLSuffix}`
 
   return (
@@ -153,6 +218,7 @@ export const WorkerEditComponent = () => {
 
       <Divider margin={4}></Divider>
       <Tabs
+        onChange={setActiveTab} // 新增：更新当前激活的标签页
         tabBarExtraContent={
           <Button
             theme="borderless"
@@ -231,6 +297,31 @@ export const WorkerEditComponent = () => {
           tab={<span>Template</span>}
         >
           <TemplateEditor content={templateContent} setContent={setTemplateContent} />
+        </TabPane>
+        <TabPane
+          itemKey="logs"
+          style={{ overflow: 'initial' }}
+          tab={<span>Logs</span>}
+        >
+          <Pagination total={totalLogs} currentPage={page} onPageChange={setPage} pageSize={pageSize} style={{ marginBottom: 12 }} />
+          <List
+            layout="vertical"
+            dataSource={logs}
+            split={false}
+            renderItem={(item) => (
+              <List.Item
+                style={{ padding: '5px 0px', fontSize: '16px' }}
+                main={
+                  <div>
+                    <Tag size="small" color='light-blue'>{formatDate(new Date(item.time))}</Tag>
+                    <span className="ml-2">{item.output}</span>
+                  </div>
+                }
+              />
+            )}
+          />
+          <Pagination total={totalLogs} currentPage={page} onPageChange={setPage} pageSize={pageSize} style={{ marginBottom: 12 }} />
+
         </TabPane>
       </Tabs>
     </div>

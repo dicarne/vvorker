@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Breadcrumb, ButtonGroup, Button, Card, List, Modal, Form, Descriptions } from '@douyinfe/semi-ui';
 import { IconHome } from '@douyinfe/semi-icons';
 import { t } from '@/lib/i18n';
-import { getLogs, interruptTask } from '@/api/workers';
+import { getTaskLogs, interruptTask } from '@/api/workers';
 import type { TaskLog } from '@/types/workers';
 import { Pagination, Tag } from '@douyinfe/semi-ui';
 import router from 'next/router';
@@ -30,7 +30,7 @@ export const LogsComponent: React.FC = () => {
     const fetchTasks = useCallback(async (_page: number, _page_size: number) => {
         setLoading(true);
         try {
-            const data = (await getLogs(worker_uid as string, trace_id as string, _page, _page_size)).data.data;
+            const data = (await getTaskLogs(worker_uid as string, trace_id as string, _page, _page_size)).data.data;
             setTasks(data.logs);
             setTotal(data.total);
         }

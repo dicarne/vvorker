@@ -30,11 +30,11 @@ type execManager struct {
 var ExecManager *execManager
 
 type WorkerLogData struct {
-	UID    string `gorm:"index"`
-	Output string
-	Time   time.Time `gorm:"index"`
-	Type   string    `gorm:"index"`
-	LogUID string    `gorm:"index"`
+	UID    string    `gorm:"index" json:"uid"`
+	Output string    `json:"output"`
+	Time   time.Time `gorm:"index" json:"time"`
+	Type   string    `gorm:"index" json:"type"`
+	LogUID string    `gorm:"index" json:"log_uid"`
 }
 
 // 定义合并后的日志模型
