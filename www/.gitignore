@@ -42,3 +42,5 @@ dist/**/*
 yarn.lock
 
 out
+
+public/monaco-assets
