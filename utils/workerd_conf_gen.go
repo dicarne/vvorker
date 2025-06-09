@@ -26,13 +26,25 @@ type GenTemplateConfig struct {
 }
 
 // 检查文件是否存在，若不存在则写入内容
-func writeFileIfNotExists(filePath string, content string) {
+func writeFileIfNotExists(filePath string, content string) error {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		// 获取文件所在的目录
+		dir := filepath.Dir(filePath)
+		// 检查目录是否存在，不存在则创建
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			err := os.MkdirAll(dir, 0755)
+			if err != nil {
+				logrus.Errorf("Failed to create directory %s: %v", dir, err)
+				return err
+			}
+		}
 		err := WriteFile(filePath, content)
 		if err != nil {
 			logrus.Errorf("Failed to write file %s: %v", filePath, err)
+			return err
 		}
 	}
+	return nil
 }
 
 func RPCWrapper() *req.Request {
@@ -110,7 +122,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					// 构建文件路径
 					filePath := filepath.Join(conf.AppConfigInstance.WorkerdDir,
 						defs.WorkerInfoPath,
-						worker.GetUID(), "src", extName+".js")
+						worker.GetUID(), "../../lib", extName+".js")
 
 					writeFileIfNotExists(filePath, allowExtension.Script)
 				} else {
@@ -136,7 +148,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					// 构建文件路径
 					filePath := filepath.Join(conf.AppConfigInstance.WorkerdDir,
 						defs.WorkerInfoPath,
-						worker.GetUID(), "src", extName+".js")
+						worker.GetUID(), "../../lib", extName+".js")
 
 					writeFileIfNotExists(filePath, allowExtension.Script)
 				} else {
@@ -171,7 +183,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					// 构建文件路径
 					filePath := filepath.Join(conf.AppConfigInstance.WorkerdDir,
 						defs.WorkerInfoPath,
-						worker.GetUID(), "src", extName+".js")
+						worker.GetUID(), "../../lib", extName+".js")
 
 					writeFileIfNotExists(filePath, allowExtension.Script)
 				} else {
@@ -206,7 +218,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					// 构建文件路径
 					filePath := filepath.Join(conf.AppConfigInstance.WorkerdDir,
 						defs.WorkerInfoPath,
-						worker.GetUID(), "src", extName+".js")
+						worker.GetUID(), "../../lib", extName+".js")
 
 					writeFileIfNotExists(filePath, allowExtension.Script)
 				} else {
@@ -248,7 +260,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					// 构建文件路径
 					filePath := filepath.Join(conf.AppConfigInstance.WorkerdDir,
 						defs.WorkerInfoPath,
-						worker.GetUID(), "src", extName+".js")
+						worker.GetUID(), "../../lib", extName+".js")
 
 					writeFileIfNotExists(filePath, allowExtension.Script)
 				} else {
@@ -279,7 +291,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					// 构建文件路径
 					filePath := filepath.Join(conf.AppConfigInstance.WorkerdDir,
 						defs.WorkerInfoPath,
-						worker.GetUID(), "src", extName+".js")
+						worker.GetUID(), "../../lib", extName+".js")
 
 					writeFileIfNotExists(filePath, allowExtension.Script)
 				} else {
@@ -310,7 +322,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 					// 构建文件路径
 					filePath := filepath.Join(conf.AppConfigInstance.WorkerdDir,
 						defs.WorkerInfoPath,
-						worker.GetUID(), "src", extName+".js")
+						worker.GetUID(), "../../lib", extName+".js")
 
 					writeFileIfNotExists(filePath, allowExtension.Script)
 				} else {

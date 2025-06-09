@@ -25,7 +25,7 @@ type AllowServiceTemplate struct {
 var commonExtensionTemplate = `
 const e{{.Name}} :Workerd.Extension = (
   modules = [
-    (name = "e{{.Name}}:binding", esModule = embed "src/{{.Path}}.js", internal = true),
+    (name = "e{{.Name}}:binding", esModule = embed "../../lib/{{.Path}}.js", internal = true),
   ],
 );
 `
@@ -33,7 +33,7 @@ const e{{.Name}} :Workerd.Extension = (
 var commonWorkerTemplate = `
  const w{{.Name}} :Workerd.Worker = (
    modules = [
-     (name = "{{.Name}}", esModule = embed "src/{{.Path}}.js"),
+     (name = "{{.Name}}", esModule = embed "../../lib/{{.Path}}.js"),
    ],
    compatibilityDate = "2025-05-08",
    bindings = [{{.WorkerBindingText}}],
