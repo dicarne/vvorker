@@ -1,7 +1,6 @@
 package models
 
 import (
-	"math/rand"
 	"time"
 	"vvorker/conf"
 	"vvorker/defs"
@@ -140,8 +139,8 @@ func GetAssignNode() (*Node, error) {
 	}
 
 	// random get a node
-	idx := rand.Intn(len(nodes))
-	return nodes[idx], nil
+	// idx := rand.Intn(len(nodes))
+	return nodes[0], nil
 }
 
 func NodeModels2Entities(nodes []*Node) []*entities.Node {
