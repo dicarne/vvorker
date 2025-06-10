@@ -1,7 +1,7 @@
 // filepath: src/index.ts
 import { Client } from "pg";
 
-import { WorkerEntrypoint, env } from 'cloudflare:workers'
+import { RpcTarget, WorkerEntrypoint, env } from 'cloudflare:workers'
 
 const eenv = env as unknown as any
 function config() {
@@ -26,33 +26,40 @@ function config() {
 
 const cfg = config()
 
-export default class PGSQL extends WorkerEntrypoint {
-	constructor(ctx: any, env: any) {
-		super(ctx, env)
-	}
-	async start() {
-		const client = new Client({
+class PGSQLTarget extends RpcTarget {
+	client: Client
+	constructor() {
+		super()
+		this.client = new Client({
 			user: cfg.user,
 			host: cfg.host,
 			database: cfg.database,
 			password: cfg.password,
 			port: Number(cfg.port),
 		});
-		await client.connect()
+	}
+	async start() {
+		await this.client.connect()
+	}
+	async query(sql: string, params: any[] = []) {
+		const result = await this.client.query(sql, params)
 		return {
-			end: async () => {
-				await client.end()
-			},
-			query: async (sql: string, params: any[] = []) => {
-				const result = await client.query(sql, params)
-				return {
-					rows: result.rows,
-					rowCount: result.rowCount,
-					command: result.command,
-					oid: result.oid,
-				}
-			}
+			rows: result.rows,
+			rowCount: result.rowCount,
+			command: result.command,
+			oid: result.oid,
 		}
+	}
+}
+
+export default class PGSQL extends WorkerEntrypoint {
+	constructor(ctx: any, env: any) {
+		super(ctx, env)
+	}
+	async start() {
+		const target = new PGSQLTarget()
+		await target.start()
+		return target
 	}
 	connectionString() {
 		return `postgres://${cfg.user}:${cfg.password}@${cfg.host}:${cfg.port}/${cfg.database}`;
