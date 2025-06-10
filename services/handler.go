@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 	"vvorker/authz"
@@ -216,6 +218,14 @@ func initTunnelService(serviceName string, servicePort int, visitorPort int) err
 }
 
 func Run(f embed.FS) {
+
+	os.RemoveAll(
+		filepath.Join(
+			conf.AppConfigInstance.WorkerdDir,
+			"lib",
+		),
+	)
+
 	wg := conc.NewWaitGroup()
 	defer wg.Wait()
 
