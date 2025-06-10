@@ -239,10 +239,14 @@ func Run(f embed.FS) {
 		HandleStaticFile(f)
 	}
 	wg.Go(func() {
-		proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerPostgreHost, conf.AppConfigInstance.ServerPostgrePort), fmt.Sprintf(":%d", 13420))
-		proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerRedisHost, conf.AppConfigInstance.ServerRedisPort), fmt.Sprintf(":%d", 13421))
-		initTunnelService("postgresql", 13420, conf.AppConfigInstance.ClientPostgrePort)
-		initTunnelService("redis", 13421, conf.AppConfigInstance.ClientRedisPort)
+		// 将数据库远程端口代理到master临时本地端口
+		if conf.IsMaster() {
+			proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerPostgreHost, conf.AppConfigInstance.ServerPostgrePort), fmt.Sprintf(":%d", conf.AppConfigInstance.LocalTMPPostgrePort))
+			proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerRedisHost, conf.AppConfigInstance.ServerRedisPort), fmt.Sprintf(":%d", conf.AppConfigInstance.LocalTMPRedisPort))
+		}
+		// 将master；临时本地端口代理到worker本地端口
+		initTunnelService(conf.AppConfigInstance.NodeName+"postgresql", conf.AppConfigInstance.LocalTMPPostgrePort, conf.AppConfigInstance.ClientPostgrePort)
+		initTunnelService(conf.AppConfigInstance.NodeName+"redis", conf.AppConfigInstance.LocalTMPRedisPort, conf.AppConfigInstance.ClientRedisPort)
 	})
 	wg.Go(func() {
 		router.Run(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ListenAddr, conf.AppConfigInstance.APIPort))

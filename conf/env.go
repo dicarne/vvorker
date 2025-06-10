@@ -30,9 +30,9 @@ type AppConfig struct {
 	NodeName          string `env:"NODE_NAME" env-default:"default"`
 	MasterEndpoint    string `env:"MASTER_ENDPOINT" env-default:"http://127.0.0.1:8888"` // needed for agent
 	RunMode           string `env:"RUN_MODE" env-default:"master"`                       // master, agent
-	TunnelEntryPort   int    `env:"TUNNEL_ENTRY_PORT" env-default:"10080"`
-	TunnelHost        string `env:"TUNNEL_HOST" env-default:"127.0.0.1"` // for master usually 127.0.0.1, for agent usually master public ip
-	TunnelAPIPort     int    `env:"TUNNEL_API_PORT" env-default:"18080"`
+	TunnelEntryPort   int    `env:"TUNNEL_ENTRY_PORT" env-default:"10080"`               //提供http服务
+	TunnelHost        string `env:"TUNNEL_HOST" env-default:"127.0.0.1"`                 // for master usually 127.0.0.1, for agent usually master public ip
+	TunnelAPIPort     int    `env:"TUNNEL_API_PORT" env-default:"18080"`                 // 监听
 	DefaultWorkerHost string `env:"DEFAULT_WORKER_HOST" env-default:"localhost"`
 	LitefsPrimaryPort int    `env:"LITEFS_PRIMARY_PORT" env-default:"20202"`
 	LitefsBinPath     string `env:"LITEFS_BIN_PATH" env-default:"/usr/local/bin/litefs"`
@@ -65,6 +65,9 @@ type AppConfig struct {
 	ClientMinioPort   int `env:"CLIENT_MINIO_PORT" env-default:"19000"`
 	ClientPostgrePort int `env:"CLIENT_POSTGRE_PORT" env-default:"15432"`
 	ClientRedisPort   int `env:"CLIENT_REDIS_PORT" env-default:"16379"`
+
+	LocalTMPPostgrePort int `env:"LOCAL_TMP_POSTGRE_PORT" env-default:"13420"`
+	LocalTMPRedisPort   int `env:"LOCAL_TMP_REDIS_PORT" env-default:"13421"`
 }
 
 type JwtConfig struct {
