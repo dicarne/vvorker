@@ -179,7 +179,7 @@ export default {
       }
 
       const jsonFilePath = `vvorker.json`;
-      await fs.writeJson(jsonFilePath, jsonData, { spaces: 2 });
+      await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
       console.log(`项目 ${projectName} 初始化完成`);
     } else {
       if (fs.existsSync('wrangler.jsonc')) {
