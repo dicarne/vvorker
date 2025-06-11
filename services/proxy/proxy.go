@@ -54,7 +54,7 @@ func Endpoint(c *gin.Context) {
 	}
 
 	if worker.EnableAccessControl {
-
+		authed := false
 		accesstoken := c.Request.Header.Get("vvorker-access-token")
 		if accesstoken != "" {
 			db := database.GetDB()
@@ -68,6 +68,7 @@ func Endpoint(c *gin.Context) {
 				return
 			}
 			c.Request.Header.Del("vvorker-access-token")
+			authed = true
 		}
 
 		internaltoken := c.Request.Header.Get("vvorker-internal-token")
@@ -94,6 +95,12 @@ func Endpoint(c *gin.Context) {
 				}
 			}
 			c.Request.Header.Del("vvorker-internal-token")
+			authed = true
+		}
+
+		if !authed {
+			c.AbortWithStatus(401)
+			return
 		}
 	}
 
