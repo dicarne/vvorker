@@ -22,8 +22,8 @@ export interface AccessTokenListRequest {
 
 // 访问令牌删除请求接口
 export interface AccessTokenDeleteRequest {
-  // 关联的 Worker UID
   worker_uid: string;
+  id: number
 }
 
 // 内部白名单创建请求接口
@@ -58,6 +58,118 @@ export interface InternalWhiteListUpdateRequest {
 export interface InternalWhiteListDeleteRequest {
   // 关联的 Worker UID
   worker_uid: string;
+  id: number;
+}
+
+// AccessKey 实体接口
+export interface AccessKey {
+  // 自增 ID
+  id: number;
+  // 创建时间
+  created_at: string;
+  // 更新时间
+  updated_at: string;
+  // 删除时间
+  deleted_at: string | null;
+  // 用户 ID
+  user_id: number;
+  // 访问密钥名称
+  name: string;
+  // 访问密钥
+  key: string;
+}
+
+// InternalServerWhiteList 实体接口
+export interface InternalServerWhiteList {
+  // 自增 ID
+  id: number;
+  // 关联的 Worker UID
+  worker_uid: string;
   // 允许访问的 Worker UID
   allow_worker_uid: string;
+  // 白名单描述信息
+  description: string;
+  WorkerName: string;
+}
+
+// ExternalServerAKSK 实体接口
+export interface ExternalServerAKSK {
+  // 自增 ID
+  id: number;
+  // 创建时间
+  created_at: string;
+  // 更新时间
+  updated_at: string;
+  // 删除时间
+  deleted_at: string | null;
+  // 关联的 Worker UID
+  worker_uid: string;
+  // 访问密钥
+  access_key: string;
+  // 密钥
+  secret_key: string;
+  // 描述信息
+  description: string;
+  // 是否永久有效
+  forever: boolean;
+  // 过期时间
+  expiration_time: string;
+}
+
+// ExternalServerToken 实体接口
+export interface ExternalServerToken {
+  // 自增 ID
+  id: number;
+  // 创建时间
+  created_at: string;
+  // 更新时间
+  updated_at: string;
+  // 删除时间
+  deleted_at: string | null;
+  // 关联的 Worker UID
+  worker_uid: string;
+  // 令牌
+  token: string;
+  // 描述信息
+  description: string;
+  // 是否永久有效
+  forever: boolean;
+  // 过期时间
+  expiration_time: string;
+}
+
+// AccessRule 实体接口
+export interface AccessRule {
+  // 自增 ID
+  id?: number;
+  // 关联的 Worker UID
+  worker_uid: string;
+  // 规则类型
+  rule_type: string;
+  // 规则描述信息
+  description: string;
+  // path
+  path: boolean;
+}
+
+
+// 访问控制请求接口
+export interface EnableAccessControlRequest {
+  enable: boolean;
+  worker_uid: string;
+}
+
+export interface AccessControlRequest {
+  worker_uid: string;
+}
+
+export interface DeleteAccessRuleRequest {
+  worker_uid: string;
+  rule_id: number;
+}
+
+export interface ListAccessRuleRequest {
+  worker_uid: string;
+  page: number;
+  page_size: number;
 }

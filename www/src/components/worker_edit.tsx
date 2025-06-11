@@ -27,6 +27,8 @@ import { i18n } from '@/lib/i18n'
 import { TemplateEditor } from './template_editor'
 import type { TaskLog, WorkerLog } from '@/types/workers';
 import { useEffect, useState, useCallback, useRef } from 'react'
+import RulesTabPane from './access/rules'
+import AuthTab from './access/auth'
 
 const MonacoEditor = dynamic(
   import('./editor').then((m) => m.MonacoEditor),
@@ -326,6 +328,16 @@ export const WorkerEditComponent = () => {
             )}
           />
           <Pagination total={totalLogs} currentPage={page} onPageChange={setPage} pageSize={pageSize} style={{ marginBottom: 12 }} />
+        </TabPane>
+        <TabPane itemKey="rules"
+          style={{ overflow: 'initial' }}
+          tab={<span>Rules</span>}>
+          <RulesTabPane workerUid={UID as string} />
+        </TabPane>
+        <TabPane itemKey="auth"
+          style={{ overflow: 'initial' }}
+          tab={<span>Auth</span>}>
+          <AuthTab workerUid={UID as string} />
         </TabPane>
       </Tabs>
     </div>

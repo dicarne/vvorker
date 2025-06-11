@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type AccessTokenCreateRequest struct {
@@ -121,6 +122,7 @@ func ListAccessTokenEndpoint(c *gin.Context) {
 
 type AccessTokenDeleteRequest struct {
 	WorkerUID string `json:"worker_uid"`
+	ID        uint   `json:"id"`
 }
 
 func DeleteAccessTokenEndpoint(c *gin.Context) {
@@ -153,7 +155,9 @@ func DeleteAccessTokenEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
 		return
 	}
-	if err := db.Where(&models.ExternalServerToken{WorkerUID: request.WorkerUID}).Delete(&models.ExternalServerToken{}).Error; err != nil {
+	if err := db.Where(&models.ExternalServerToken{WorkerUID: request.WorkerUID, Model: gorm.Model{
+		ID: request.ID,
+	}}).Delete(&models.ExternalServerToken{}).Error; err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}

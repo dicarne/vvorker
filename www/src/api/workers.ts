@@ -7,7 +7,14 @@ import {
   InternalWhiteListCreateRequest,
   InternalWhiteListListRequest,
   InternalWhiteListUpdateRequest,
-  InternalWhiteListDeleteRequest
+  InternalWhiteListDeleteRequest,
+  InternalServerWhiteList,
+  ExternalServerToken,
+  AccessRule,
+  ListAccessRuleRequest,
+  DeleteAccessRuleRequest,
+  AccessControlRequest,
+  EnableAccessControlRequest
 } from '@/types/access' // 假设存在对应的类型定义
 
 export const getWorker = (uid: string) => {
@@ -70,12 +77,8 @@ export const createAccessToken = (request: AccessTokenCreateRequest) => {
   return api.post('/api/worker/access/token/create', request).then((res) => res.data)
 }
 
-export const listAccessTokens = (request: AccessTokenListRequest) => {
-  return api.post<{
-    data: {
-      access_tokens: any[] // 假设存在对应的类型定义
-    }
-  }>('/api/worker/access/token/list', request).then((res) => res.data.data)
+export const listAccessTokens = async (request: AccessTokenListRequest) => {
+  return (await api.post<CommonResponse<{ access_tokens: ExternalServerToken[] }>>('/api/worker/access/token/list', request)).data
 }
 
 export const deleteAccessToken = (request: AccessTokenDeleteRequest) => {
@@ -91,12 +94,12 @@ interface CommonResponse<T> {
 
 // 内部白名单相关 API
 export const createInternalWhiteList = async (request: InternalWhiteListCreateRequest) => {
-  const res = await api.post<CommonResponse<{ internal_white_list: any }>>('/api/worker/access/whitelist/create', request);
+  const res = await api.post<CommonResponse<{ internal_white_list: InternalServerWhiteList }>>('/api/worker/access/whitelist/create', request);
   return res.data;
 };
 
 export const listInternalWhiteLists = async (request: InternalWhiteListListRequest) => {
-  const res = await api.post<CommonResponse<{ internal_white_lists: any[] }>>('/api/worker/access/whitelist/list', request);
+  const res = await api.post<CommonResponse<{ internal_white_lists: InternalServerWhiteList[] }>>('/api/worker/access/whitelist/list', request);
   return res.data;
 };
 
@@ -107,6 +110,32 @@ export const updateInternalWhiteList = async (request: InternalWhiteListUpdateRe
 
 export const deleteInternalWhiteList = async (request: InternalWhiteListDeleteRequest) => {
   const res = await api.post<CommonResponse<null>>('/api/worker/access/whitelist/delete', request);
+  return res.data;
+};
+
+// 访问控制相关 API
+export const updateEnableAccessControl = async (request: EnableAccessControlRequest) => {
+  const res = await api.post<CommonResponse<null>>('/api/worker/access/control/update-control', request);
+  return res.data;
+};
+
+export const getAccessControl = async (request: AccessControlRequest) => {
+  const res = await api.post<CommonResponse<{ EnableAccessControl: boolean }>>('/api/worker/access/control/get-control', request);
+  return res.data;
+};
+
+export const addAccessRule = async (request: AccessRule) => {
+  const res = await api.post<CommonResponse<null>>('/api/worker/access/control/create-rule', request);
+  return res.data;
+};
+
+export const deleteAccessRule = async (request: DeleteAccessRuleRequest) => {
+  const res = await api.post<CommonResponse<null>>('/api/worker/access/control/delete-rule', request);
+  return res.data;
+};
+
+export const listAccessRules = async (request: ListAccessRuleRequest) => {
+  const res = await api.post<CommonResponse<{ total: number, access_rules: AccessRule[] }>>('/api/worker/access/control/list-rules', request);
   return res.data;
 };
 

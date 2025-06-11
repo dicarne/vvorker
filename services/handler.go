@@ -98,6 +98,15 @@ func init() {
 						whitelistApi.POST("/update", access.UpdateInternalWhiteListEndpoint)
 						whitelistApi.POST("/delete", access.DeleteInternalWhiteListEndpoint)
 					}
+
+					controlApi := accessApi.Group("/control")
+					{
+						controlApi.POST("/update-control", access.UpdateEnableAccessControlEndpoint)
+						controlApi.POST("/get-control", access.GetAccessControlEndpoint)
+						controlApi.POST("/list-rules", access.ListAccessRuleEndpoint)
+						controlApi.POST("/create-rule", access.AddAccessRuleEndpoint)
+						controlApi.POST("/delete-rule", access.DeleteAccessRuleEndpoint)
+					}
 				}
 
 				workerV2 := workerApi.Group("/v2")

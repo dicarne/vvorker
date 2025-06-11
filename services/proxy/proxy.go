@@ -53,45 +53,48 @@ func Endpoint(c *gin.Context) {
 		}
 	}
 
-	accesstoken := c.Request.Header.Get("vvorker-access-token")
-	if accesstoken != "" {
-		db := database.GetDB()
-		var workerToken models.ExternalServerToken
-		d := db.Where(&models.ExternalServerToken{
-			WorkerUID: worker.UID,
-			Token:     accesstoken,
-		}).First(&workerToken)
-		if d.Error != nil {
-			c.AbortWithStatus(403)
-			return
-		}
-		c.Request.Header.Del("vvorker-access-token")
-	}
+	if worker.EnableAccessControl {
 
-	internaltoken := c.Request.Header.Get("vvorker-internal-token")
-	if internaltoken != "" {
-		db := database.GetDB()
-		tokens := strings.Split(internaltoken, ":")
-		if len(tokens) != 2 {
-			c.AbortWithStatus(401)
-			return
-		}
-		if tokens[1] != conf.RPCToken {
-			c.AbortWithStatus(403)
-			return
-		}
-		if tokens[1] != worker.UID {
-			var workerToken models.InternalServerWhiteList
-			d := db.Where(&models.InternalServerWhiteList{
-				WorkerUID:      worker.UID,
-				AllowWorkerUID: tokens[0],
+		accesstoken := c.Request.Header.Get("vvorker-access-token")
+		if accesstoken != "" {
+			db := database.GetDB()
+			var workerToken models.ExternalServerToken
+			d := db.Where(&models.ExternalServerToken{
+				WorkerUID: worker.UID,
+				Token:     accesstoken,
 			}).First(&workerToken)
 			if d.Error != nil {
 				c.AbortWithStatus(403)
 				return
 			}
+			c.Request.Header.Del("vvorker-access-token")
 		}
-		c.Request.Header.Del("vvorker-internal-token")
+
+		internaltoken := c.Request.Header.Get("vvorker-internal-token")
+		if internaltoken != "" {
+			db := database.GetDB()
+			tokens := strings.Split(internaltoken, ":")
+			if len(tokens) != 2 {
+				c.AbortWithStatus(401)
+				return
+			}
+			if tokens[1] != conf.RPCToken {
+				c.AbortWithStatus(403)
+				return
+			}
+			if tokens[1] != worker.UID {
+				var workerToken models.InternalServerWhiteList
+				d := db.Where(&models.InternalServerWhiteList{
+					WorkerUID:      worker.UID,
+					AllowWorkerUID: tokens[0],
+				}).First(&workerToken)
+				if d.Error != nil {
+					c.AbortWithStatus(403)
+					return
+				}
+			}
+			c.Request.Header.Del("vvorker-internal-token")
+		}
 	}
 
 	var startTime = time.Now()
