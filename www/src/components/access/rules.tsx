@@ -150,9 +150,11 @@ const RulesTabPane: React.FC<RulesTabPaneProps> = ({ workerUid }) => {
                             field="rule_type"
                             placeholder='请选择控制类型'
                             label="该路径前缀的控制类型"
+                            initValue={'internal'}
                         >
                             <Form.Select.Option value="internal">内部认证</Form.Select.Option>
                             <Form.Select.Option value="token">外部TOKEN</Form.Select.Option>
+                            <Form.Select.Option value="open">开放</Form.Select.Option>
                         </Form.Select>
                     </Row>
                     <Row>

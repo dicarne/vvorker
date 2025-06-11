@@ -38,7 +38,7 @@ type ExternalServerToken struct {
 type AccessRule struct {
 	gorm.Model
 	WorkerUID   string `json:"worker_uid" gorm:"index"`
-	RuleType    string `json:"rule_type"` // "internal", "aksk", "token", "sso"
+	RuleType    string `json:"rule_type"` // "internal", "aksk", "token", "sso", "open"
 	Path        string `json:"path"`
 	Description string `json:"description"`
 }
