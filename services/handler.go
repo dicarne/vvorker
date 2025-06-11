@@ -80,6 +80,26 @@ func init() {
 				workerApi.GET("/analyse/group-by-time", proxyService.GetWorkerRequestStatsByTime)
 				workerApi.GET("/analyse/by-time", proxyService.GetWorkerRequestStats)
 
+				accessApi := workerApi.Group("/access")
+				{
+					// 访问令牌子路由
+					tokenApi := accessApi.Group("/token")
+					{
+						tokenApi.POST("/create", access.CreateAccessTokenEndpoint)
+						tokenApi.POST("/list", access.ListAccessTokenEndpoint)
+						tokenApi.POST("/delete", access.DeleteAccessTokenEndpoint)
+					}
+
+					// 内部白名单子路由
+					whitelistApi := accessApi.Group("/whitelist")
+					{
+						whitelistApi.POST("/create", access.CreateInternalWhiteListEndpoint)
+						whitelistApi.POST("/list", access.ListInternalWhiteListEndpoint)
+						whitelistApi.POST("/update", access.UpdateInternalWhiteListEndpoint)
+						whitelistApi.POST("/delete", access.DeleteInternalWhiteListEndpoint)
+					}
+				}
+
 				workerV2 := workerApi.Group("/v2")
 				{
 					workerV2.POST("/get-worker", workerd.GetWorkerEndpointJSON)

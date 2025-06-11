@@ -333,7 +333,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 
 		if len(workerconfig.Services) > 0 {
 			for _, service := range workerconfig.Services {
-				netw := defs.GenServiceNetwork(service)
+				netw := defs.GenServiceNetwork(worker.UID, service)
 				workerTemplate = workerTemplate + netw.NetworkText
 				servicesText = servicesText + netw.ServiceText
 				bindingsText = bindingsText + netw.BindingsText
@@ -354,7 +354,6 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 				jsonString := string(jsonBytes)
 				bindingsText += "( name = \"vars\", json = " + jsonString + " ),"
 			}
-
 		}
 
 		capTemplate, err := capTemplate.Parse(workerTemplate)

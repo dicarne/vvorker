@@ -31,7 +31,7 @@ func toCamelCase(s string) string {
 // 用于生成内部网络绑定的代码。会生成将服务名称改为驼峰命名后的env绑定。
 //
 // @param serviceName 服务名称，例如：test-service
-func GenServiceNetwork(serviceName string) ServiceNetworkTemplate {
+func GenServiceNetwork(thisWorkerUID string, serviceName string) ServiceNetworkTemplate {
 	// 修改为转换为驼峰命名
 	name := toCamelCase(serviceName)
 
@@ -42,6 +42,7 @@ const n{{.Name}}Network :Workerd.ExternalServer = (
   http = (
 	injectRequestHeaders = [
 	  (name = "host", value = "{{.Host}}{{.Domain}}"),
+	  (name = "vvorker-internal-token", value = "{{.Token}}"),
 	]
   )
 );
@@ -54,10 +55,12 @@ const n{{.Name}}Network :Workerd.ExternalServer = (
 		Name   string
 		Host   string
 		Domain string
+		Token  string
 	}{
 		Name:   name,
 		Host:   serviceName,
 		Domain: conf.AppConfigInstance.WorkerURLSuffix,
+		Token:  thisWorkerUID + ":" + conf.RPCToken,
 	})
 
 	// ----------
