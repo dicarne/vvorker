@@ -164,7 +164,7 @@ export default {
       } else if (projtype === "vue") {
         await new Promise((resolve, reject) => {
           // npm create cloudflare@latest -- my-vue-app --framework=vue
-          const child = spawn('pnpm', ['create', 'build', "cloudflare@latest", "--", projectName, "--framework=vue"], { stdio: 'inherit', shell: true });
+          const child = spawn('pnpm', ['create', "cloudflare@latest", projectName, "--framework=vue"], { stdio: 'inherit', shell: true });
           child.on('close', (code) => {
             if (code === 0) {
               resolve(code);
