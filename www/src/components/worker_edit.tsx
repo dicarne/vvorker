@@ -326,7 +326,6 @@ export const WorkerEditComponent = () => {
             )}
           />
           <Pagination total={totalLogs} currentPage={page} onPageChange={setPage} pageSize={pageSize} style={{ marginBottom: 12 }} />
-
         </TabPane>
       </Tabs>
     </div>

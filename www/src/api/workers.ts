@@ -1,5 +1,14 @@
 import api from './http'
 import { Task, TaskLog, VorkerSettingsProperties, WorkerItem, WorkerLog } from '@/types/workers'
+import {
+  AccessTokenCreateRequest,
+  AccessTokenListRequest,
+  AccessTokenDeleteRequest,
+  InternalWhiteListCreateRequest,
+  InternalWhiteListListRequest,
+  InternalWhiteListUpdateRequest,
+  InternalWhiteListDeleteRequest
+} from '@/types/access' // 假设存在对应的类型定义
 
 export const getWorker = (uid: string) => {
   return api
@@ -56,6 +65,51 @@ export const getWorkersStatus = (uids: string[]) => {
 }
 
 
+// 访问令牌相关 API
+export const createAccessToken = (request: AccessTokenCreateRequest) => {
+  return api.post('/api/worker/access/token/create', request).then((res) => res.data)
+}
+
+export const listAccessTokens = (request: AccessTokenListRequest) => {
+  return api.post<{
+    data: {
+      access_tokens: any[] // 假设存在对应的类型定义
+    }
+  }>('/api/worker/access/token/list', request).then((res) => res.data.data)
+}
+
+export const deleteAccessToken = (request: AccessTokenDeleteRequest) => {
+  return api.post('/api/worker/access/token/delete', request).then((res) => res.data)
+}
+
+// 定义通用响应类型
+interface CommonResponse<T> {
+  code: number;
+  msg: string;
+  data: T;
+}
+
+// 内部白名单相关 API
+export const createInternalWhiteList = async (request: InternalWhiteListCreateRequest) => {
+  const res = await api.post<CommonResponse<{ internal_white_list: any }>>('/api/worker/access/whitelist/create', request);
+  return res.data;
+};
+
+export const listInternalWhiteLists = async (request: InternalWhiteListListRequest) => {
+  const res = await api.post<CommonResponse<{ internal_white_lists: any[] }>>('/api/worker/access/whitelist/list', request);
+  return res.data;
+};
+
+export const updateInternalWhiteList = async (request: InternalWhiteListUpdateRequest) => {
+  const res = await api.post<CommonResponse<null>>('/api/worker/access/whitelist/update', request);
+  return res.data;
+};
+
+export const deleteInternalWhiteList = async (request: InternalWhiteListDeleteRequest) => {
+  const res = await api.post<CommonResponse<null>>('/api/worker/access/whitelist/delete', request);
+  return res.data;
+};
+
 export const listTasks = (page: number, page_size: number) => {
   return api.post<{
     data: {
@@ -81,3 +135,5 @@ export const interruptTask = (trace_id: string, worker_uid: string) => {
 export const getWorkerLogs = (uid: string, page: number, page_size: number) => {
   return api.post<{ data: { total: number, logs: WorkerLog[] } }>(`/api/worker/logs/${uid}`, { page, page_size })
 }
+
+
