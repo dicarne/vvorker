@@ -20,11 +20,17 @@ type ExportConfigReq struct {
 	ServiceNames []string `json:"service_names"` // 服务名称列表
 }
 
+type AssetFile struct {
+	*models.Assets
+	Content []byte `json:"content"`
+}
+
 type ExportConfig struct {
 	Workers []*models.Worker     `json:"workers"`
 	Kv      []*models.KV         `json:"kv"`
 	Pgsql   []*models.PostgreSQL `json:"pgsql"`
 	Oss     []*models.OSS        `json:"oss"`
+	Assets  []*AssetFile         `json:"assets"`
 }
 
 // 用于导出某些服务及所有相关资源
@@ -149,6 +155,28 @@ func ExportResourcesConfigEndpoint(c *gin.Context) {
 				}
 			}
 		}
+
+		if len(wc.Assets) > 0 {
+			exportAssets := make([]*models.Assets, 0)
+			if err := db.Model(&models.Assets{}).Where(&models.Assets{WorkerUID: w.UID}).Find(exportAssets).Error; err != nil {
+				common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+				return
+			}
+			for _, asset := range exportAssets {
+				file := &models.File{}
+				if err := db.Where(&models.File{
+					UID: asset.UID,
+				}).First(file).Error; err != nil {
+					common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+					return
+				}
+				assetFile := &AssetFile{
+					Assets:  asset,
+					Content: file.Data,
+				}
+				res.Assets = append(res.Assets, assetFile)
+			}
+		}
 	}
 
 	common.RespOK(c, "success", res)
@@ -199,6 +227,31 @@ func ImportResourcesConfigEndpoint(g *gin.Context) {
 		pgsql2.UserID = uint64(userID)
 		_, err := pgsql.RecoverPGSQL(uint64(userID), pgsql2)
 		if err != nil {
+			common.RespErr(g, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+			return
+		}
+	}
+
+	db := database.GetDB()
+
+	for _, asset := range req.Assets {
+		nass := models.Assets{}
+		if err := db.Where(&models.Assets{
+			UID: asset.UID,
+		}).Assign(asset.Assets).FirstOrCreate(&nass).Error; err != nil {
+			common.RespErr(g, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+			return
+		}
+		nfile := models.File{}
+		if err := db.Where(&models.File{
+			UID: asset.UID,
+		}).Assign(&models.File{
+			Data:      asset.Content,
+			UID:       asset.UID,
+			Hash:      asset.Hash,
+			Mimetype:  asset.MIME,
+			CreatedBy: userID,
+		}).FirstOrCreate(&nfile).Error; err != nil {
 			common.RespErr(g, common.RespCodeInternalError, common.RespMsgInternalError, nil)
 			return
 		}
