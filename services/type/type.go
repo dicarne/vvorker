@@ -1,6 +1,7 @@
 package gentype
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"runtime/debug"
@@ -170,7 +171,11 @@ export interface EnvBinding {
 	typeStr += "\n}\n" + finalStr
 
 	common.RespOK(c, common.RespMsgOK, gin.H{
-		"types": typeStr,
+		"types":  typeStr,
+		"schema": schemaText,
 	})
 	// c.Data(http.StatusOK, "text/plain", []byte(typeStr))
 }
+
+//go:embed schema.json
+var schemaText string

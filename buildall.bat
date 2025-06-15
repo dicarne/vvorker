@@ -6,6 +6,11 @@ call pnpm run build
 call pnpm run export
 cd ..
 
+cd cli
+call pnpm i
+call pnpm run build
+cd ..
+
 cd ext
 
 cd ai

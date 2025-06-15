@@ -93,6 +93,7 @@ program
     },])
 
     const jsonData = {
+      "$schema": "vvorker-schema.json",
       "name": projectName,
       "project": {
         "uid": uid,
@@ -204,6 +205,7 @@ export default {
       const jsonFilePath = `vvorker.json`;
       await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
       console.log(`项目 ${projectName} 初始化完成`);
+      console.log(`运行 vvcli types 生成相关类型提示`);
     } else {
       if (fs.existsSync('wrangler.jsonc')) {
         let wrtxt = await fs.readFile('wrangler.jsonc', 'utf-8');
@@ -220,6 +222,7 @@ export default {
       const jsonFilePath = `vvorker.json`;
       await fs.writeJson(jsonFilePath, jsonData, { spaces: 2 });
       console.log(`项目 ${projectName} 初始化完成`);
+      console.log(`运行 vvcli types 生成相关类型提示`);
     }
   });
 
@@ -452,6 +455,7 @@ program.command('types')
     } else {
       fs.writeFileSync(`${process.cwd()}/src/binding.ts`, w);
     }
+    fs.writeFileSync(`${process.cwd()}/vvorker-schema.json`, resp.data.data.schema)
     console.log('类型生成成功');
   })
 
