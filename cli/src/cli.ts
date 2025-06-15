@@ -448,7 +448,7 @@ program.command('types')
     }
     let w = resp.data.data.types;
     if (vvv.project.type === "vue") {
-
+      fs.writeFileSync(`${process.cwd()}/server/binding.ts`, w);
     } else {
       fs.writeFileSync(`${process.cwd()}/src/binding.ts`, w);
     }

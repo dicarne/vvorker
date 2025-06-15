@@ -1,8 +1,10 @@
 package gentype
 
 import (
+	"encoding/json"
 	"fmt"
 	"runtime/debug"
+	"strings"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/entities"
@@ -21,6 +23,39 @@ type Project struct {
 type GenTypeRequest struct {
 	*conf.WorkerConfig
 	Project *Project `json:"project" binding:"required"`
+}
+
+func generateTypeDefinition(data interface{}, indent int) string {
+	indentStr := strings.Repeat("  ", indent)
+	switch v := data.(type) {
+	case map[string]interface{}:
+		if len(v) == 0 {
+			return "{}"
+		}
+		typeStr := "{\n"
+		for key, value := range v {
+			typeStr += fmt.Sprintf("%s  %s: %s;\n", indentStr, key, generateTypeDefinition(value, indent+1))
+		}
+		typeStr += indentStr + "}"
+		return typeStr
+	case []interface{}:
+		if len(v) == 0 {
+			return "any[]"
+		}
+		// 假设数组中所有元素类型相同
+		elementType := generateTypeDefinition(v[0], indent)
+		return fmt.Sprintf("%s[]", elementType)
+	case string:
+		return "string"
+	case float64:
+		return "number"
+	case bool:
+		return "boolean"
+	case nil:
+		return "null"
+	default:
+		return "any"
+	}
 }
 
 func GenerateTypes(c *gin.Context) {
@@ -66,12 +101,9 @@ export interface EnvBinding {
 `, v.Binding)
 	}
 
-	if len(worker.WorkerConfig.Assets) > 0 {
-		finalStr += ext.TypeBindingAssets + "\n"
-	}
 	for _, v := range worker.WorkerConfig.Assets {
 		typeStr += fmt.Sprintf(`
-	%s: AssetsBinding
+	%s: Fetcher
 `, v.Binding)
 	}
 
@@ -114,22 +146,25 @@ export interface EnvBinding {
 	}
 
 	if len(worker.WorkerConfig.Services) > 0 {
-		finalStr += `
-export interface AService {
-		fetch: (url: string, init: RequestInit) => Promise<Response>;
-}
-`
 		for _, v := range worker.WorkerConfig.Services {
 			typeStr += fmt.Sprintf(`
-	%s: AService
+	%s: Fetcher
 `, common.ToCamelCase(v))
 		}
 	}
 
 	if len(worker.Vars) > 0 {
-		typeStr += `
+		var varsMap map[string]interface{}
+		if err := json.Unmarshal(worker.Vars, &varsMap); err == nil {
+			varsType := generateTypeDefinition(varsMap, 2)
+			typeStr += fmt.Sprintf(`
+	vars: %s
+`, varsType)
+		} else {
+			typeStr += `
 	vars: any
 `
+		}
 	}
 
 	typeStr += "\n}\n" + finalStr
