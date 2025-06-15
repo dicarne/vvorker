@@ -17,21 +17,21 @@ type UpdateUserRequest struct {
 
 // UpdateUserEndpoint 更新用户信息
 func UpdateUserEndpoint(c *gin.Context) {
-	// 检查是否是管理员
-	if !IsAdmin(c) {
-		common.RespErr(c, http.StatusUnauthorized, "", gin.H{
-			"code": 1,
-			"msg":  "unauthorized",
-		})
-		return
-	}
-
 	// 获取用户ID
 	userID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		common.RespErr(c, http.StatusBadRequest, "", gin.H{
 			"code": 1,
 			"msg":  "invalid user id",
+		})
+		return
+	}
+
+	// 检查是否是管理员
+	if !IsAdmin(c) && uint(userID) != c.GetUint(common.UIDKey) {
+		common.RespErr(c, http.StatusUnauthorized, "", gin.H{
+			"code": 1,
+			"msg":  "unauthorized",
 		})
 		return
 	}

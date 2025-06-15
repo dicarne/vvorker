@@ -42,4 +42,3 @@ export const deleteAccessKey = (access_key: string) => {
     key: access_key
   })
 }
-

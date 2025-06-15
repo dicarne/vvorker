@@ -13,7 +13,6 @@ const UsersPage: React.FC = () => {
     const router = useRouter();
     const user = useStore($user);
     const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
-    console.log(user);
 
     // 检查用户是否为管理员，如果不是则重定向到首页
     useEffect(() => {

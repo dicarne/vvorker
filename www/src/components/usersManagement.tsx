@@ -40,7 +40,7 @@ export const UsersManagementCom: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         loadUsers();

@@ -3,16 +3,23 @@ import { Breadcrumb, ButtonGroup, Button, Card, List, Modal, Form, Descriptions 
 import { IconHome } from '@douyinfe/semi-icons';
 import { t } from '@/lib/i18n';
 import { createAccessKey, getAccessKeys, deleteAccessKey } from '@/api/auth';
+import { changePassword } from '@/api/users';
 import type { AccessKey } from '@/types/user';
+import { $user } from '@/store/userState';
+import { useStore } from '@nanostores/react';
 
 export const UserCom: React.FC = () => {
     const [accessKeys, setAccessKeys] = useState<AccessKey[]>([]);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [openChangePasswordDialog, setOpenChangePasswordDialog] = useState(false);
+    const [newPassword, setNewPassword] = useState('');
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [accessKeyToDelete, setAccessKeyToDelete] = useState<string | null>(null);
     const [openCreateDialog, setOpenCreateDialog] = useState(false);
     const [newAccessKeyName, setNewAccessKeyName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const user = useStore($user);
 
     const loadAccessKeys = useCallback(async () => {
         try {
@@ -81,6 +88,35 @@ export const UserCom: React.FC = () => {
         setAccessKeyToDelete(null);
     };
 
+    const handleChangePasswordClick = () => {
+        setOpenChangePasswordDialog(true);
+    };
+
+    const handleChangePasswordConfirm = async () => {
+        if (!newPassword) {
+            alert('旧密码和新密码不能为空');
+            return;
+        }
+        if (!user) return;
+
+        setIsChangingPassword(true);
+        try {
+            await changePassword(user.id, newPassword);
+            setOpenChangePasswordDialog(false);
+            setNewPassword('');
+        } catch (error) {
+            console.error('修改密码失败:', error);
+            alert('修改密码失败，请检查旧密码是否正确');
+        } finally {
+            setIsChangingPassword(false);
+        }
+    };
+
+    const handleChangePasswordCancel = () => {
+        setOpenChangePasswordDialog(false);
+        setNewPassword('');
+    };
+
     return (
         <div className="m-4">
             <div className="flex justify-between">
@@ -89,8 +125,18 @@ export const UserCom: React.FC = () => {
                         href="/admin"
                         icon={<IconHome size="small" />}
                     ></Breadcrumb.Item>
-                    <Breadcrumb.Item href="/admin">Access Key</Breadcrumb.Item>
+                    <Breadcrumb.Item href="/admin">User</Breadcrumb.Item>
                 </Breadcrumb>
+            </div>
+            <p>Config</p>
+            <Card style={{ width: '100%', marginBottom: '16px' }}>
+                <div className="flex justify-between items-center">
+                    <span>用户密码</span>
+                    <Button onClick={handleChangePasswordClick} disabled={isChangingPassword}>修改密码</Button>
+                </div>
+            </Card>
+            <div className='flex justify-between'>
+                <p>Access Key</p>
                 <ButtonGroup>
                     <Button onClick={handleCreateAccessKey} disabled={isCreating}>{t.create}</Button>
                 </ButtonGroup>
@@ -137,6 +183,26 @@ export const UserCom: React.FC = () => {
             >
                 <div style={{ padding: '16px' }}>
                     <p>{t.warnDeleteResource}</p>
+                </div>
+            </Modal>
+            <Modal
+                title="修改密码"
+                visible={openChangePasswordDialog}
+                onOk={handleChangePasswordConfirm}
+                onCancel={handleChangePasswordCancel}
+                maskClosable={false}
+                closeOnEsc={true}
+            >
+                <div style={{ padding: '16px' }}>
+                    <Form>
+                        <Form.Input
+                            field='newPassword'
+                            label="新密码"
+                            type="password"
+                            initValue={newPassword}
+                            onChange={(value) => setNewPassword(value)}
+                        />
+                    </Form>
                 </div>
             </Modal>
         </div>

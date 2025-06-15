@@ -27,5 +27,6 @@ func GetUserEndpoint(c *gin.Context) {
 		UserName: user.UserName,
 		Role:     user.Role,
 		Email:    user.Email,
+		ID:       user.ID,
 	})
 }

@@ -30,6 +30,7 @@ export const unbanUser = (userId: number) => {
     })
 }
 
+// 可以用于管理员修改密码或用户修改自己的密码。如果是用户自己修改，需要传入自己的id
 export const changePassword = (userId: number, password: string) => {
     return http.post(`/api/admin/users/${userId}`, {
         password

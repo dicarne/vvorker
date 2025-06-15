@@ -312,6 +312,7 @@ func HandleStaticFile(f embed.FS) {
 	router.StaticFileFS("/kv", "kv.html", http.FS(fp))
 	router.StaticFileFS("/task", "task.html", http.FS(fp))
 	router.StaticFileFS("/logs", "logs.html", http.FS(fp))
+	router.StaticFileFS("/users", "users.html", http.FS(fp))
 	router.NoRoute(func(c *gin.Context) {
 		if conf.AppConfigInstance.AdminAPIProxy {
 			if conf.AppConfigInstance.WorkerHostMode != "path" {
