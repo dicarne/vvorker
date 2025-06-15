@@ -19,8 +19,11 @@ import { $user } from '@/store/userState';
 export const UsersManagementCom: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const [userToDelete, setUserToDelete] = useState<string | null>(null);
+    const [userToDelete, setUserToDelete] = useState<number | null>(null);
     const [openCreateDialog, setOpenCreateDialog] = useState(false);
+    const [openChangePasswordDialog, setOpenChangePasswordDialog] = useState(false);
+    const [userToChangePassword, setUserToChangePassword] = useState<number | null>(null);
+    const [newPassword, setNewPassword] = useState('');
     const [newUserForm, setNewUserForm] = useState({ username: '', email: '', password: '' });
     const [isLoading, setIsLoading] = useState(false);
     const user = useStore($user);
@@ -67,7 +70,7 @@ export const UsersManagementCom: React.FC = () => {
         }
     };
 
-    const handleDeleteClick = (userId: string) => {
+    const handleDeleteClick = (userId: number) => {
         setUserToDelete(userId);
         setOpenDeleteDialog(true);
     };
@@ -107,6 +110,32 @@ export const UsersManagementCom: React.FC = () => {
         }
     };
 
+    const handleChangePasswordClick = (userId: number) => {
+        setUserToChangePassword(userId);
+        setNewPassword('');
+        setOpenChangePasswordDialog(true);
+    };
+
+    const handleChangePasswordConfirm = async () => {
+        if (!userToChangePassword || !newPassword) {
+            Toast.warning('Please enter a new password');
+            return;
+        }
+        setIsLoading(true);
+        try {
+            await changePassword(userToChangePassword, newPassword);
+            Toast.success('Password changed successfully');
+            setOpenChangePasswordDialog(false);
+            setUserToChangePassword(null);
+            setNewPassword('');
+        } catch (error) {
+            Toast.error('Failed to change password');
+            console.error('Failed to change password:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="m-4">
             <div className="flex justify-between">
@@ -131,7 +160,7 @@ export const UsersManagementCom: React.FC = () => {
                                 <ButtonGroup>
                                     <Button
                                         type={user.status === 1 ? 'secondary' : 'warning'}
-                                        onClick={}
+                                        onClick={() => handleChangePasswordClick(user.ID)}
                                         disabled={isLoading || user.role === 'admin'}
                                     >
                                         Change Password
@@ -145,7 +174,7 @@ export const UsersManagementCom: React.FC = () => {
                                     </Button>
                                     <Button
                                         type="danger"
-                                        onClick={() => handleDeleteClick(user.user_name)}
+                                        onClick={() => handleDeleteClick(user.ID)}
                                         disabled={isLoading || user.role === 'admin'}
                                     >
                                         Delete
@@ -207,6 +236,31 @@ export const UsersManagementCom: React.FC = () => {
                 closeOnEsc={true}
             >
                 <p>Are you sure you want to delete this user? This action cannot be undone.</p>
+            </Modal>
+
+            <Modal
+                title="Change Password"
+                visible={openChangePasswordDialog}
+                onOk={handleChangePasswordConfirm}
+                onCancel={() => {
+                    setOpenChangePasswordDialog(false);
+                    setUserToChangePassword(null);
+                    setNewPassword('');
+                }}
+                maskClosable={false}
+                closeOnEsc={true}
+            >
+                <Form>
+                    <Form.Input
+                        field="newPassword"
+                        label="New Password"
+                        type="password"
+                        required
+                        initValue={newPassword}
+                        onChange={val => setNewPassword(val)}
+                        placeholder="Enter new password"
+                    />
+                </Form>
             </Modal>
         </div>
     );

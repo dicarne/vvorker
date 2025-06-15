@@ -17,7 +17,7 @@ func DeleteUserEndpoint(c *gin.Context) {
 	}
 
 	// 获取用户ID
-	userID, err := strconv.ParseUint(c.Query("id"), 10, 32)
+	userID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest, "invalid user id", nil)
 		return

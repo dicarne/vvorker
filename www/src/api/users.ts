@@ -14,7 +14,7 @@ export const createUser = (data: CreateUserData) => {
     return http.post('/api/admin/users', data)
 }
 
-export const deleteUser = (userId: string) => {
+export const deleteUser = (userId: number) => {
     return http.delete(`/api/admin/users/${userId}`)
 }
 
