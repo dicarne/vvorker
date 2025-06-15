@@ -30,6 +30,7 @@ import (
 	proxyService "vvorker/services/proxy"
 	"vvorker/services/resource"
 	"vvorker/services/task"
+	gentype "vvorker/services/type"
 	"vvorker/services/users"
 	"vvorker/services/workerd"
 	"vvorker/tunnel"
@@ -221,6 +222,8 @@ func init() {
 
 			if conf.IsMaster() {
 				extAPI.POST("/list", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), resource.ListResourceEndpoint)
+
+				extAPI.POST("/types", authz.AccessKeyMiddleware(), gentype.GenerateTypes)
 			}
 		}
 	}

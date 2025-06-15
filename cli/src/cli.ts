@@ -25,7 +25,11 @@ function getToken() {
 
 function getUrl() {
   let env = config.current_env ?? "default";
-  return config.env[env]?.url;
+  let url = config.env[env]?.url;
+  if (url?.endsWith('/')) {
+    url = url.slice(0, -1)
+  }
+  return url
 }
 
 function ensureEnv(env: string) {
@@ -44,6 +48,25 @@ function setUrl(url: string) {
   let env = config.current_env ?? "default";
   ensureEnv(env);
   config.env[env].url = url;
+}
+
+function loadVVorkerConfig() {
+  let current_env = config.current_env
+  if (fs.existsSync(`${process.cwd()}/vvorker.${current_env}.json`)) {
+    let vvorkerJson = json5.parse(fs.readFileSync(`${process.cwd()}/vvorker.${current_env}.json`, 'utf-8'))
+    return vvorkerJson
+  } else {
+    return json5.parse(fs.readFileSync(`${process.cwd()}/vvorker.json`, 'utf-8'))
+  }
+}
+
+function saveVVorkerConfig(vvorkerJson: any) {
+  let current_env = config.current_env
+  if (fs.existsSync(`${process.cwd()}/vvorker.${current_env}.json`)) {
+    fs.writeFileSync(`${process.cwd()}/vvorker.${current_env}.json`, json5.stringify(vvorkerJson, null, 2))
+  } else {
+    fs.writeFileSync(`${process.cwd()}/vvorker.json`, json5.stringify(vvorkerJson, null, 2))
+  }
 }
 
 const program = new Command();
@@ -210,7 +233,7 @@ program
       return;
     }
     // 读取当前目录下的 vvorker.json 文件
-    const vvorkerJson = await fs.readJson('vvorker.json');
+    const vvorkerJson = loadVVorkerConfig();
     const packageJson = await fs.readJson('package.json');
     let serviceName = vvorkerJson.name;
     if (!serviceName) {
@@ -408,6 +431,56 @@ cmd_config.command('set <key> <value>')
     }
     fs.writeFileSync(configFilePath, JSON.stringify(config));
     console.log('配置成功');
+  })
+
+program.command('types')
+  .description("用于自动生成配置文件对应的TypeScript类型")
+  .action(async () => {
+    const vvv = loadVVorkerConfig();
+    let resp = await axios.post(`${getUrl()}/api/ext/types`, vvv, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`,
+      }
+    })
+    if (resp.status !== 200) {
+      throw new Error(`获取类型失败：${resp.status} ${resp.statusText}`);
+    }
+    let w = resp.data.data.types;
+    if (vvv.project.type === "vue") {
+
+    } else {
+      fs.writeFileSync(`${process.cwd()}/src/binding.ts`, w);
+    }
+    console.log('类型生成成功');
+  })
+
+program.command("env")
+  .description("切换当前可用环境")
+  .action(async (env) => {
+    console.log(`当前环境：${config.current_env}`);
+    let all_env = []
+    for (const key in config.env) {
+      if (Object.prototype.hasOwnProperty.call(config.env, key)) {
+        const element = config.env[key];
+        all_env.push(key)
+      }
+    }
+
+    const { envname } = await inquirer.prompt([{
+      type: 'list',
+      name: 'envname',
+      message: '切换环境',
+      choices: all_env.map(s => {
+        return {
+          name: s,
+          value: s,
+        }
+      }),
+      default: config.current_env
+    },])
+    config.current_env = envname;
+    fs.writeFileSync(configFilePath, JSON.stringify(config));
   })
 
 program.parse(process.argv);

@@ -56,7 +56,7 @@ export default class PGSQL extends WorkerEntrypoint {
 	constructor(ctx: any, env: any) {
 		super(ctx, env)
 	}
-	async start() {
+	async client() {
 		const target = new PGSQLTarget()
 		await target.start()
 		return target

@@ -19,3 +19,23 @@ var ExtAssetsScript string
 
 //go:embed task/dist/index.js
 var ExtTaskScript string
+
+////////////////////////////
+
+//go:embed ai/src/binding.ts
+var TypeBindingAI string
+
+//go:embed pgsql/src/binding.ts
+var TypeBindingPgsql string
+
+//go:embed oss/src/binding.ts
+var TypeBindingOSS string
+
+//go:embed kv/src/binding.ts
+var TypeBindingKV string
+
+//go:embed assets/src/binding.ts
+var TypeBindingAssets string
+
+//go:embed task/src/binding.ts
+var TypeBindingTask string
