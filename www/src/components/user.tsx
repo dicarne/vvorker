@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ListItem, ListItemText } from '@mui/material';
 import { Breadcrumb, ButtonGroup, Button, Card, List, Modal, Form, Descriptions } from '@douyinfe/semi-ui';
 import { IconHome } from '@douyinfe/semi-icons';
 import { t } from '@/lib/i18n';
@@ -98,7 +97,7 @@ export const UserCom: React.FC = () => {
             </div>
             <List>
                 {accessKeys.map(key => (
-                    <ListItem key={key.key}>
+                    <List.Item key={key.key}>
                         <Card title={key.name} style={{ width: '100%' }} headerExtraContent={
                             <ButtonGroup>
                                 <Button onClick={() => handleDeleteClick(key.key)} disabled={isDeleting}>{t.delete}</Button>
@@ -111,7 +110,7 @@ export const UserCom: React.FC = () => {
                                 }
                             ]} />
                         </Card>
-                    </ListItem>
+                    </List.Item>
                 ))}
             </List>
             <Modal

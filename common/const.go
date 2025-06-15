@@ -1,9 +1,9 @@
 package common
 
 const (
-	UserStatusNormal = iota
+	UserStatusUnknown = iota
 	UserStatusDisabled
-	UserStatusPending
+	UserStatusNormal
 )
 
 const (
@@ -22,6 +22,7 @@ const (
 	RespCodeDBErr
 	RespCodeMethodNotAllowed
 	RespCodeServiceNotFound
+	RespCodeNotFound
 )
 
 const (

@@ -15,6 +15,7 @@ import { atom } from 'nanostores'
 import { useStore } from '@nanostores/react'
 import cn from 'clsx'
 import { useEffect, useState } from 'react'
+import { $user } from '@/store/userState'
 
 export const $expandSidebar = atom(false)
 
@@ -22,6 +23,7 @@ export const SideBarComponent = ({ selected }: { selected: string }) => {
   const router = useRouter()
   const expand = useStore($expandSidebar)
   const [invisible, setInvisible] = useState(expand)
+  const user = useStore($user);
   const routeMap = {
     workers: '/admin',
     status: '/nodes',
@@ -30,7 +32,8 @@ export const SideBarComponent = ({ selected }: { selected: string }) => {
     oss: '/oss',
     kv: '/kv',
     sql: '/sql',
-    user: '/user'
+    user: '/user',
+    users: '/users'
   } as any
   useEffect(() => {
     if (!expand) {
@@ -52,9 +55,8 @@ export const SideBarComponent = ({ selected }: { selected: string }) => {
           { itemKey: 'oss', text: 'OSS', icon: <IconArchive /> },
           { itemKey: 'kv', text: 'KV', icon: <IconLayers /> },
           { itemKey: 'user', text: 'User', icon: <IconUser /> },
-          
-          // { itemKey: 'settings', text: 'Settings', icon: <IconWrench /> },
-        ]}
+          { itemKey: 'users', text: 'Users Management', icon: <IconUser />, hide: user?.role != 'admin' },
+        ].filter(a => !a.hide)}
         onSelect={(data) => console.log('trigger onSelect: ', data)}
         onClick={(data) => {
           window.location.assign(routeMap[data.itemKey || ''])

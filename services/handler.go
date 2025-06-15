@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 	"vvorker/authz"
+	"vvorker/common"
 	"vvorker/conf"
 	assets "vvorker/ext/assets/src"
 	kv "vvorker/ext/kv/src"
@@ -29,6 +30,7 @@ import (
 	proxyService "vvorker/services/proxy"
 	"vvorker/services/resource"
 	"vvorker/services/task"
+	"vvorker/services/users"
 	"vvorker/services/workerd"
 	"vvorker/tunnel"
 	"vvorker/utils"
@@ -55,7 +57,7 @@ func init() {
 		fmt.Sprintf("%v://%v", conf.AppConfigInstance.Scheme, conf.AppConfigInstance.CookieDomain),
 	))
 	if !conf.IsMaster() {
-		router.GET("/", func(c *gin.Context) { c.JSON(200, gin.H{"code": 0, "msg": "ok"}) })
+		router.GET("/", func(c *gin.Context) { common.RespOK(c, "ok", nil) })
 	}
 
 	api := router.Group("/api")
@@ -129,7 +131,16 @@ func init() {
 				userApi.POST("/create-access-key", access.CreateAccessKeyEndpoint)
 				userApi.POST("/access-keys", access.GetAccessKeysEndpoint)
 				userApi.POST("/delete-access-key", access.DeleteAccessKeyEndpoint)
+
+				// 注册用户管理相关路由
+
 			}
+
+			adminAPI := api.Group("/admin", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
+			{
+				users.RegisterRoutes(adminAPI)
+			}
+
 			nodeAPI := api.Group("/node", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
 			{
 				nodeAPI.GET("/all", node.UserGetNodesEndpoint)

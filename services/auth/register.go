@@ -51,7 +51,7 @@ func RegisterEndpoint(c *gin.Context) {
 		UserName: req.UserName,
 		Password: req.Password,
 		Email:    req.Email,
-		Status:   common.UserStatusPending,
+		Status:   common.UserStatusNormal,
 		Role:     common.UserRoleNormal,
 	}
 	if err := models.CreateUser(user); err != nil {
