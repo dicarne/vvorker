@@ -62,7 +62,7 @@ func CreateAccessTokenEndpoint(c *gin.Context) {
 		return
 	}
 	common.RespOK(c, common.RespMsgOK, gin.H{
-		"access_token": accessToken,
+		"access_token": accessToken.Token,
 	})
 }
 

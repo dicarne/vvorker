@@ -16,6 +16,7 @@ import {
     InternalServerWhiteList,
     ExternalServerToken
 } from '@/types/access';
+import { t } from '@/lib/i18n'
 
 interface AuthTabProps {
     workerUid: string;
@@ -31,6 +32,10 @@ const AuthTab: React.FC<AuthTabProps> = ({ workerUid }) => {
     const [deleteId, setDeleteId] = useState<number | string | null>(null);
     const internalFormRef = useRef<Form>(null);
     const tokenFormRef = useRef<Form>(null);
+    // 新增状态，控制显示 token 的弹窗
+    const [isShowTokenModalVisible, setIsShowTokenModalVisible] = useState(false);
+    // 新增状态，存储新生成的 token
+    const [newToken, setNewToken] = useState<string>('');
 
     // 获取内部白名单列表
     const fetchInternalWhiteLists = async () => {
@@ -100,7 +105,11 @@ const AuthTab: React.FC<AuthTabProps> = ({ workerUid }) => {
             };
 
             try {
-                await createAccessToken(request);
+                const response = await createAccessToken(request);
+                // 存储新生成的 token
+                setNewToken(response.data.access_token);
+                // 显示 token 弹窗
+                setIsShowTokenModalVisible(true);
             } catch (error) {
                 const throttleOpts = {
                     content: String(error),
@@ -190,7 +199,7 @@ const AuthTab: React.FC<AuthTabProps> = ({ workerUid }) => {
         <>
             <div style={{ marginBottom: 24 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <h3>Internal White List</h3>
+                    <h3>{t.internalAccess}</h3>
                     <Button type="primary" onClick={showInternalModal}>
                         Add
                     </Button>
@@ -219,7 +228,7 @@ const AuthTab: React.FC<AuthTabProps> = ({ workerUid }) => {
             </div>
             <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <h3>Access Token</h3>
+                    <h3>{t.accessKey}</h3>
                     <Button type="primary" onClick={showTokenModal}>
                         Add
                     </Button>
@@ -246,7 +255,7 @@ const AuthTab: React.FC<AuthTabProps> = ({ workerUid }) => {
                     )}
                 />
             </div>
-            <Modal title="Add Internal White List" visible={isInternalModalVisible} onOk={handleInternalOk} onCancel={handleCancel}>
+            <Modal title={t.addInternalAccess} visible={isInternalModalVisible} onOk={handleInternalOk} onCancel={handleCancel}>
                 <Form ref={internalFormRef}>
                     <Form.Input
                         field="name"
@@ -262,7 +271,7 @@ const AuthTab: React.FC<AuthTabProps> = ({ workerUid }) => {
                     />
                 </Form>
             </Modal>
-            <Modal title="Add Access Token" visible={isTokenModalVisible} onOk={handleTokenOk} onCancel={handleCancel}>
+            <Modal title={t.addAccessKey} visible={isTokenModalVisible} onOk={handleTokenOk} onCancel={handleCancel}>
                 <Form ref={tokenFormRef}>
                     <Form.Input
                         field="description"
@@ -273,13 +282,31 @@ const AuthTab: React.FC<AuthTabProps> = ({ workerUid }) => {
                 </Form>
             </Modal>
             <Modal
-                title="Confirm Delete"
+                title={t.delete}
                 visible={isDeleteConfirmVisible}
                 onOk={handleDeleteConfirm}
                 onCancel={handleDeleteCancel}
                 okType="danger"
             >
-                <p>Are you sure you want to delete this item?</p>
+                <p>{t.deleteConfirm}</p>
+            </Modal>
+            <Modal
+                title={t.important}
+                visible={isShowTokenModalVisible}
+                onOk={() => setIsShowTokenModalVisible(false)}
+                onCancel={() => setIsShowTokenModalVisible(false)}
+            >
+                <p style={{
+                    textAlign: "center"
+                }}>{t.tokenOnce}</p>
+                <pre style={{
+                    background: "#ededed",
+                    padding: 10,
+                    borderRadius: 5,
+                    marginTop: 10,
+                    textAlign: "center"
+
+                }}>{newToken}</pre>
             </Modal>
         </>
     );

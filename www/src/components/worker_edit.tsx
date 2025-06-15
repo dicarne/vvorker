@@ -29,6 +29,8 @@ import type { TaskLog, WorkerLog } from '@/types/workers';
 import { useEffect, useState, useCallback, useRef } from 'react'
 import RulesTabPane from './access/rules'
 import AuthTab from './access/auth'
+import { t } from '@/lib/i18n'
+
 
 const MonacoEditor = dynamic(
   import('./editor').then((m) => m.MonacoEditor),
@@ -203,9 +205,9 @@ export const WorkerEditComponent = () => {
                 window.location.assign('/admin')
               }}
             >
-              Back
+              {t.back}
             </Button>
-            <Button onClick={() => updateWorker.mutate()}>Save</Button>
+            <Button onClick={() => updateWorker.mutate()}>{t.save}</Button>
           </ButtonGroup>
         </div>
       </div>
@@ -231,14 +233,14 @@ export const WorkerEditComponent = () => {
             theme="borderless"
             onClick={() => runWorker.mutate(editItem.UID)}
           >
-            Run
+            {t.run}
           </Button>
         }
       >
         <TabPane
           itemKey="code"
           style={{ overflow: 'initial' }}
-          tab={<span>Code</span>}
+          tab={<span>{t.code}</span>}
         >
           {worker ? (
             <div className="flex flex-col my-1">
@@ -248,10 +250,10 @@ export const WorkerEditComponent = () => {
             </div>
           ) : null}
         </TabPane>
-        <TabPane itemKey="config" tab={<span>Config</span>}>
+        <TabPane itemKey="config" tab={<span>{t.property}</span>}>
           <div className="flex flex-col">
             <div className="flex flex-row m-2">
-              <p className="self-center">Entry: </p>
+              <p className="self-center pr-8">{t.workerEntry} </p>
               <div className="grid grid-cols-1 lg:grid-cols-2">
                 <Input
                   addonBefore={
@@ -275,7 +277,7 @@ export const WorkerEditComponent = () => {
               </div>
             </div>
             <div className="flex flex-row m-2">
-              <p className="self-center">Node: </p>
+              <p className="self-center  pr-16">{t.node}</p>
               <Select
                 placeholder="请选择节点"
                 style={{ width: 180 }}
@@ -301,14 +303,14 @@ export const WorkerEditComponent = () => {
         <TabPane
           itemKey="template"
           style={{ overflow: 'initial' }}
-          tab={<span>Template</span>}
+          tab={<span>{t.config}</span>}
         >
           <TemplateEditor content={templateContent} setContent={setTemplateContent} />
         </TabPane>
         <TabPane
           itemKey="logs"
           style={{ overflow: 'initial' }}
-          tab={<span>Logs</span>}
+          tab={<span>{t.logs}</span>}
         >
           <Pagination total={totalLogs} currentPage={page} onPageChange={setPage} pageSize={pageSize} style={{ marginBottom: 12 }} />
           <List
@@ -331,12 +333,12 @@ export const WorkerEditComponent = () => {
         </TabPane>
         <TabPane itemKey="rules"
           style={{ overflow: 'initial' }}
-          tab={<span>Rules</span>}>
+          tab={<span>{t.rules}</span>}>
           <RulesTabPane workerUid={UID as string} />
         </TabPane>
         <TabPane itemKey="auth"
           style={{ overflow: 'initial' }}
-          tab={<span>Auth</span>}>
+          tab={<span>{t.auth}</span>}>
           <AuthTab workerUid={UID as string} />
         </TabPane>
       </Tabs>

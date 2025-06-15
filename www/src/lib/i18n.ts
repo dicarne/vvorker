@@ -29,6 +29,19 @@ const zh = {
   failed: "失败",
   log: "日志",
   look: "查看",
+  node: "节点",
+  workerEntry: "函数入口",
+
+  tokenOnce: "此 token 仅显示一次，请妥善保存。",
+  deleteConfirm: "确认删除吗？",
+  important: "重要提示",
+  addAccessKey: "添加访问密钥",
+  addInternalAccess: "添加内部访问",
+  internalAccess: "内部访问",
+  accessKey: "访问密钥",
+  enableAccessControl: "启用访问控制",
+  addRule: "添加规则",
+  prefix: "路由前缀",
 
   workerConfirmDelete: '确认删除函数',
   workerDeleteSuccess: '删除成功',
@@ -48,6 +61,14 @@ const zh = {
   registerFailed: '注册失败',
 
   warnDeleteResource: "确定要删除这个资源吗？",
+
+  back: '返回',
+  save: '保存',
+  property: '属性',
+  config: '配置',
+  logs: '日志',
+  rules: '规则',
+  auth: '鉴权',
 }
 
 const en = {
@@ -79,6 +100,18 @@ const en = {
   failed: "Failed",
   log: "Log",
   look: "Look",
+  tokenOnce: "This token will only be displayed once. Please keep it safe.",
+  deleteConfirm: "Are you sure you want to delete this item?",
+  important: "Important Notice",
+  addAccessKey: "Add Access Key",
+  addInternalAccess: "Add Internal Access",
+  internalAccess: "Internal Access",
+  accessKey: "Access Key",
+  enableAccessControl: "Enable Access Control",
+  addRule: "Add Rule",
+  prefix: "Prefix",
+  node: "Node",
+  workerEntry: "Worker Entry",
 
   workerConfirmDelete: 'Confirm delete worker',
   workerDeleteSuccess: 'Delete worker success',
@@ -98,6 +131,13 @@ const en = {
   registerFailed: 'Failed to register',
 
   warnDeleteResource: "Are you sure you want to delete this resource?",
+  back: 'Back',
+  save: 'Save',
+  property: 'Property',
+  config: 'Config',
+  logs: 'Logs',
+  rules: 'Rules',
+  auth: 'Auth',
 }
 
 export type Key = keyof typeof zh & keyof typeof en

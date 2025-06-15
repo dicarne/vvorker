@@ -8,7 +8,7 @@ import {
     deleteAccessRule
 } from '@/api/workers';
 import { AccessRule, EnableAccessControlRequest, DeleteAccessRuleRequest } from '@/types/access';
-
+import { t } from '@/lib/i18n';
 
 interface RulesTabPaneProps {
     workerUid: string;
@@ -105,12 +105,12 @@ const RulesTabPane: React.FC<RulesTabPaneProps> = ({ workerUid }) => {
     return (
         <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <div>
-                    <span>Enable Rules: </span>
+                <div className='flex items-center px-2'>
+                    <span className='pr-6'>{t.enableAccessControl} </span>
                     <Switch checked={isEnabled} onChange={handleSwitchChange} />
                 </div>
                 <Button type="primary" onClick={showModal}>
-                    Add Rule
+                    {t.addRule}
                 </Button>
             </div>
             <List
@@ -135,12 +135,12 @@ const RulesTabPane: React.FC<RulesTabPaneProps> = ({ workerUid }) => {
                     />
                 )}
             />
-            <Modal title="Add New Rule" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+            <Modal title={t.addRule} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
                 <Form ref={formRef}>
                     <Row>
                         <Form.Input
                             field="path"
-                            label="Path"
+                            label={t.prefix}
                             initValue={'/'}
                             trigger='blur'
                         />
