@@ -41,4 +41,6 @@ type AccessRule struct {
 	RuleType    string `json:"rule_type"` // "internal", "aksk", "token", "sso", "open"
 	Path        string `json:"path"`
 	Description string `json:"description"`
+	Length      int    `json:"length"`
+	RuleUID     string `json:"rule_uid"`
 }

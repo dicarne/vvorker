@@ -201,7 +201,7 @@ const AuthTab: React.FC<AuthTabProps> = ({ workerUid }) => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <h3>{t.internalAccess}</h3>
                     <Button type="primary" onClick={showInternalModal}>
-                        Add
+                        {t.add}
                     </Button>
                 </div>
                 <List
@@ -230,7 +230,7 @@ const AuthTab: React.FC<AuthTabProps> = ({ workerUid }) => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <h3>{t.accessKey}</h3>
                     <Button type="primary" onClick={showTokenModal}>
-                        Add
+                        {t.add}
                     </Button>
                 </div>
                 <List

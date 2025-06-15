@@ -145,11 +145,12 @@ export interface AccessRule {
   // 关联的 Worker UID
   worker_uid: string;
   // 规则类型
-  rule_type: string;
+  rule_type: "internal" | "aksk" | "token" | "sso" | "open";
   // 规则描述信息
   description: string;
   // path
   path: boolean;
+  rule_uid: string;
 }
 
 
@@ -165,7 +166,7 @@ export interface AccessControlRequest {
 
 export interface DeleteAccessRuleRequest {
   worker_uid: string;
-  rule_id: number;
+  rule_uid: string;
 }
 
 export interface ListAccessRuleRequest {

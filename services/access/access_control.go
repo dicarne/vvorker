@@ -5,11 +5,11 @@ import (
 	"vvorker/common"
 	"vvorker/entities"
 	"vvorker/models"
+	"vvorker/utils"
 	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 )
 
 type EnableAccessControlRequest struct {
@@ -99,6 +99,8 @@ func AddAccessRuleEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
+	request.Length = len(request.Path)
+	request.RuleUID = utils.GenerateUID()
 
 	db := database.GetDB()
 	var user models.Worker
@@ -115,7 +117,7 @@ func AddAccessRuleEndpoint(c *gin.Context) {
 
 type DeleteAccessRuleRequest struct {
 	WorkerUID string `json:"worker_uid"`
-	RuleID    uint   `json:"rule_id"`
+	RuleUID   string `json:"rule_uid"`
 }
 
 func DeleteAccessRuleEndpoint(c *gin.Context) {
@@ -135,6 +137,14 @@ func DeleteAccessRuleEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
+	if request.RuleUID == "" {
+		common.RespErr(c, common.RespCodeInvalidRequest, "rule_uid is required", nil)
+		return
+	}
+	if request.WorkerUID == "" {
+		common.RespErr(c, common.RespCodeInvalidRequest, "worker_uid is required", nil)
+		return
+	}
 
 	db := database.GetDB()
 	var user models.Worker
@@ -143,7 +153,7 @@ func DeleteAccessRuleEndpoint(c *gin.Context) {
 		return
 	}
 	if err := db.Delete(&models.AccessRule{}, &models.AccessRule{
-		Model:     gorm.Model{ID: request.RuleID},
+		RuleUID:   request.RuleUID,
 		WorkerUID: request.WorkerUID,
 	}).Error; err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)

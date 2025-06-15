@@ -15,7 +15,7 @@ const zh = {
   sync: '同步',
   create: '创建',
   delete: '删除',
-  open: '打开',
+  openWeb: '打开',
   refresh: '刷新',
   deleteWorker: '删除函数',
   deleteNode: '删除节点',
@@ -31,6 +31,7 @@ const zh = {
   look: "查看",
   node: "节点",
   workerEntry: "函数入口",
+  add: "新增",
 
   tokenOnce: "此 token 仅显示一次，请妥善保存。",
   deleteConfirm: "确认删除吗？",
@@ -69,6 +70,13 @@ const zh = {
   logs: '日志',
   rules: '规则',
   auth: '鉴权',
+
+
+  "internal": "内部访问",
+  "aksk": "AccessKey 与 AccessSecret",
+  "token": "AccessKey",
+  "sso": "SSO",
+  "open": "开放"
 }
 
 const en = {
@@ -86,7 +94,7 @@ const en = {
   sync: 'Sync',
   create: 'New',
   delete: 'Delete',
-  open: 'Open',
+  openWeb: 'Open',
   refresh: 'Refresh',
   deleteWorker: 'Delete worker',
   deleteNode: 'Delete Node',
@@ -112,6 +120,7 @@ const en = {
   prefix: "Prefix",
   node: "Node",
   workerEntry: "Worker Entry",
+  add: "Add",
 
   workerConfirmDelete: 'Confirm delete worker',
   workerDeleteSuccess: 'Delete worker success',
@@ -138,6 +147,12 @@ const en = {
   logs: 'Logs',
   rules: 'Rules',
   auth: 'Auth',
+
+  "internal": "Internal access",
+  "aksk": "AccessKey with AccessSecret",
+  "token": "AccessKey",
+  "sso": "SSO",
+  "open": "Open",
 }
 
 export type Key = keyof typeof zh & keyof typeof en

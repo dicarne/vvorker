@@ -8,18 +8,19 @@ import {
     deleteAccessRule
 } from '@/api/workers';
 import { AccessRule, EnableAccessControlRequest, DeleteAccessRuleRequest } from '@/types/access';
-import { t } from '@/lib/i18n';
+import { t, i18n } from '@/lib/i18n';
 
 interface RulesTabPaneProps {
     workerUid: string;
 }
-
 
 const RulesTabPane: React.FC<RulesTabPaneProps> = ({ workerUid }) => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [rules, setRules] = useState<AccessRule[]>([]);
     const [isEnabled, setIsEnabled] = useState(false);
     const formRef = useRef<Form>(null);
+    // 新增：记录待删除规则的 uid
+    const [deleteRuleUid, setDeleteRuleUid] = useState<string>('');
 
     // 获取规则控制状态
     const fetchAccessControl = async () => {
@@ -72,7 +73,8 @@ const RulesTabPane: React.FC<RulesTabPaneProps> = ({ workerUid }) => {
                 worker_uid: workerUid,
                 rule_type: v.rule_type,
                 path: v.path,
-                description: v.description
+                description: v.description,
+                rule_uid: ""
             });
             setIsModalVisible(false);
             fetchRules();
@@ -87,14 +89,26 @@ const RulesTabPane: React.FC<RulesTabPaneProps> = ({ workerUid }) => {
     };
 
     // 删除规则
-    const handleDeleteRule = async (id: number) => {
-        try {
-            const request: DeleteAccessRuleRequest = { worker_uid: workerUid, rule_id: id };
-            await deleteAccessRule(request);
-            fetchRules();
-        } catch (error) {
-            console.error('Failed to delete access rule', error);
-        }
+    const handleDeleteRule = (uid: string) => {
+        setDeleteRuleUid(uid);
+        // 显示删除确认弹窗
+        Modal.confirm({
+            title: t.deleteConfirm,
+            content: t.deleteConfirm,
+            onOk: async () => {
+                try {
+                    const request: DeleteAccessRuleRequest = { worker_uid: workerUid, rule_uid: uid };
+                    await deleteAccessRule(request);
+                    fetchRules();
+                } catch (error) {
+                    console.error('Failed to delete access rule', error);
+                }
+            },
+            onCancel: () => {
+                // 取消操作，清空待删除规则的 uid
+                setDeleteRuleUid('');
+            }
+        });
     };
 
     useEffect(() => {
@@ -114,22 +128,20 @@ const RulesTabPane: React.FC<RulesTabPaneProps> = ({ workerUid }) => {
                 </Button>
             </div>
             <List
-                layout="horizontal"
                 dataSource={rules}
                 split
                 renderItem={(item) => (
                     <List.Item
-                        style={{ padding: '10px', width: "100%", border: '1px solid var(--semi-color-border)', }}
+                        style={{ padding: '10px', }}
                         main={
                             <div>
                                 <div style={{ color: 'var(--semi-color-text-0)', fontWeight: 500 }}>{item.path}</div>
-                                <div>{item.rule_type}</div>
+                                <div>{i18n(item.rule_type)}</div>
                             </div>
                         }
                         extra={
                             <ButtonGroup theme="borderless">
-                                <Button onClick={() => handleDeleteRule(item.id!)}>删除</Button>
-                                <Button>更多</Button>
+                                <Button onClick={() => handleDeleteRule(item.rule_uid)}>删除</Button>
                             </ButtonGroup>
                         }
                     />

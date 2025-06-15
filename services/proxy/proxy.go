@@ -15,6 +15,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm/clause"
 )
 
 func Endpoint(c *gin.Context) {
@@ -55,47 +56,65 @@ func Endpoint(c *gin.Context) {
 
 	if worker.EnableAccessControl {
 		authed := false
-		accesstoken := c.Request.Header.Get("vvorker-access-token")
-		if accesstoken != "" {
-			db := database.GetDB()
-			var workerToken models.ExternalServerToken
-			d := db.Where(&models.ExternalServerToken{
-				WorkerUID: worker.UID,
-				Token:     accesstoken,
-			}).First(&workerToken)
-			if d.Error != nil {
-				c.AbortWithStatus(403)
-				return
-			}
-			c.Request.Header.Del("vvorker-access-token")
-			authed = true
-		}
+		rules := []models.AccessRule{}
+		db := database.GetDB()
+		db.Where(&models.AccessRule{
+			WorkerUID: worker.UID,
+		}).Order(clause.OrderByColumn{Column: clause.Column{Name: "length"}, Desc: true}).Find(&rules)
 
-		internaltoken := c.Request.Header.Get("vvorker-internal-token")
-		if internaltoken != "" {
-			db := database.GetDB()
-			tokens := strings.Split(internaltoken, ":")
-			if len(tokens) != 2 {
-				c.AbortWithStatus(401)
-				return
+		requestPath := c.Request.URL.Path
+		for _, rule := range rules {
+			if strings.HasPrefix(requestPath, rule.Path) {
+				if rule.RuleType == "open" {
+					authed = true
+					break
+				}
 			}
-			if tokens[1] != conf.RPCToken {
-				c.AbortWithStatus(403)
-				return
-			}
-			if tokens[1] != worker.UID {
-				var workerToken models.InternalServerWhiteList
-				d := db.Where(&models.InternalServerWhiteList{
-					WorkerUID:      worker.UID,
-					AllowWorkerUID: tokens[0],
+
+			accesstoken := c.Request.Header.Get("vvorker-access-token")
+			if accesstoken != "" {
+				db := database.GetDB()
+				var workerToken models.ExternalServerToken
+				d := db.Where(&models.ExternalServerToken{
+					WorkerUID: worker.UID,
+					Token:     accesstoken,
 				}).First(&workerToken)
 				if d.Error != nil {
 					c.AbortWithStatus(403)
 					return
 				}
+				c.Request.Header.Del("vvorker-access-token")
+				authed = true
+				break
 			}
-			c.Request.Header.Del("vvorker-internal-token")
-			authed = true
+
+			internaltoken := c.Request.Header.Get("vvorker-internal-token")
+			if internaltoken != "" {
+				db := database.GetDB()
+				tokens := strings.Split(internaltoken, ":")
+				if len(tokens) != 2 {
+					c.AbortWithStatus(401)
+					return
+				}
+				if tokens[1] != conf.RPCToken {
+					c.AbortWithStatus(403)
+					return
+				}
+				if tokens[1] != worker.UID {
+					var workerToken models.InternalServerWhiteList
+					d := db.Where(&models.InternalServerWhiteList{
+						WorkerUID:      worker.UID,
+						AllowWorkerUID: tokens[0],
+					}).First(&workerToken)
+					if d.Error != nil {
+						c.AbortWithStatus(403)
+						return
+					}
+				}
+				c.Request.Header.Del("vvorker-internal-token")
+				authed = true
+				break
+			}
 		}
 
 		if !authed {

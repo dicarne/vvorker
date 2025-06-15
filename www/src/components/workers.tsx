@@ -234,7 +234,7 @@ export function WorkersComponent() {
                     icon={<IconLink />}
                     onClick={() => handleOpenWorker(item)}
                   >
-                    {t.open}
+                    {t.openWeb}
                   </Button>
                   <Dropdown
                     // onVisibleChange={(v) => handleVisibleChange(1, v)}
