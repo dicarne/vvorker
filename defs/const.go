@@ -65,6 +65,7 @@ const vControl :Workerd.Worker = (
     (name = "control", esModule = embed "../../lib/control.js"),
   ],
   compatibilityDate = "2025-05-08",
+  bindings = [{{.BindingsMainWorker}}],
 );
 
 `

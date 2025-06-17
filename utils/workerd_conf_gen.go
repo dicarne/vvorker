@@ -360,7 +360,8 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 		}
 
 		servicesText += defs.DefaultControlService
-		workerTemplate += defs.DefaultControlWorker
+		controlWorker := strings.ReplaceAll(defs.DefaultControlWorker, "{{.BindingsMainWorker}}", `(name = "worker", service = "`+worker.UID+`"),`)
+		workerTemplate += controlWorker
 
 		writeFileIfNotExists(filepath.Join(conf.AppConfigInstance.WorkerdDir,
 			defs.WorkerInfoPath,
