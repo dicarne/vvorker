@@ -173,6 +173,7 @@ type ServiceNetworkTemplate struct {
 	NetworkText  string
 	ServiceText  string
 	BindingsText string
+	SocketText   string
 }
 
 type NameStruct struct {

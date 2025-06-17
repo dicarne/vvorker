@@ -39,3 +39,8 @@ var TypeBindingAssets string
 
 //go:embed task/src/binding.ts
 var TypeBindingTask string
+
+///////////////////////////
+
+//go:embed control/dist/index.js
+var ControlScript string

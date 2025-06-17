@@ -9,9 +9,11 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/entities"
+	"vvorker/ext"
 
 	"github.com/imroc/req/v3"
 	"github.com/sirupsen/logrus"
@@ -23,6 +25,7 @@ type GenTemplateConfig struct {
 	ExtensionsText template.HTML
 	ServiceText    template.HTML
 	FlagsText      template.HTML
+	SocketText     template.HTML
 }
 
 // 检查文件是否存在，若不存在则写入内容
@@ -356,10 +359,22 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 			}
 		}
 
+		servicesText += defs.DefaultControlService
+		workerTemplate += defs.DefaultControlWorker
+
+		writeFileIfNotExists(filepath.Join(conf.AppConfigInstance.WorkerdDir,
+			defs.WorkerInfoPath,
+			worker.GetUID(), "../../lib", "control.js"),
+			ext.ControlScript)
+
 		capTemplate, err := capTemplate.Parse(workerTemplate)
 		if err != nil {
 			panic(err)
 		}
+
+		socketText := defs.DefaultSocketText
+		socketText = strings.ReplaceAll(socketText, "{{.ControlHost}}", "localhost")
+		socketText = strings.ReplaceAll(socketText, "{{.ControlPort}}", strconv.Itoa(int(worker.ControlPort)))
 
 		genConfig := GenTemplateConfig{
 			Worker:         worker,
@@ -367,6 +382,7 @@ func BuildCapfile(workers []*entities.Worker) map[string]string {
 			ExtensionsText: template.HTML(extensionsText),
 			ServiceText:    template.HTML(servicesText),
 			FlagsText:      template.HTML(flagsText),
+			SocketText:     template.HTML(socketText),
 		}
 		capTemplate.Execute(writer, genConfig)
 		results[worker.GetUID()] = writer.String()

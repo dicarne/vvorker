@@ -43,6 +43,7 @@ const config :Workerd.Config = (
       http=(),
       service="{{.Worker.UID}}"
     ),
+	{{.SocketText}}
   ],
 
   extensions = [{{.ExtensionsText}}],
@@ -57,6 +58,26 @@ const v{{.Worker.UID}}Worker :Workerd.Worker = (
   compatibilityFlags = [{{.FlagsText}}],
 );
 
+`
+	DefaultControlWorker = `
+const vControl :Workerd.Worker = (
+  modules = [
+    (name = "control", esModule = embed "../../lib/control.js"),
+  ],
+  compatibilityDate = "2025-05-08",
+);
+
+`
+	DefaultControlService = `
+   (name = "control", worker = .vControl),
+`
+	DefaultSocketText = `
+(
+	name = "control",
+	address = "{{.ControlHost}}:{{.ControlPort}}",
+	http=(),
+	service="control"
+),
 `
 )
 

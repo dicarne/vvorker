@@ -56,6 +56,10 @@ type Task struct {
 	Binding string `json:"binding"`
 }
 
+type Scheduler struct {
+	Cron string `json:"cron"`
+}
+
 type WorkerConfig struct {
 	ProjectName        string            `json:"name"`
 	Version            string            `json:"version"`
@@ -69,6 +73,7 @@ type WorkerConfig struct {
 	KV                 []KV              `json:"kv"`
 	Assets             []Assets          `json:"assets"`
 	Task               []Task            `json:"task"`
+	Scheduler          []Scheduler       `json:"scheduler"`
 }
 
 func ParseWorkerConfig(s string) (*WorkerConfig, error) {

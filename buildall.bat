@@ -13,6 +13,11 @@ cd ..
 
 cd ext
 
+cd control
+call pnpm i 
+call pnpm run build
+cd ..
+
 cd ai
 call pnpm i 
 call pnpm run build

@@ -23,6 +23,7 @@ import (
 	"vvorker/services/agent"
 	"vvorker/services/appconf"
 	"vvorker/services/auth"
+	"vvorker/services/control"
 	"vvorker/services/export"
 	"vvorker/services/files"
 	"vvorker/services/litefs"
@@ -121,6 +122,8 @@ func init() {
 					workerV2.POST("/import-workers", export.ImportResourcesConfigEndpoint)
 				}
 			}
+			api.POST("/control", authz.AccessKeyMiddleware(), control.ControlEndpoint)
+
 			workersApi := api.Group("/workers", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
 			{
 				workersApi.GET("/flush", workerd.FlushAllEndpoint)

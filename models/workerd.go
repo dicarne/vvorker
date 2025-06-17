@@ -269,9 +269,16 @@ func (w *Worker) Update() error {
 		tunnel.GetClient().Delete(w.GetUID())
 		tunnel.GetClient().Add(w.GetUID(),
 			utils.WorkerHostPrefix(w.GetName()), int(port))
+
+		controlPort := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetUID()+"-control")
+		w.ControlPort = controlPort
+		tunnel.GetClient().Delete(w.GetUID() + "-control")
+		tunnel.GetClient().Add(w.GetUID()+"-control", w.GetUID()+"-control", int(controlPort))
+
 		if err := w.UpdateFile(); err != nil {
 			return err
 		}
+
 	}
 	if !conf.IsMaster() && conf.AppConfigInstance.LitefsEnabled {
 		return nil
@@ -353,6 +360,7 @@ func (w *Worker) Flush() error {
 func (w *Worker) ToEntity() *entities.Worker {
 	ans := w.Worker
 	ans.Port = int32(w.GetPort())
+	ans.ControlPort = int32(w.GetControlPort())
 	return ans
 }
 

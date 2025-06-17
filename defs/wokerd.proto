@@ -15,6 +15,7 @@ message Worker {
 	uint64 UserID = 10; // worker's user id
 	string Template = 11; // worker's template
 	string ActiveVersionID = 12; // worker's version id, if this field is not null, the worker's code will be ignored
+	int32 ControlPort = 13; // worker's control port
 }
 
 // one WorkerList for one workerd instance
