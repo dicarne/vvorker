@@ -9,9 +9,12 @@ import (
 	"time"
 	"vvorker/conf"
 	"vvorker/defs"
+	"vvorker/entities"
+	"vvorker/services/control"
 	"vvorker/utils"
 	"vvorker/utils/database"
 
+	"github.com/go-co-op/gocron/v2"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -25,6 +28,8 @@ type execManager struct {
 	pidMap *defs.SyncMap[string, int]
 	// 用于记录 worker 运行状态
 	runningMap *defs.SyncMap[string, bool]
+	// 用于存储调度器实例
+	scheduler gocron.Scheduler
 }
 
 var ExecManager *execManager
@@ -52,13 +57,21 @@ var (
 
 // 初始化时启动合并后的日志处理 goroutine
 func init() {
+	var scheduler gocron.Scheduler
+	var err error
+	if scheduler, err = gocron.NewScheduler(); err != nil {
+		logrus.Fatalf("Failed to initialize scheduler: %v", err)
+	}
+
 	ExecManager = &execManager{
 		signMap:    new(defs.SyncMap[string, bool]),
 		chanMap:    new(defs.SyncMap[string, chan struct{}]),
 		pidMap:     new(defs.SyncMap[string, int]),
 		runningMap: new(defs.SyncMap[string, bool]), // 初始化运行状态映射
+		scheduler:  scheduler,                       // 初始化调度器
 	}
 
+	ExecManager.scheduler.Start()
 	go processWorkerLogs()
 }
 
@@ -100,6 +113,40 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 		return
 	}
 
+	db := database.GetDB()
+	var worker entities.Worker
+	if err := db.Where("uid = ?", uid).First(&worker).Error; err != nil {
+		logrus.Warnf("workerconfig error: %v", err)
+		return
+	}
+	workerconfig, werr := conf.ParseWorkerConfig(worker.Template)
+	if werr != nil {
+		logrus.Warnf("workerconfig error: %v", werr)
+		workerconfig = conf.DefaultWorkerConfig()
+	}
+	schedluers := workerconfig.Schedulers
+	allJobs := make([]gocron.Job, 0)
+	for _, scheduler := range schedluers {
+		if scheduler.Cron == "" {
+			continue
+		}
+		s := ExecManager.scheduler
+		j, err := s.NewJob(
+			gocron.CronJob(scheduler.Cron, true),
+			gocron.NewTask(
+				control.SendSchedulerEvent,
+				uid,
+				scheduler.Cron,
+			),
+		)
+		if err != nil {
+			logrus.Warnf("Failed to create scheduler job: %v", err)
+			continue
+		}
+		logrus.Infof("workerd %s scheduler job created! id: %s", uid, j.ID())
+		allJobs = append(allJobs, j)
+	}
+
 	c := make(chan struct{})
 	m.chanMap.Set(uid, c)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -121,6 +168,9 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 			select {
 			case <-ctx.Done():
 				logrus.Infof("workerd %s context cancelled, exiting loop", uid)
+				for _, job := range allJobs {
+					ExecManager.scheduler.RemoveJob(job.ID())
+				}
 				return
 			default:
 			}

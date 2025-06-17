@@ -73,7 +73,7 @@ type WorkerConfig struct {
 	KV                 []KV              `json:"kv"`
 	Assets             []Assets          `json:"assets"`
 	Task               []Task            `json:"task"`
-	Scheduler          []Scheduler       `json:"scheduler"`
+	Schedulers         []Scheduler       `json:"schedulers"`
 }
 
 func ParseWorkerConfig(s string) (*WorkerConfig, error) {
