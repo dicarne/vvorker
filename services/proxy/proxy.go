@@ -34,6 +34,7 @@ func Endpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeServiceNotFound, common.RespMsgServiceNotFound, nil)
 		return
 	}
+	c.Request.Header.Del("vvorker-worker-uid")
 
 	var remote *url.URL
 	if worker.GetNodeName() == conf.AppConfigInstance.NodeName {
@@ -289,3 +290,101 @@ func GetWorkerRequestStatsByTime(c *gin.Context) {
 	}
 	common.RespOK(c, "ok", resp)
 }
+
+// func HandleConnect(c *gin.Context) {
+// 	if c.Request.Method == "CONNECT" {
+// 		logrus.Infof("HandleConnect: %s %s", c.Request.URL, c.Request.Host)
+// 		httpProxy(c)
+// 	} else {
+// 		Endpoint(c)
+// 	}
+
+// }
+
+// func httpProxy(c *gin.Context) {
+// 	req := c.Request
+// 	// get worker uid
+// 	host := req.Host
+// 	logrus.Infof("***********request header: %v", req.Header)
+// 	// host
+// 	logrus.Infof("***********host: %v", req.Host)
+// 	workerName := host[:len(host)-len(conf.AppConfigInstance.WorkerURLSuffix)]
+
+// 	db := database.GetDB()
+// 	var worker models.Worker
+// 	if db.Where(&models.Worker{
+// 		Worker: &entities.Worker{
+// 			Name: workerName,
+// 		},
+// 	}).First(&worker).Error != nil {
+// 		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+// 		return
+// 	}
+// 	// log worker content
+// 	logrus.Infof("***********worker: %v", worker)
+
+// 	// "http://127.0.0.1:"+strconv.Itoa(worker.GetPort())
+// 	req.RequestURI = fmt.Sprintf("http://127.0.0.1:%d", worker.GetPort())
+// 	tunnel(c.Writer, req)
+// }
+
+// func tunnel(w http.ResponseWriter, req *http.Request) {
+// 	// We handle CONNECT method only
+// 	if req.Method != http.MethodConnect {
+// 		log.Println(req.Method, req.RequestURI)
+// 		http.NotFound(w, req)
+// 		return
+// 	}
+
+// 	// The host:port pair.
+// 	log.Println(req.RequestURI)
+
+// 	// Connect to Remote.
+// 	dst, err := net.Dial("tcp", req.RequestURI)
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
+// 	defer dst.Close()
+
+// 	// Upon success, we respond a 200 status code to client.
+// 	w.Write([]byte("200 Connection established\r\n"))
+
+// 	// Now, Hijack the writer to get the underlying net.Conn.
+// 	// Which can be either *tcp.Conn, for HTTP, or *tls.Conn, for HTTPS.
+// 	src, bio, err := w.(http.Hijacker).Hijack()
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// 	defer src.Close()
+
+// 	wg := &sync.WaitGroup{}
+// 	wg.Add(2)
+
+// 	go func() {
+// 		defer wg.Done()
+
+// 		// The returned bufio.Reader may contain unprocessed buffered data from the client.
+// 		// Copy them to dst so we can use src directly.
+// 		if n := bio.Reader.Buffered(); n > 0 {
+// 			n64, err := io.CopyN(dst, bio, int64(n))
+// 			if n64 != int64(n) || err != nil {
+// 				log.Println("io.CopyN:", n64, err)
+// 				return
+// 			}
+// 		}
+
+// 		// Relay: src -> dst
+// 		io.Copy(dst, src)
+// 	}()
+
+// 	go func() {
+// 		defer wg.Done()
+
+// 		// Relay: dst -> src
+// 		io.Copy(src, dst)
+// 	}()
+
+// 	wg.Wait()
+// }

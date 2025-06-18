@@ -9,6 +9,7 @@ require (
 	github.com/fatedier/frp v0.62.1
 	github.com/gin-gonic/gin v1.10.0
 	github.com/glebarez/sqlite v1.11.0
+	github.com/go-co-op/gocron/v2 v2.16.2
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
@@ -29,7 +30,6 @@ require (
 )
 
 require (
-	github.com/go-co-op/gocron/v2 v2.16.2 // indirect
 	github.com/jonboulle/clockwork v0.5.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 )

@@ -40,7 +40,7 @@ const config :Workerd.Config = (
     (
       name = "{{.Worker.UID}}",
       address = "{{.Worker.HostName}}:{{.Worker.Port}}",
-      http=(),
+      http=(capnpConnectHost = "{{.WorkerHost}}"),
       service="{{.Worker.UID}}"
     ),
 	{{.SocketText}}

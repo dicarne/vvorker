@@ -43,8 +43,9 @@ import (
 )
 
 var (
-	router *gin.Engine
-	proxy  *gin.Engine
+	router    *gin.Engine
+	proxy     *gin.Engine
+	rpctunnel *gin.Engine
 )
 
 func init() {
@@ -53,6 +54,12 @@ func init() {
 
 	proxy = gin.Default()
 	proxy.Use(modifyProxyRequestHeadersMid)
+
+	rpctunnel = gin.Default()
+	rpctunnel.Use(func(c *gin.Context) {
+		logrus.Println("rpc tunnel request", c.Request.URL, c.Request.Host, c.Request.Method)
+		c.Next()
+	})
 
 	router.Use(utils.CORSMiddlewaire(
 		fmt.Sprintf("%v://%v", conf.AppConfigInstance.Scheme, conf.AppConfigInstance.CookieDomain),
@@ -228,7 +235,8 @@ func init() {
 			}
 		}
 	}
-
+	// rpctunnel.Any("/*proxyPath", proxyService.Endpoint)
+	// rpctunnel.NoRoute(proxyService.HandleConnect)
 	proxy.Any("/*proxyPath", proxyService.Endpoint)
 }
 
@@ -294,6 +302,9 @@ func Run(f embed.FS) {
 	})
 	wg.Go(func() {
 		router.Run(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ListenAddr, conf.AppConfigInstance.APIPort))
+	})
+	wg.Go(func() {
+		rpctunnel.Run(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ListenAddr, conf.AppConfigInstance.InternalRPCPort))
 	})
 }
 

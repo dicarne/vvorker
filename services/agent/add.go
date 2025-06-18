@@ -7,7 +7,7 @@ import (
 	"vvorker/entities"
 	"vvorker/exec"
 	"vvorker/models"
-	"vvorker/utils"
+	"vvorker/utils/generate"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -30,7 +30,7 @@ func AddWorkerEventHandler(c *gin.Context, req *entities.NotifyEventRequest) {
 	}
 
 	if worker.NodeName == conf.AppConfigInstance.NodeName {
-		if err := utils.GenWorkerConfig(w.ToEntity()); err != nil {
+		if err := generate.GenWorkerConfig(w.ToEntity(), w); err != nil {
 			logrus.WithError(err).Error("add worker event handler error")
 			common.RespErr(c, common.RespCodeInvalidRequest, common.RespMsgInvalidRequest, nil)
 			return

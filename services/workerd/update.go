@@ -8,7 +8,7 @@ import (
 	"vvorker/entities"
 	"vvorker/exec"
 	"vvorker/models"
-	"vvorker/utils"
+	"vvorker/utils/generate"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -105,7 +105,7 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker) error {
 	}
 
 	if worker.NodeName == curNodeName {
-		err := utils.GenWorkerConfig(newWorker.ToEntity())
+		err := generate.GenWorkerConfig(newWorker.ToEntity(), newWorker)
 		if err != nil {
 			return err
 		}

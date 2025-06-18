@@ -8,6 +8,7 @@ import (
 	"vvorker/entities"
 	"vvorker/models"
 	"vvorker/utils"
+	"vvorker/utils/generate"
 
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
@@ -24,7 +25,7 @@ func GenCapnpConfig() error {
 	var hasError bool
 	for _, worker := range workerList {
 		w := &models.Worker{Worker: worker}
-		fileMap := utils.BuildCapfile([]*entities.Worker{w.ToEntity()})
+		fileMap := generate.BuildCapfile([]*entities.Worker{w.ToEntity()}, w)
 
 		if fileContent, ok := fileMap[worker.GetUID()]; ok {
 			// 打印生成的 capnp 文件路径

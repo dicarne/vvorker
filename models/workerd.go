@@ -17,6 +17,7 @@ import (
 	"vvorker/tunnel"
 	"vvorker/utils"
 	"vvorker/utils/database"
+	"vvorker/utils/generate"
 
 	"github.com/codeclysm/extract/v3"
 
@@ -348,7 +349,7 @@ func (w *Worker) Flush() error {
 		return err
 	}
 
-	if err := utils.GenWorkerConfig(w.ToEntity()); err != nil {
+	if err := generate.GenWorkerConfig(w.ToEntity(), w); err != nil {
 		return err
 	}
 
@@ -467,7 +468,7 @@ func SyncWorkers(workerList *entities.WorkerList) error {
 			partialFail = true
 			continue
 		}
-		if err := utils.GenWorkerConfig(modelWorker.ToEntity()); err != nil {
+		if err := generate.GenWorkerConfig(modelWorker.ToEntity(), modelWorker); err != nil {
 			logrus.WithError(err).Errorf("sync workers gen config error, worker is: %+v", worker)
 			partialFail = true
 			continue
@@ -496,4 +497,22 @@ func SyncWorkers(workerList *entities.WorkerList) error {
 	}
 
 	return nil
+}
+
+func (w *Worker) WorkerNameToPort(name string) (int, error) {
+	anow := Worker{}
+	db := database.GetDB()
+	if err := db.Where("name = ?", name).First(&anow).Error; err != nil {
+		return 0, err
+	}
+	return anow.GetPort(), nil
+}
+
+func (w *Worker) WorkerNameToUID(name string) (string, error) {
+	anow := Worker{}
+	db := database.GetDB()
+	if err := db.Where("name = ?", name).First(&anow).Error; err != nil {
+		return "", err
+	}
+	return anow.GetUID(), nil
 }

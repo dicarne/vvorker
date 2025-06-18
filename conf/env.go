@@ -19,6 +19,8 @@ type AppConfig struct {
 	TunnelEntryPort int    `env:"TUNNEL_ENTRY_PORT" env-default:"10080"` // 【主节点内部】提供http服务，主节点用这个端口向其他节点发送请求。在主节点提供服务，子节点无法向其发送请求。
 	TunnelAPIPort   int    `env:"TUNNEL_API_PORT" env-default:"18080"`   // 【主节点公开】TUNNEL_ENTRY_PORT的frp端口，子节点通过这个端口配置每个worker的转发
 
+	InternalRPCPort int `env:"INTERNAL_RPC_PORT" env-default:"19080"` // 【内部】提供rpc服务
+
 	WorkerURLSuffix string `env:"WORKER_URL_SUFFIX"`         // master required, e.g. .example.com. for worker show and route
 	Scheme          string `env:"SCHEME" env-default:"http"` // http, https. for public frontend show
 	NodeName        string `env:"NODE_NAME" env-default:"default"`
