@@ -40,7 +40,7 @@ type PostgreSQL struct {
 type Assets struct {
 	gorm.Model
 	UserID    uint64
-	UID       string `gorm:"unique"`
+	UID       string
 	WorkerUID string
 	Name      string
 	MIME      string

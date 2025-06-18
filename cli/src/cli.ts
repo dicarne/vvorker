@@ -298,7 +298,7 @@ program
     let jsFilePath = "";
     if (vvorkerJson.assets && vvorkerJson.assets.length > 0) {
       if (vvorkerJson.project?.type === "vue") {
-        jsFilePath = `${process.cwd()}/dist/${packageJson.name}/index.js`;
+        jsFilePath = `${process.cwd()}/dist/${packageJson.name.replaceAll("-", "_")}/index.js`;
 
         let wwwAssetsPath = path.join(process.cwd(), "dist", "client")
         // walk wwwAssetsPath，调用接口上传每一个文件
@@ -333,20 +333,25 @@ program
               }
 
               let fileuid = up1.data.data.fileId;
+              
+              try {
+                let resp = await axios.post(`${getUrl()}/api/ext/assets/create-assets`, {
+                  uid: fileuid,
+                  "worker_uid": uid,
+                  "path": fileUrl,
+                }, {
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                  },
+                })
 
-              let resp = await axios.post(`${getUrl()}/api/ext/assets/create-assets`, {
-                uid: fileuid,
-                "worker_uid": uid,
-                "path": fileUrl,
-              }, {
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                },
-              })
+                if (resp.status != 200) {
+                  console.log(`上传失败：${fileUrl} ${resp.status} ${resp.statusText}`);
+                  throw new Error(`上传失败：${fileUrl}`);
+                }
 
-              if (resp.status != 200) {
-                console.log(`上传失败：${fileUrl} ${resp.status} ${resp.statusText}`);
-                throw new Error(`上传失败：${fileUrl}`);
+              } catch (error) {
+                console.log(`上传失败：${fileUrl} ${error}`);
               }
 
 
