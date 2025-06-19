@@ -59,6 +59,45 @@ export default class OSS extends WorkerEntrypoint {
 		return response.json();
 	}
 
+	async uploadStreamFile(stream: ReadableStream<Uint8Array>, fileName: string) {
+		const formData = new FormData();
+		const reader = stream.getReader();
+		const chunks: Uint8Array[] = [];
+
+		try {
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) break;
+				chunks.push(value);
+			}
+
+			// Combine all chunks into a single Uint8Array
+			const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+			const combined = new Uint8Array(totalLength);
+			let offset = 0;
+			for (const chunk of chunks) {
+				combined.set(chunk, offset);
+				offset += chunk.length;
+			}
+
+			// Create blob from combined data
+			const blob = new Blob([combined]);
+			formData.append("file", blob, fileName);
+
+			const response = await fetch(`${GO_API_URL}/api/ext/oss/upload`, {
+				method: "POST",
+				headers: {
+					...commonConfig,
+					Object: fileName
+				},
+				body: formData,
+			});
+			return response.json();
+		} finally {
+			reader.releaseLock();
+		}
+	}
+
 	async downloadFile(fileName: string) {
 		const response = await fetch(`${GO_API_URL}/api/ext/oss/download`, {
 			method: "POST",
@@ -68,6 +107,17 @@ export default class OSS extends WorkerEntrypoint {
 			},
 		});
 		return response.bytes();
+	}
+
+	async downloadStreamFile(fileName: string) {
+		const response = await fetch(`${GO_API_URL}/api/ext/oss/download`, {
+			method: "POST",
+			headers: {
+				...commonConfig,
+				Object: fileName
+			},
+		});
+		return response.body;
 	}
 
 	async listObjects(path: string, recursive: boolean = false) {
