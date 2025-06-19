@@ -82,6 +82,10 @@
                 "resource_id": {
                     "type": "string",
                     "title": "资源 ID"
+                },
+                "migrate": {
+                    "type": "string",
+                    "title": "数据库迁移文件目录"
                 }
             },
             "required": [

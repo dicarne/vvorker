@@ -7,12 +7,14 @@ import (
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/entities"
+	"vvorker/funcs"
 	"vvorker/models"
 	"vvorker/utils"
 	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+	"github.com/sirupsen/logrus"
 )
 
 // CreatePostgreSQLDatabase 创建 PostgreSQL 数据库及相关用户，并授予权限
@@ -241,4 +243,103 @@ func RecoverPGSQL(userID uint64, pgResource *models.PostgreSQL) (*models.Postgre
 	}
 
 	return pgResource, nil
+}
+
+type updateFile struct {
+	FileName string `json:"name"`
+	Content  string `json:"content"`
+}
+
+type updateMigrateReq struct {
+	ResourceID string       `json:"resource_id"`
+	Files      []updateFile `json:"files"`
+}
+
+func UpdateMigrate(c *gin.Context) {
+	var req updateMigrateReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": err.Error()})
+		return
+	}
+	userID := uint64(c.GetUint(common.UIDKey))
+	if userID == 0 {
+		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": "uid is required"})
+		return
+	}
+	db := database.GetDB()
+	pgResource := models.PostgreSQL{}
+	if err := db.Where("uid =?", req.ResourceID).First(&pgResource).Error; err != nil {
+		common.RespErr(c, http.StatusInternalServerError, "Failed to get PostgreSQL resource", gin.H{"error": err.Error()})
+		return
+	}
+	if pgResource.UserID != userID {
+		common.RespErr(c, http.StatusUnauthorized, "Unauthorized", gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	if err := db.Where(&models.PostgreSQLMigration{
+		UserID: userID,
+		DBUID:  pgResource.UID,
+	}).Delete(&models.PostgreSQLMigration{}).Error; err != nil {
+		common.RespErr(c, http.StatusInternalServerError, "Failed to delete PostgreSQL migration", gin.H{"error": err.Error()})
+		return
+	}
+
+	for i, file := range req.Files {
+		if err := db.Model(&models.PostgreSQLMigration{}).Create(&models.PostgreSQLMigration{
+			UserID:      userID,
+			DBUID:       pgResource.UID,
+			FileName:    file.FileName,
+			FileContent: file.Content,
+			Sequence:    i,
+		}).Error; err != nil {
+			common.RespErr(c, http.StatusInternalServerError, "Failed to create PostgreSQL migration", gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	common.RespOK(c, "success", gin.H{})
+}
+
+func MigratePostgreSQLDatabase(userID uint64, pgid string) error {
+	db := database.GetDB()
+	pgResource := models.PostgreSQL{}
+	if err := db.Where("uid =?", pgid).First(&pgResource).Error; err != nil {
+		return err
+	}
+
+	migrates := []models.PostgreSQLMigration{}
+	if err := db.Where(&models.PostgreSQLMigration{
+		UserID: userID,
+		DBUID:  pgResource.UID,
+	}).Order("sequence").Find(&migrates).Error; err != nil {
+		return err
+	}
+
+	pgResource.Database = "vvorker_" + pgResource.UID
+
+	pgdb, err := sql.Open("postgres",
+		"user="+conf.AppConfigInstance.ServerPostgreUser+
+			" password="+conf.AppConfigInstance.ServerPostgrePassword+
+			" host="+conf.AppConfigInstance.ServerPostgreHost+
+			" port="+fmt.Sprintf("%d", conf.AppConfigInstance.ServerPostgrePort)+
+			" sslmode=disable"+
+			" dbname="+pgResource.Database)
+	if err != nil {
+		return err
+	}
+	defer pgdb.Close()
+
+	for _, migrate := range migrates {
+		_, err = pgdb.Exec(migrate.FileContent)
+		if err != nil {
+			logrus.Error(err)
+			// return err
+		}
+	}
+	return nil
+}
+
+func init() {
+	funcs.SetMigratePostgreSQLDatabase(MigratePostgreSQLDatabase)
 }

@@ -333,7 +333,7 @@ program
               }
 
               let fileuid = up1.data.data.fileId;
-              
+
               try {
                 let resp = await axios.post(`${getUrl()}/api/ext/assets/create-assets`, {
                   uid: fileuid,
@@ -387,6 +387,45 @@ program
 
     //读取 /dist/vvorker.json
     const distVvorkerJson = await fs.readJson(`${process.cwd()}/dist/vvorker.json`);
+    if (distVvorkerJson.pgsql && distVvorkerJson.pgsql.length > 0) {
+      for (let pgsql of distVvorkerJson.pgsql) {
+        let rid = pgsql.resource_id;
+        if (pgsql.migrate) {
+          let migrateFiles = fs.readdirSync(pgsql.migrate);
+          let allFile: {
+            name: string,
+            content: string
+          }[] = []
+          for (let migrateFile of migrateFiles) {
+            if (!migrateFile.endsWith('.sql')) {
+              continue;
+            }
+            let migrateFilePath = path.join(pgsql.migrate, migrateFile);
+            let migrateFileContent = fs.readFileSync(migrateFilePath, 'utf-8');
+            allFile.push({
+              name: migrateFile,
+              content: migrateFileContent
+            })
+          }
+
+          let resp = await axios.post(`${getUrl()}/api/ext/pgsql/migrate`, {
+            resource_id: rid,
+            files: allFile,
+          }, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          })
+          if (resp.data.code !== 0) {
+            console.log(`迁移失败：${pgsql.migrate}`);
+            throw new Error(`迁移失败：${pgsql.migrate}`);
+          }
+          console.log(`迁移成功：${pgsql.migrate}`);
+        }
+      }
+    }
+
+    //
     prev.Code = jsBase64;
     prev.Template = JSON.stringify(distVvorkerJson);
     prev.HostName = undefined;

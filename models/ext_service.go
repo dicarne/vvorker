@@ -37,6 +37,15 @@ type PostgreSQL struct {
 	Password string
 }
 
+type PostgreSQLMigration struct {
+	gorm.Model
+	UserID      uint64
+	DBUID       string
+	FileName    string
+	FileContent string
+	Sequence    int
+}
+
 type Assets struct {
 	gorm.Model
 	UserID    uint64

@@ -199,6 +199,7 @@ func init() {
 				if conf.IsMaster() {
 					pgsqlAPI.POST("/create-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.CreateNewPostgreSQLResourcesEndpoint)
 					pgsqlAPI.POST("/delete-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.DeletePostgreSQLResourcesEndpoint)
+					pgsqlAPI.POST("/migrate", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.UpdateMigrate)
 				}
 			}
 			kvAPI := extAPI.Group("/kv")

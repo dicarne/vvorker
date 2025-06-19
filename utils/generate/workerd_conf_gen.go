@@ -192,6 +192,8 @@ func BuildCapfile(workers []*entities.Worker, workerQuery funcs.WorkerQuery) map
 						worker.GetUID(), "../../lib", extName+".js")
 
 					writeFileIfNotExists(filePath, allowExtension.Script)
+
+					funcs.MigratePostgreSQLDatabase(worker.UserID, ext.ResourceID)
 				} else {
 					logrus.Warnf("service %v not found", ext)
 				}
