@@ -8,6 +8,7 @@ import (
 	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/entities"
+	"vvorker/funcs"
 	"vvorker/models"
 	"vvorker/utils/database"
 
@@ -202,6 +203,8 @@ func FinishWorkerConfig(worker *models.Worker) string {
 					ext.ResourceID = ""
 				}
 				workerconfig.PgSql[i] = ext
+
+				funcs.MigratePostgreSQLDatabase(worker.UserID, ext.ResourceID)
 			}
 		}
 
