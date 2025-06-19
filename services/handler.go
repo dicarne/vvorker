@@ -189,6 +189,11 @@ func init() {
 				ossAPI.POST("/delete", authz.AgentAuthz(), oss.DeleteFile)
 				ossAPI.POST("/list-objects", authz.AgentAuthz(), oss.ListObjects)
 
+				ossAPI.POST("/initiate-multipart-upload", authz.AgentAuthz(), oss.InitiateMultipartUpload)
+				ossAPI.POST("/upload-part", authz.AgentAuthz(), oss.UploadPart)
+				ossAPI.POST("/complete-multipart-upload", authz.AgentAuthz(), oss.CompleteMultipartUpload)
+				ossAPI.POST("/abort-multipart-upload", authz.AgentAuthz(), oss.AbortMultipartUpload)
+
 				if conf.IsMaster() {
 					ossAPI.POST("/create-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), oss.CreateNewOSSResourcesEndpoint)
 					ossAPI.POST("/delete-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), oss.DeleteOSSResourcesEndpoint)

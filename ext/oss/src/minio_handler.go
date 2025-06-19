@@ -103,6 +103,127 @@ func DownloadFile(c *gin.Context) {
 	c.Writer.Flush()
 }
 
+// InitiateMultipartUpload 初始化分块上传
+func InitiateMultipartUpload(c *gin.Context) {
+	mc, err := getMinioClient(c)
+	if err != nil {
+		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
+		return
+	}
+	coreClient := &minio.Core{Client: mc.Client}
+
+	bucketName := c.GetHeader("Bucket")
+	objectName := c.GetHeader("Object")
+
+	uploadID, err := coreClient.NewMultipartUpload(context.Background(), bucketName, objectName, minio.PutObjectOptions{})
+	if err != nil {
+		common.RespErr(c, http.StatusInternalServerError, "Failed to initiate multipart upload", gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"UploadId": uploadID,
+	})
+}
+
+// UploadPart 上传分块
+func UploadPart(c *gin.Context) {
+	mc, err := getMinioClient(c)
+	if err != nil {
+		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
+		return
+	}
+	coreClient := &minio.Core{Client: mc.Client}
+
+	bucketName := c.GetHeader("Bucket")
+	objectName := c.GetHeader("Object")
+	uploadID := c.GetHeader("x-amz-upload-id")
+	partNumberStr := c.GetHeader("x-amz-part-number")
+	partNumber, err := strconv.Atoi(partNumberStr)
+	if err != nil {
+		common.RespErr(c, http.StatusBadRequest, "Invalid part number", gin.H{"error": err.Error()})
+		return
+	}
+
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		common.RespErr(c, http.StatusBadRequest, "Failed to get file from form", gin.H{"error": err.Error()})
+		return
+	}
+	defer file.Close()
+
+	part, err := coreClient.PutObjectPart(context.Background(), bucketName, objectName, uploadID, partNumber, file, header.Size, minio.PutObjectPartOptions{})
+	if err != nil {
+		common.RespErr(c, http.StatusInternalServerError, "Failed to upload part", gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"ETag": part.ETag,
+	})
+}
+
+// CompleteMultipartUpload 完成分块上传
+func CompleteMultipartUpload(c *gin.Context) {
+	mc, err := getMinioClient(c)
+	if err != nil {
+		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
+		return
+	}
+	coreClient := &minio.Core{Client: mc.Client}
+
+	bucketName := c.GetHeader("Bucket")
+	objectName := c.GetHeader("Object")
+	uploadID := c.GetHeader("x-amz-upload-id")
+
+	var completeRequest struct {
+		Parts []minio.CompletePart `json:"Parts"`
+	}
+
+	if err := c.ShouldBindJSON(&completeRequest); err != nil {
+		common.RespErr(c, http.StatusBadRequest, "Invalid parts data", gin.H{"error": err.Error()})
+		return
+	}
+
+	uploadInfo, err := coreClient.CompleteMultipartUpload(context.Background(), bucketName, objectName, uploadID, completeRequest.Parts, minio.PutObjectOptions{})
+	if err != nil {
+		common.RespErr(c, http.StatusInternalServerError, "Failed to complete multipart upload", gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "Upload completed successfully",
+		"Location": uploadInfo.Location,
+		"Bucket":   uploadInfo.Bucket,
+		"Key":      uploadInfo.Key,
+		"ETag":     uploadInfo.ETag,
+	})
+}
+
+// AbortMultipartUpload 中断分块上传
+func AbortMultipartUpload(c *gin.Context) {
+	mc, err := getMinioClient(c)
+	if err != nil {
+		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
+		return
+	}
+	coreClient := &minio.Core{Client: mc.Client}
+
+	bucketName := c.GetHeader("Bucket")
+	objectName := c.GetHeader("Object")
+	uploadID := c.GetHeader("x-amz-upload-id")
+
+	err = coreClient.AbortMultipartUpload(context.Background(), bucketName, objectName, uploadID)
+	if err != nil {
+		common.RespErr(c, http.StatusInternalServerError, "Failed to abort multipart upload", gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Multipart upload aborted",
+	})
+}
+
 // UploadFile 上传文件接口
 func UploadFile(c *gin.Context) {
 	mc, err := getMinioClient(c)
