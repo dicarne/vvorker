@@ -210,6 +210,19 @@
             "required": [
                 "binding"
             ]
+        },
+        "SchedulersConfig": {
+            "type": "object",
+            "title": "定时任务配置",
+            "properties": {
+                "cron": {
+                    "type": "string",
+                    "title": "定时任务表达式"
+                }
+            },
+            "required": [
+                "cron"
+            ]
         }
     },
     "properties": {
@@ -305,6 +318,13 @@
             "title": "任务配置列表",
             "items": {
                 "$ref": "#/definitions/Task"
+            }
+        },
+        "schedulers": {
+            "type": "array",
+            "title": "定时任务配置列表",
+            "items": {
+                "$ref": "#/definitions/SchedulersConfig"
             }
         }
     }
