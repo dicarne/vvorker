@@ -23,7 +23,7 @@ func RequestControlEndpoint(workerUID string, bbody []byte) []byte {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Host = workerUID + "-control.vvorker.zhishudali.ink"
+	req.Host = workerUID + "-control" + conf.AppConfigInstance.WorkerURLSuffix
 
 	body := bytes.NewBuffer(bbody)
 	req.Body = io.NopCloser(body)
