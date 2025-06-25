@@ -27,7 +27,8 @@ export default withMermaid({
       {
         text: "DESIGN",
         items: [
-          { text: 'Design', link: '/design/network' },
+          { text: '钦定', link: '/design/must' },
+          { text: '网络', link: '/design/network' },
         ]
       }
     ],

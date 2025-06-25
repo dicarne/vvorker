@@ -15,7 +15,7 @@ hero:
       link: /cli/vvorker-cli
     - theme: alt
       text: DESIGN
-      link: /design/network
+      link: /design/must
 
 features:
   - title: 快速上线
