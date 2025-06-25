@@ -289,8 +289,10 @@ async function vars<T extends { vars: any }>(binding: any): Promise<T['vars']> {
     return binding
 }
 
-// 用于转换环境变量和绑定，在开发时（env.vars.MODE="development"）将通过代理和节点进行交互，从而获取节点的绑定和变量。
-// 在生产时，将直接返回绑定和变量。
+/**
+ * 用于转换环境变量和绑定，在开发时（env.vars.MODE="development"）将通过代理和节点进行交互，从而获取节点的绑定和变量。
+ * 在生产时，将直接返回绑定和变量。
+ */
 export function vvbind<T extends { env: { vars: any, [key: string]: any } }>(c: T) {
     return {
         oss: (key: string) => vvoss(key, c.env[key]),

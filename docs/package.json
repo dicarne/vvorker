@@ -1,0 +1,34 @@
+{
+  "name": "vvorker-docs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "cf-typegen": "wrangler types"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.11.0",
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.46",
+    "mermaid": "^11.7.0",
+    "typescript": "^5.8.3",
+    "vitepress": "^1.6.3",
+    "vitepress-plugin-mermaid": "^2.0.17",
+    "wrangler": "^4.21.2"
+  },
+  "dependencies": {
+    "@braintree/sanitize-url": "^7.1.1",
+    "cytoscape": "^3.32.0",
+    "cytoscape-cose-bilkent": "^4.1.0",
+    "dayjs": "^1.11.13",
+    "debug": "^4.4.1",
+    "hono": "^4.8.3"
+  }
+}

@@ -1,0 +1,9 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "vvorker-docs",
+    "main": "src/index.ts",
+    "compatibility_date": "2025-05-20",
+    "observability": {
+        "enabled": true
+    }
+}

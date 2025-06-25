@@ -227,7 +227,13 @@ export default app;
       }
 
       const jsonFilePath = `vvorker.json`;
-      await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
+      (jsonData as any)["assets"] = [
+        {
+          "directory": "./dist",
+          "binding": "ASSETS"
+        }
+      ],
+        await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
       console.log(`项目 ${projectName} 初始化完成`);
       console.log(`运行 vvcli types 生成相关类型提示`);
     } else {
@@ -321,70 +327,71 @@ program
 
     let jsFilePath = "";
     if (vvorkerJson.assets && vvorkerJson.assets.length > 0) {
-      if (vvorkerJson.project?.type === "vue") {
-        jsFilePath = `${process.cwd()}/dist/${packageJson.name.replaceAll("-", "_")}/index.js`;
 
-        let wwwAssetsPath = path.join(process.cwd(), "dist", "client")
-        // walk wwwAssetsPath，调用接口上传每一个文件
-        const walk = async (dir: string) => {
-          const files = fs.readdirSync(dir);
-          for (let file of files) {
-            const filePath = path.join(dir, file);
-            const stat = fs.statSync(filePath);
-            if (stat.isDirectory()) {
-              walk(filePath);
-            } else {
-              const fileContent = fs.readFileSync(filePath);
-              const fileBase64 = Buffer.from(fileContent).toString('base64');
-              const fileUrl = filePath.replace(wwwAssetsPath, '').replace(/\\/g, '/');
-              console.log(fileUrl);
 
-              // 创建 FormData 对象
-              const formData = new FormData();
-              // 将文件数据添加到 FormData 中
-              formData.append('file', new Blob([fileContent]), fileUrl);
+      let wwwAssetsPath = path.join(process.cwd(), vvorkerJson.assets[0].directory)
+      // walk wwwAssetsPath，调用接口上传每一个文件
+      const walk = async (dir: string) => {
+        const files = fs.readdirSync(dir);
+        for (let file of files) {
+          const filePath = path.join(dir, file);
+          const stat = fs.statSync(filePath);
+          if (stat.isDirectory()) {
+            walk(filePath);
+          } else {
+            const fileContent = fs.readFileSync(filePath);
+            // const fileBase64 = Buffer.from(fileContent).toString('base64');
+            const fileUrl = filePath.replace(wwwAssetsPath, '').replace(/\\/g, '/');
+            console.log(fileUrl);
 
-              let up1 = await axios.post(`${getUrl()}/api/file/upload`, formData, {
+            // 创建 FormData 对象
+            const formData = new FormData();
+            // 将文件数据添加到 FormData 中
+            formData.append('file', new Blob([fileContent]), fileUrl);
+
+            let up1 = await axios.post(`${getUrl()}/api/file/upload`, formData, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                // 设置 Content-Type 为 multipart/form-data
+                'Content-Type': 'multipart/form-data'
+              },
+            })
+
+            if (up1.status !== 200) {
+              throw new Error(`上传失败：${fileUrl} ${up1.status} ${up1.statusText}`);
+            }
+
+            let fileuid = up1.data.data.fileId;
+
+            try {
+              let resp = await axios.post(`${getUrl()}/api/ext/assets/create-assets`, {
+                uid: fileuid,
+                "worker_uid": uid,
+                "path": fileUrl,
+              }, {
                 headers: {
                   'Authorization': `Bearer ${token}`,
-                  // 设置 Content-Type 为 multipart/form-data
-                  'Content-Type': 'multipart/form-data'
                 },
               })
 
-              if (up1.status !== 200) {
-                throw new Error(`上传失败：${fileUrl} ${up1.status} ${up1.statusText}`);
+              if (resp.status != 200) {
+                console.log(`上传失败：${fileUrl} ${resp.status} ${resp.statusText}`);
+                throw new Error(`上传失败：${fileUrl}`);
               }
 
-              let fileuid = up1.data.data.fileId;
-
-              try {
-                let resp = await axios.post(`${getUrl()}/api/ext/assets/create-assets`, {
-                  uid: fileuid,
-                  "worker_uid": uid,
-                  "path": fileUrl,
-                }, {
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                  },
-                })
-
-                if (resp.status != 200) {
-                  console.log(`上传失败：${fileUrl} ${resp.status} ${resp.statusText}`);
-                  throw new Error(`上传失败：${fileUrl}`);
-                }
-
-              } catch (error) {
-                console.log(`上传失败：${fileUrl} ${error}`);
-              }
-
-
+            } catch (error) {
+              console.log(`上传失败：${fileUrl} ${error}`);
             }
+
+
           }
         }
-        await walk(wwwAssetsPath);
       }
+      await walk(wwwAssetsPath);
+    }
 
+    if (vvorkerJson.project.type === "vue") {
+      jsFilePath = `${process.cwd()}/dist/${packageJson.name.replaceAll("-", "_")}/index.js`;
     } else {
       jsFilePath = `${process.cwd()}/dist/index.js`;
     }

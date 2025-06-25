@@ -1,0 +1,307 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "required": [
+        "name"
+    ],
+    "definitions": {
+        "binding": {
+            "type": "string",
+            "title": "绑定名称"
+        },
+        "ExtensionConfig": {
+            "type": "object",
+            "title": "扩展配置",
+            "properties": {
+                "binding": {
+                    "$ref": "#/definitions/binding"
+                },
+                "name": {
+                    "type": "string",
+                    "title": "扩展名称"
+                }
+            },
+            "required": [
+                "binding",
+                "name"
+            ]
+        },
+        "AiConfig": {
+            "type": "object",
+            "title": "AI 配置",
+            "properties": {
+                "model": {
+                    "type": "string",
+                    "title": "模型id"
+                },
+                "api_key": {
+                    "type": "string",
+                    "title": "API密钥"
+                },
+                "base_url": {
+                    "type": "string",
+                    "title": "API Base Url"
+                },
+                "binding": {
+                    "$ref": "#/definitions/binding"
+                }
+            },
+            "required": [
+                "model",
+                "api_key",
+                "base_url",
+                "binding"
+            ]
+        },
+        "SQLDBConfig": {
+            "type": "object",
+            "title": "SQL 数据库配置",
+            "properties": {
+                "host": {
+                    "type": "string",
+                    "title": "数据库主机地址"
+                },
+                "port": {
+                    "type": "integer",
+                    "title": "数据库端口"
+                },
+                "user": {
+                    "type": "string",
+                    "title": "数据库用户名"
+                },
+                "password": {
+                    "type": "string",
+                    "title": "数据库密码"
+                },
+                "database": {
+                    "type": "string",
+                    "title": "数据库名"
+                },
+                "binding": {
+                    "$ref": "#/definitions/binding"
+                },
+                "resource_id": {
+                    "type": "string",
+                    "title": "资源 ID"
+                }
+            },
+            "required": [
+                "host",
+                "port",
+                "user",
+                "password",
+                "database",
+                "binding",
+                "resource_id"
+            ]
+        },
+        "OSSConfig": {
+            "type": "object",
+            "title": "对象存储服务配置",
+            "properties": {
+                "host": {
+                    "type": "string",
+                    "title": "对象存储主机地址"
+                },
+                "port": {
+                    "type": "integer",
+                    "title": "对象存储端口"
+                },
+                "access_key_id": {
+                    "type": "string",
+                    "title": "访问密钥 ID"
+                },
+                "access_key_secret": {
+                    "type": "string",
+                    "title": "访问密钥 Secret"
+                },
+                "binding": {
+                    "$ref": "#/definitions/binding"
+                },
+                "bucket": {
+                    "type": "string",
+                    "title": "存储桶名称"
+                },
+                "use_ssl": {
+                    "type": "boolean",
+                    "title": "是否使用 SSL"
+                },
+                "region": {
+                    "type": "string",
+                    "title": "区域"
+                },
+                "resource_id": {
+                    "type": "string",
+                    "title": "资源 ID"
+                },
+                "session_token": {
+                    "type": "string",
+                    "title": "会话令牌"
+                }
+            },
+            "required": [
+                "host",
+                "port",
+                "access_key_id",
+                "access_key_secret",
+                "binding",
+                "bucket",
+                "use_ssl",
+                "region",
+                "resource_id",
+                "session_token"
+            ]
+        },
+        "KV": {
+            "type": "object",
+            "title": "键值存储配置",
+            "properties": {
+                "host": {
+                    "type": "string",
+                    "title": "键值存储主机地址"
+                },
+                "port": {
+                    "type": "integer",
+                    "title": "键值存储端口"
+                },
+                "binding": {
+                    "$ref": "#/definitions/binding"
+                },
+                "resource_id": {
+                    "type": "string",
+                    "title": "资源 ID"
+                }
+            },
+            "required": [
+                "host",
+                "port",
+                "binding",
+                "resource_id"
+            ]
+        },
+        "Assets": {
+            "type": "object",
+            "title": "静态资源配置",
+            "properties": {
+                "binding": {
+                    "$ref": "#/definitions/binding"
+                },
+                "directory": {
+                    "type": "string",
+                    "title": "静态资源目录"
+                }
+            },
+            "required": [
+                "binding",
+                "directory"
+            ]
+        },
+        "Task": {
+            "type": "object",
+            "title": "任务配置",
+            "properties": {
+                "binding": {
+                    "$ref": "#/definitions/binding"
+                }
+            },
+            "required": [
+                "binding"
+            ]
+        }
+    },
+    "properties": {
+        "name": {
+            "type": "string",
+            "title": "Worker的名称，通常是项目名"
+        },
+        "project": {
+            "type": "object",
+            "title": "用于描述项目的元数据",
+            "properties": {
+                "uid": {
+                    "title": "用于绑定vvorker中的worker UID",
+                    "type": "string"
+                },
+                "type": {
+                    "title": "工程类型",
+                    "type": "string",
+                    "enum": [
+                        "worker",
+                        "vue"
+                    ]
+                }
+            }
+        },
+        "version": {
+            "type": "string",
+            "title": "版本号"
+        },
+        "extensions": {
+            "type": "array",
+            "title": "扩展配置列表",
+            "items": {
+                "$ref": "#/definitions/ExtensionConfig"
+            }
+        },
+        "services": {
+            "type": "array",
+            "title": "用于绑定内部服务，填写对应服务的name而不是uid，在env中name将转换为CamelCase",
+            "uniqueItems": true,
+            "items": {
+                "type": "string"
+            }
+        },
+        "compatibility_flags": {
+            "type": "array",
+            "title": "wrangler compatibility_flags，需要与wrangler.jsonc保持一致",
+            "items": {
+                "type": "string"
+            }
+        },
+        "vars": {
+            "type": "object",
+            "title": "自定义环境变量"
+        },
+        "ai": {
+            "type": "array",
+            "title": "绑定AI服务",
+            "items": {
+                "$ref": "#/definitions/AiConfig"
+            }
+        },
+        "pgsql": {
+            "type": "array",
+            "title": "PostgreSQL 数据库配置列表",
+            "items": {
+                "$ref": "#/definitions/SQLDBConfig"
+            }
+        },
+        "oss": {
+            "type": "array",
+            "title": "对象存储服务配置列表",
+            "items": {
+                "$ref": "#/definitions/OSSConfig"
+            }
+        },
+        "kv": {
+            "type": "array",
+            "title": "键值存储配置列表",
+            "items": {
+                "$ref": "#/definitions/KV"
+            }
+        },
+        "assets": {
+            "type": "array",
+            "title": "静态资源配置列表",
+            "items": {
+                "$ref": "#/definitions/Assets"
+            }
+        },
+        "task": {
+            "type": "array",
+            "title": "任务配置列表",
+            "items": {
+                "$ref": "#/definitions/Task"
+            }
+        }
+    }
+}

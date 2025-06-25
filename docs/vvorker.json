@@ -1,0 +1,14 @@
+{
+    "name": "vvorker-docs",
+    "project": {
+      "uid": "6ac4d0ecf8734e63ad9efd8365b30219",
+      "type": "worker"
+    },
+    "version": "1.0.0",
+    "assets": [
+      {
+        "directory": ".vitepress/dist",
+        "binding": "ASSETS"
+      }
+    ]
+  }
