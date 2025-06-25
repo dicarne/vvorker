@@ -1,4 +1,5 @@
 import { WorkerEntrypoint, env } from "cloudflare:workers";
+export * from "./binding"
 
 interface InitResult {
     UploadId: string;

@@ -1,5 +1,5 @@
 {
-	"name": "oss",
+	"name": "@dicarne/vvorker-oss",
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
@@ -8,12 +8,14 @@
 		"start": "wrangler dev",
 		"test": "vitest",
 		"cf-typegen": "wrangler types",
-		"build": "wrangler deploy --dry-run --outdir dist"
+		"build": "wrangler deploy --dry-run --outdir dist",
+		"package": "tsc"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.8.19",
 		"typescript": "^5.5.2",
 		"vitest": "~3.0.7",
 		"wrangler": "^4.16.1"
-	}
+	},
+	"types": "distpkg/index.d.ts"
 }

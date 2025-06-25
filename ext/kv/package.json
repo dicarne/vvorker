@@ -1,5 +1,5 @@
 {
-	"name": "kv",
+	"name": "@dicarne/vvorker-kv",
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
@@ -8,7 +8,8 @@
 		"start": "wrangler dev",
 		"test": "vitest",
 		"cf-typegen": "wrangler types",
-		"build": "wrangler deploy --dry-run --outdir dist"
+		"build": "wrangler deploy --dry-run --outdir dist",
+		"package": "tsc"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.8.19",
@@ -18,5 +19,6 @@
 	},
 	"dependencies": {
 		"redis": "^5.1.0"
-	}
+	},
+	"types": "distpkg/index.d.ts"
 }

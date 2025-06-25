@@ -22,7 +22,9 @@
 		"checkJs": false,
 
 		/* Disable emitting files from a compilation. */
-		"noEmit": true,
+		"noEmit": false,
+		"outDir": "./distpkg",
+		"declaration": true,
 
 		/* Ensure that each file can be safely transpiled without relying on other imports. */
 		"isolatedModules": true,

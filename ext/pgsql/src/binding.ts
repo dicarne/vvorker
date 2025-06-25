@@ -1,5 +1,5 @@
 export interface PGSQLBinding {
-    connectionString: Promise<string>;
+    connectionString: () =>Promise<string>;
     client: () => Promise<PGSQLClient>;
 }
 

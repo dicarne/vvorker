@@ -1,0 +1,33 @@
+{
+  "name": "@dicarne/vvorker-sdk",
+  "version": "1.0.0",
+  "description": "VVorker SDK for JavaScript/TypeScript",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vvorker",
+    "sdk",
+    "typescript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "packageManager": "pnpm@10.11.0",
+  "dependencies": {
+    "@dicarne/vvorker-kv": "link:..\\..\\ext\\kv",
+    "@dicarne/vvorker-oss": "link:..\\..\\ext\\oss",
+    "@dicarne/vvorker-pgsql": "link:..\\..\\ext\\pgsql",
+    "hono": "^4.8.3"
+  }
+}
