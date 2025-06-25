@@ -3,8 +3,10 @@ import { DebugEndpointRequest } from "../types/debug-endpoint";
 import { KVBinding } from "@dicarne/vvorker-kv";
 import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
 import { OSSBinding } from "@dicarne/vvorker-oss";
+import { isDev } from "../common/common";
 
 export function useDebugEndpoint(app: any) {
+    if (!isDev()) return
     app.post("/__vvorker__debug", async (c: Context) => {
         const req = await c.req.json<DebugEndpointRequest>();
         switch (req.service) {

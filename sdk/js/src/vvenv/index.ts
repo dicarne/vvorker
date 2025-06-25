@@ -1,24 +1,8 @@
 import { KVBinding, KV } from "@dicarne/vvorker-kv";
 import { OSSBinding } from "@dicarne/vvorker-oss";
 import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
-import { Context } from "hono";
+import { config, isDev } from "../common/common";
 
-function isDev() {
-    return true
-}
-
-function config() {
-    let url = (import.meta as any).env.VITE_VVORKER_BASE_URL
-    // Remove trailing slash if exists
-    if (url.endsWith('/')) {
-        url = url.slice(0, -1);
-    }
-    const token = (import.meta as any).env.VITE_VVORKER_TOKEN
-    return {
-        url,
-        token
-    }
-}
 
 function vvoss(key: string, binding: OSSBinding): OSSBinding {
     if (isDev()) {
@@ -92,7 +76,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                         }
                     })
                 })
-                return (await r.json()).data    
+                return (await r.json()).data
             },
             uploadStreamFile: async (stream: ReadableStream<Uint8Array>, fileName: string) => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -111,7 +95,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                         }
                     })
                 })
-                return (await r.json()).data    
+                return (await r.json()).data
             },
             downloadStreamFile: async (fileName: string) => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -129,9 +113,9 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                         }
                     })
                 })
-                return (await r.json()).data    
+                return (await r.json()).data
             },
-            deleteObject: async (fileName: string) =>   {
+            deleteObject: async (fileName: string) => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
                     method: "POST",
                     headers: {
@@ -147,7 +131,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                         }
                     })
                 })
-                return (await r.json()).data    
+                return (await r.json()).data
             },
         }
     } else {
