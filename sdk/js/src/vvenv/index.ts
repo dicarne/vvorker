@@ -269,11 +269,31 @@ function vvkv(binding_key: string, binding: KVBinding): KVBinding {
     }
 }
 
+async function vars(binding: any): Promise<any> {
+    if (isDev()) {
+        let r = await fetch(`${config().url}/__vvorker__debug`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${config().token}`
+            },
+            body: JSON.stringify({
+                service: "vars",
+                binding: "",
+                method: "get",
+                params: {}
+            })
+        })
+        return (await r.json()).data
+    }
+    return binding
+}
 
 export function vvbind(c: any) {
     return {
         oss: (key: string) => vvoss(key, c.env[key]),
         pgsql: (key: string) => vvpgsql(key, c.env[key]),
         kv: (key: string) => vvkv(key, c.env[key]),
+        vars: () => vars(c.env)
     }
 }

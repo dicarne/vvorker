@@ -71,6 +71,15 @@ export function useDebugEndpoint(app: any) {
                             return c.json({ error: "method not found", req }, 404)
                     }
                 }
+            case "vars":
+                {
+                    switch (req.method) {
+                        case "get":
+                            return c.json({ message: "vars", data: await c.env.vars });
+                        default:
+                            return c.json({ error: "method not found", req }, 404)
+                    }
+                }
         }
     })
 }
