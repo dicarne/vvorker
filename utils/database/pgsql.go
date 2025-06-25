@@ -22,7 +22,7 @@ func initPgsql() {
 		return
 	}
 
-	databaseNmae := "vvorker_admin"
+	databaseNmae := "vvorker_admin_" + conf.AppConfigInstance.NodeName
 
 	pgdb, err := sql.Open("postgres",
 		"user="+conf.AppConfigInstance.ServerPostgreUser+
@@ -40,10 +40,11 @@ func initPgsql() {
 		logrus.Printf("Failed to create database: %v", err)
 	}
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=vvorker_admin port=%d sslmode=disable",
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
 		conf.AppConfigInstance.ServerPostgreHost,
 		conf.AppConfigInstance.ServerPostgreUser,
 		conf.AppConfigInstance.ServerPostgrePassword,
+		databaseNmae,
 		conf.AppConfigInstance.ServerPostgrePort)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
