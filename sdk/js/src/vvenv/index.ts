@@ -269,7 +269,7 @@ function vvkv(binding_key: string, binding: KVBinding): KVBinding {
     }
 }
 
-async function vars(binding: any): Promise<any> {
+async function vars<T extends { vars: any }>(binding: any): Promise<T['vars']> {
     if (isDev()) {
         let r = await fetch(`${config().url}/__vvorker__debug`, {
             method: "POST",
@@ -289,11 +289,13 @@ async function vars(binding: any): Promise<any> {
     return binding
 }
 
-export function vvbind(c: any) {
+// 用于转换环境变量和绑定，在开发时（env.vars.MODE="development"）将通过代理和节点进行交互，从而获取节点的绑定和变量。
+// 在生产时，将直接返回绑定和变量。
+export function vvbind<T extends { env: { vars: any, [key: string]: any } }>(c: T) {
     return {
         oss: (key: string) => vvoss(key, c.env[key]),
         pgsql: (key: string) => vvpgsql(key, c.env[key]),
         kv: (key: string) => vvkv(key, c.env[key]),
-        vars: () => vars(c.env)
+        vars: () => vars<{ vars: T['env']['vars'] }>(c.env)
     }
 }
