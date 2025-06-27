@@ -208,8 +208,7 @@ app.get("*", async (c) => {
 
 export default app;
         `
-        const jsFilePath = `${projectName}/src/index.ts`;
-        await fs.writeFile(jsFilePath, vueJSCode);
+        
         await new Promise((resolve, reject) => {
           // npm create cloudflare@latest -- my-vue-app --framework=vue
           const child = spawn('pnpm', ['create', "cloudflare@latest", projectName, "--framework=vue"], { stdio: 'inherit', shell: true });
@@ -224,6 +223,9 @@ export default app;
             reject(error);
           });
         });
+
+        const jsFilePath = `${projectName}/server/index.ts`;
+        await fs.writeFile(jsFilePath, vueJSCode);
       }
 
       const jsonFilePath = `vvorker.json`;
