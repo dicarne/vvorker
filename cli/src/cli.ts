@@ -231,7 +231,7 @@ export default app;
       const jsonFilePath = `vvorker.json`;
       (jsonData as any)["assets"] = [
         {
-          "directory": "./dist",
+          "directory": "./dist/client",
           "binding": "ASSETS"
         }
       ],
