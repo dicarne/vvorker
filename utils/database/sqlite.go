@@ -1,6 +1,8 @@
 package database
 
 import (
+	"os"
+	"path/filepath"
 	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/utils"
@@ -21,6 +23,13 @@ func initSqlite() {
 	}
 
 	dbPath := conf.AppConfigInstance.DBPath
+
+	// 确保数据库文件所在目录存在
+	if err := os.MkdirAll(filepath.Dir(dbPath), 0755); err != nil {
+		logrus.WithError(err).Errorf("Failed to create directory for SQLite database: %s", filepath.Dir(dbPath))
+		panic(err)
+	}
+
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 	if err != nil {
 		logrus.Error(err, "Initializing DB Error")

@@ -285,6 +285,10 @@ func initTunnelService(serviceName string, servicePort int, visitorPort int) err
 }
 
 func Run(f embed.FS) {
+	if err := os.MkdirAll(conf.AppConfigInstance.WorkerdDir, 0755); err != nil {
+		logrus.WithError(err).Errorf("Failed to create workerd directory: %s", conf.AppConfigInstance.WorkerdDir)
+		return
+	}
 
 	os.RemoveAll(
 		filepath.Join(
