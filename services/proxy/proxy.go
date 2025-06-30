@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"fmt"
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"runtime/debug"
@@ -30,8 +31,9 @@ func Endpoint(c *gin.Context) {
 	workerName := host[:len(host)-len(conf.AppConfigInstance.WorkerURLSuffix)]
 	worker, err := models.AdminGetWorkerByName(workerName)
 	if err != nil {
-		logrus.Errorf("failed to get worker by name, err: %v", err)
-		common.RespErr(c, common.RespCodeServiceNotFound, common.RespMsgServiceNotFound, nil)
+		// logrus.Errorf("failed to get worker by name, err: %v", err)
+		// common.RespErr(c, common.RespCodeServiceNotFound, common.RespMsgServiceNotFound, nil)
+		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 	c.Request.Header.Del("vvorker-worker-uid")
@@ -81,7 +83,7 @@ func Endpoint(c *gin.Context) {
 					Token:     accesstoken,
 				}).First(&workerToken)
 				if d.Error != nil {
-					c.AbortWithStatus(403)
+					c.AbortWithStatus(http.StatusForbidden)
 					return
 				}
 				c.Request.Header.Del("vvorker-access-token")
@@ -94,11 +96,11 @@ func Endpoint(c *gin.Context) {
 				db := database.GetDB()
 				tokens := strings.Split(internaltoken, ":")
 				if len(tokens) != 2 {
-					c.AbortWithStatus(401)
+					c.AbortWithStatus(http.StatusUnauthorized)
 					return
 				}
 				if tokens[1] != conf.RPCToken {
-					c.AbortWithStatus(403)
+					c.AbortWithStatus(http.StatusForbidden)
 					return
 				}
 				if tokens[1] != worker.UID {
@@ -108,7 +110,7 @@ func Endpoint(c *gin.Context) {
 						AllowWorkerUID: tokens[0],
 					}).First(&workerToken)
 					if d.Error != nil {
-						c.AbortWithStatus(403)
+						c.AbortWithStatus(http.StatusForbidden)
 						return
 					}
 				}
@@ -119,7 +121,7 @@ func Endpoint(c *gin.Context) {
 		}
 
 		if !authed {
-			c.AbortWithStatus(401)
+			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 	}
