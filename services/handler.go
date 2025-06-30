@@ -69,7 +69,7 @@ func init() {
 	}
 
 	api := router.Group("/api")
-	{
+	registerApi := func(api *gin.RouterGroup) {
 		if conf.IsMaster() {
 			workerApi := api.Group("/worker", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
 			{
@@ -241,6 +241,15 @@ func init() {
 			}
 		}
 	}
+	registerApi(api)
+
+	if conf.AppConfigInstance.WorkerHostMode == "path" && conf.AppConfigInstance.WorkerHostPath != "" {
+		if conf.IsMaster() {
+			api2 := router.Group("/" + conf.AppConfigInstance.WorkerHostPath + "/api")
+			registerApi(api2)
+		}
+
+	}
 	// rpctunnel.Any("/*proxyPath", proxyService.Endpoint)
 	// rpctunnel.NoRoute(proxyService.HandleConnect)
 	proxy.Any("/*proxyPath", proxyService.Endpoint)
@@ -399,19 +408,35 @@ func modifyProxyRequestHeaders(c *gin.Context) {
 			url = url[1:]
 		}
 		// 按 / 分割路径
-		parts := strings.SplitN(url, "/", 2)
-		if len(parts) > 0 && parts[0] != "" {
-			// 提取第一段作为主机名
-			host := parts[0] + conf.AppConfigInstance.WorkerURLSuffix
-			c.Request.Header.Set("Host", host)
-			c.Request.Host = host
-			// 去掉第一段后的路径
-			if len(parts) > 1 {
-				c.Request.URL.Path = "/" + parts[1]
-			} else {
-				c.Request.URL.Path = "/"
+		if conf.AppConfigInstance.WorkerHostPath == "" {
+			parts := strings.SplitN(url, "/", 2)
+			if len(parts) > 0 && parts[0] != "" {
+				host := parts[0] + conf.AppConfigInstance.WorkerURLSuffix
+				c.Request.Header.Set("Host", host)
+				c.Request.Host = host
+				// 去掉第一段后的路径
+				if len(parts) > 1 {
+					c.Request.URL.Path = "/" + parts[1]
+				} else {
+					c.Request.URL.Path = "/"
+				}
 			}
+		} else {
+			parts := strings.SplitN(url, "/", 3)
+			if len(parts) > 0 && parts[0] != "" {
+				host := parts[1] + conf.AppConfigInstance.WorkerURLSuffix
+				c.Request.Header.Set("Host", host)
+				c.Request.Host = host
+				// 去掉第二段后的路径
+				if len(parts) > 2 {
+					c.Request.URL.Path = "/" + parts[1] + "/" + parts[2]
+				} else {
+					c.Request.URL.Path = "/"
+				}
+			}
+
 		}
+
 	} else {
 		host := c.Request.Header.Get("Server-Host")
 		if host != "" {

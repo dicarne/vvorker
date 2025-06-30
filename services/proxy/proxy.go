@@ -28,7 +28,8 @@ func Endpoint(c *gin.Context) {
 	}()
 	host := c.Request.Host
 	c.Request.Host = host
-	workerName := host[:len(host)-len(conf.AppConfigInstance.WorkerURLSuffix)]
+	suffix := conf.AppConfigInstance.WorkerURLSuffix
+	workerName := host[:len(host)-len(suffix)]
 	worker, err := models.AdminGetWorkerByName(workerName)
 	if err != nil {
 		// logrus.Errorf("failed to get worker by name, err: %v", err)
@@ -37,6 +38,18 @@ func Endpoint(c *gin.Context) {
 		return
 	}
 	c.Request.Header.Del("vvorker-worker-uid")
+
+	if conf.AppConfigInstance.WorkerHostPath != "" {
+		path := c.Request.URL.Path
+		// Remove the first segment of the path
+		segments := strings.Split(path, "/")
+		if len(segments) > 1 {
+			path = "/" + strings.Join(segments[2:], "/")
+		}
+		c.Request.URL = &url.URL{
+			Path: path,
+		}
+	}
 
 	var remote *url.URL
 	if worker.GetNodeName() == conf.AppConfigInstance.NodeName {
