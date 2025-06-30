@@ -2,6 +2,7 @@ package conf
 
 import (
 	"fmt"
+	"os"
 	"vvorker/utils/secret"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -21,13 +22,13 @@ type AppConfig struct {
 
 	InternalRPCPort int `env:"INTERNAL_RPC_PORT" env-default:"19080"` // 【内部】提供rpc服务
 
-	WorkerURLSuffix string `env:"WORKER_URL_SUFFIX"`         // master required, e.g. .example.com. for worker show and route
-	Scheme          string `env:"SCHEME" env-default:"http"` // http, https. for public frontend show
+	WorkerURLSuffix string `env:"WORKER_URL_SUFFIX" env-default:".vvorker.local"` // master required, e.g. .example.com. for worker show and route
+	Scheme          string `env:"SCHEME" env-default:"http"`                      // http, https. for public frontend show
 	NodeName        string `env:"NODE_NAME" env-default:"default"`
 	AgentSecret     string `env:"AGENT_SECRET"` //	required, e.g. 123123123
 
-	DBPath         string `env:"DB_PATH" env-default:"/workerd/db.sqlite"`
-	WorkerdDir     string `env:"WORKERD_DIR" env-default:"/workerd"`
+	DBPath         string `env:"DB_PATH" env-default:"/app/data/db.sqlite"`
+	WorkerdDir     string `env:"WORKERD_DIR" env-default:"/app/data"`
 	DBType         string `env:"DB_TYPE" env-default:"sqlite"`
 	WorkerLimit    int    `env:"WORKER_LIMIT" env-default:"10000"`
 	WorkerdBinPath string `env:"WORKERD_BIN_PATH" env-default:"/bin/workerd"`
@@ -35,9 +36,9 @@ type AppConfig struct {
 	APIWebBaseURL  string `env:"API_WEB_BASE_URL"`
 	ListenAddr     string `env:"LISTEN_ADDR" env-default:"0.0.0.0"`
 	CookieName     string `env:"COOKIE_NAME" env-default:"authorization"`
-	CookieAge      int    `env:"COOKIE_AGE" env-default:"86400"` // second 86400 = 1 day
-	CookieDomain   string `env:"COOKIE_DOMAIN"`                  // required, e.g. example.com
-	EnableRegister bool   `env:"ENABLE_REGISTER" env-default:"true"`
+	CookieAge      int    `env:"COOKIE_AGE" env-default:"86400"`            // second 86400 = 1 day
+	CookieDomain   string `env:"COOKIE_DOMAIN" env-default:"vvorker.local"` // required, e.g. example.com
+	EnableRegister bool   `env:"ENABLE_REGISTER" env-default:"false"`
 	RunMode        string `env:"RUN_MODE" env-default:"master"` // master, agent
 
 	DefaultWorkerHost string `env:"DEFAULT_WORKER_HOST" env-default:"localhost"`
@@ -103,9 +104,19 @@ func init() {
 	JwtConf = &JwtConfig{}
 	godotenv.Load()
 
+	logrus.Info("env loaded")
+	// print all env
+	for _, env := range os.Environ() {
+		logrus.Info(env)
+	}
+
 	if err := cleanenv.ReadEnv(AppConfigInstance); err != nil {
 		logrus.Panic(err)
 	}
+	// print appconfig
+	logrus.Info("appconfig loaded")
+	logrus.Info(AppConfigInstance)
+
 	if err := cleanenv.ReadEnv(JwtConf); err != nil {
 		logrus.Panic(err)
 	}
