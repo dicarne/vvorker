@@ -43,6 +43,10 @@ func getMinioClient(c *gin.Context) (*MinioClient, error) {
 	endpoint := c.GetHeader("Endpoint")
 	accessKeyID := c.GetHeader("AccessKeyID")
 	secretAccessKey := c.GetHeader("SecretAccessKey")
+	if conf.AppConfigInstance.MinioSingleBucketMode {
+		accessKeyID = conf.AppConfigInstance.ServerMinioAccess
+		secretAccessKey = conf.AppConfigInstance.ServerMinioSecret
+	}
 	region := c.GetHeader("Region")
 	useSSLStr := c.GetHeader("UseSSL")
 	if len(resourceID) != 0 {
@@ -61,6 +65,17 @@ func getMinioClient(c *gin.Context) (*MinioClient, error) {
 	return NewMinioClient(endpoint, accessKeyID, secretAccessKey, useSSL, region)
 }
 
+func getMinioConfig(c *gin.Context) (string, string) {
+	bucketName := c.GetHeader("Bucket")
+	objectName := c.GetHeader("Object")
+	if conf.AppConfigInstance.MinioSingleBucketMode {
+		bucketName = conf.AppConfigInstance.MinioSingleBucketName
+		objectName = bucketName + "/" + objectName
+	}
+
+	return bucketName, objectName
+}
+
 // DownloadFile 下载文件接口
 func DownloadFile(c *gin.Context) {
 	mc, err := getMinioClient(c)
@@ -69,8 +84,7 @@ func DownloadFile(c *gin.Context) {
 		return
 	}
 
-	bucketName := c.GetHeader("Bucket")
-	objectName := c.GetHeader("Object")
+	bucketName, objectName := getMinioConfig(c)
 
 	// 使用 GetObject 获取文件流
 	obj, err := mc.Client.GetObject(context.Background(), bucketName, objectName, minio.GetObjectOptions{})
@@ -112,8 +126,7 @@ func InitiateMultipartUpload(c *gin.Context) {
 	}
 	coreClient := &minio.Core{Client: mc.Client}
 
-	bucketName := c.GetHeader("Bucket")
-	objectName := c.GetHeader("Object")
+	bucketName, objectName := getMinioConfig(c)
 
 	uploadID, err := coreClient.NewMultipartUpload(context.Background(), bucketName, objectName, minio.PutObjectOptions{})
 	if err != nil {
@@ -135,8 +148,7 @@ func UploadPart(c *gin.Context) {
 	}
 	coreClient := &minio.Core{Client: mc.Client}
 
-	bucketName := c.GetHeader("Bucket")
-	objectName := c.GetHeader("Object")
+	bucketName, objectName := getMinioConfig(c)
 	uploadID := c.GetHeader("x-amz-upload-id")
 	partNumberStr := c.GetHeader("x-amz-part-number")
 	partNumber, err := strconv.Atoi(partNumberStr)
@@ -172,8 +184,7 @@ func CompleteMultipartUpload(c *gin.Context) {
 	}
 	coreClient := &minio.Core{Client: mc.Client}
 
-	bucketName := c.GetHeader("Bucket")
-	objectName := c.GetHeader("Object")
+	bucketName, objectName := getMinioConfig(c)
 	uploadID := c.GetHeader("x-amz-upload-id")
 
 	var completeRequest struct {
@@ -209,8 +220,7 @@ func AbortMultipartUpload(c *gin.Context) {
 	}
 	coreClient := &minio.Core{Client: mc.Client}
 
-	bucketName := c.GetHeader("Bucket")
-	objectName := c.GetHeader("Object")
+	bucketName, objectName := getMinioConfig(c)
 	uploadID := c.GetHeader("x-amz-upload-id")
 
 	err = coreClient.AbortMultipartUpload(context.Background(), bucketName, objectName, uploadID)
@@ -232,8 +242,7 @@ func UploadFile(c *gin.Context) {
 		return
 	}
 
-	bucketName := c.GetHeader("Bucket")
-	objectName := c.GetHeader("Object")
+	bucketName, objectName := getMinioConfig(c)
 
 	// 从表单中获取文件
 	file, err := c.FormFile("file")
@@ -268,8 +277,7 @@ func DeleteFile(c *gin.Context) {
 		return
 	}
 
-	bucketName := c.GetHeader("Bucket")
-	objectName := c.GetHeader("Object")
+	bucketName, objectName := getMinioConfig(c)
 
 	err = mc.Client.RemoveObject(context.Background(), bucketName, objectName, minio.RemoveObjectOptions{})
 	if err != nil {
@@ -301,8 +309,7 @@ func ListObjects(c *gin.Context) {
 		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
 		return
 	}
-	bucketName := c.GetHeader("Bucket")
-	objectName := c.GetHeader("Path")
+	bucketName, objectName := getMinioConfig(c)
 	recursive := c.GetHeader("Recursive")
 	// 调用 ListObjects 方法
 	objectCh := mc.Client.ListObjects(context.Background(), bucketName, minio.ListObjectsOptions{
@@ -377,19 +384,21 @@ func CreateOSS(userID uint64, req entities.CreateNewResourcesRequest, uid string
 	}
 	resource.Bucket = resource.UID
 
-	err = mc.Client.MakeBucket(context.Background(), resource.Bucket, minio.MakeBucketOptions{Region: conf.AppConfigInstance.ServerMinioRegion})
-	if err != nil {
-		return nil, err
+	if !conf.AppConfigInstance.MinioSingleBucketMode {
+		err = mc.Client.MakeBucket(context.Background(), resource.Bucket, minio.MakeBucketOptions{Region: conf.AppConfigInstance.ServerMinioRegion})
+		if err != nil {
+			return nil, err
+		}
+		account, err := CreateNewServiceAccount(resource.Bucket)
+		if err != nil {
+			return nil, err
+		}
+		resource.AccessKey = account.AccessKey
+		resource.SecretKey = account.SecretKey
+		resource.Expiration = account.Expiration
+	} else {
+		resource.SingleBucket = true
 	}
-
-	account, err := CreateNewServiceAccount(resource.Bucket)
-	if err != nil {
-		return nil, err
-	}
-
-	resource.AccessKey = account.AccessKey
-	resource.SecretKey = account.SecretKey
-	resource.Expiration = account.Expiration
 
 	// 创建新的 OSS 资源
 	db := database.GetDB()
@@ -428,7 +437,10 @@ func DeleteOSSResourcesEndpoint(c *gin.Context) {
 		})
 		return
 	}
-	DeleteServiceAccount(resource.AccessKey)
+	if !conf.AppConfigInstance.MinioSingleBucketMode {
+		DeleteServiceAccount(resource.AccessKey)
+	}
+
 	common.RespOK(c, "success", entities.DeleteResourcesResp{
 		Status: 0,
 	})

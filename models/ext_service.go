@@ -16,15 +16,16 @@ type KV struct {
 
 type OSS struct {
 	gorm.Model
-	UserID     uint64
-	UID        string `gorm:"unique"`
-	AccessKey  string
-	SecretKey  string
-	Bucket     string
-	Region     string
-	Name       string
-	Expiration time.Time
-	SessionKey string
+	UserID       uint64
+	UID          string `gorm:"unique"`
+	AccessKey    string
+	SecretKey    string
+	Bucket       string
+	Region       string
+	Name         string
+	Expiration   time.Time
+	SessionKey   string
+	SingleBucket bool
 }
 
 type PostgreSQL struct {
