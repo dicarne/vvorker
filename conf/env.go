@@ -50,9 +50,10 @@ type AppConfig struct {
 	TunnelPassword    string
 	TunnelToken       string
 	NodeID            string
-	WorkerHostMode    string `env:"WORKER_HOST_MODE" env-default:"host"` // host path  // host 模式需要使用域名进行访问，path则url的第一段为服务名（不包含域名后缀
 
-	AdminAPIProxy bool `env:"ADMIN_API_PROXY" env-default:"false"` // 允许admin页面代理api请求，这可能会导致路径冲突，并且WORKER_HOST_MODE必须为path
+	WorkerHostMode string `env:"WORKER_HOST_MODE" env-default:"host"` // host path  // host 模式需要使用域名进行访问，path则url的第一段为服务名（不包含域名后缀
+	WorkerHostPath string `env:"WORKER_HOST_PATH" env-default:""`     // host 模式需要使用域名进行访问，path则url的第一段为服务名（不包含域名后缀，如example.com/xxxx/admin
+	AdminAPIProxy  bool   `env:"ADMIN_API_PROXY" env-default:"false"` // 允许admin页面代理api请求，这可能会导致路径冲突，并且WORKER_HOST_MODE必须为path
 
 	ServerRedisHost string `env:"SERVER_REDIS_HOST" env-default:"localhost"`
 	ServerRedisPort int    `env:"SERVER_REDIS_PORT" env-default:"6379"`
@@ -63,6 +64,9 @@ type AppConfig struct {
 	ServerMinioUseSSL bool   `env:"SERVER_MINIO_USE_SSL" env-default:"false"`
 	ServerMinioAccess string `env:"SERVER_MINIO_ACCESS" env-default:"minioadmin"`
 	ServerMinioSecret string `env:"SERVER_MINIO_SECRET" env-default:"minioadmin"`
+
+	MinioSingleBucketMode bool   `env:"MINIO_SINGLE_BUCKET_MODE" env-default:"false"`   // 是否使用单个bucket，所有应用都使用同一个bucket下的不同文件夹，注意，这将不进行权限管控
+	MinioSingleBucketName string `env:"MINIO_SINGLE_BUCKET_NAME" env-default:"vvorker"` // 如果使用单个bucket，bucket名称
 
 	ServerPostgreHost     string `env:"SERVER_POSTGRE_HOST" env-default:"localhost"`
 	ServerPostgrePort     int    `env:"SERVER_POSTGRE_PORT" env-default:"5432"`
