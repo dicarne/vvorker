@@ -332,34 +332,42 @@ func HandleStaticFile(f embed.FS) {
 	if err != nil {
 		logrus.Panic(err)
 	}
-	router.StaticFileFS("/404", "404.html", http.FS(fp))
-	router.StaticFileFS("/login", "login.html", http.FS(fp))
-	router.StaticFileFS("/admin", "admin.html", http.FS(fp))
-	router.StaticFileFS("/register", "register.html", http.FS(fp))
-	router.StaticFileFS("/worker", "worker.html", http.FS(fp))
-	router.StaticFileFS("/index", "index.html", http.FS(fp))
-	router.StaticFileFS("/nodes", "nodes.html", http.FS(fp))
-	router.StaticFileFS("/user", "user.html", http.FS(fp))
+	prefix := ""
+	if conf.AppConfigInstance.WorkerHostMode == "path" {
+		prefix = "/" + conf.AppConfigInstance.WorkerHostPath
+	}
+	router.StaticFileFS(prefix+"/404", "404.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/login", "login.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/admin", "admin.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/register", "register.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/worker", "worker.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/index", "index.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/nodes", "nodes.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/user", "user.html", http.FS(fp))
 
-	router.StaticFileFS("/sql", "sql.html", http.FS(fp))
-	router.StaticFileFS("/oss", "oss.html", http.FS(fp))
-	router.StaticFileFS("/kv", "kv.html", http.FS(fp))
-	router.StaticFileFS("/task", "task.html", http.FS(fp))
-	router.StaticFileFS("/logs", "logs.html", http.FS(fp))
-	router.StaticFileFS("/users", "users.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/sql", "sql.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/oss", "oss.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/kv", "kv.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/task", "task.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/logs", "logs.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/users", "users.html", http.FS(fp))
 	router.NoRoute(func(c *gin.Context) {
+		path := c.Request.URL.Path
+		if conf.AppConfigInstance.WorkerHostMode == "path" && conf.AppConfigInstance.WorkerHostPath != "" {
+			path = strings.Replace(c.Request.URL.Path, "/"+conf.AppConfigInstance.WorkerHostPath, "", 1)
+		}
 		if conf.AppConfigInstance.AdminAPIProxy {
 			if conf.AppConfigInstance.WorkerHostMode != "path" {
 				logrus.Println("admin api proxy only support path mode")
 			}
-			_, err := http.FS(fp).Open(c.Request.URL.Path)
+			_, err := http.FS(fp).Open(path)
 			if err != nil {
 				modifyProxyRequestHeaders(c)
 				proxyService.Endpoint(c)
 				return
 			}
 		}
-		c.FileFromFS(c.Request.URL.Path, http.FS(fp))
+		c.FileFromFS(path, http.FS(fp))
 	})
 }
 
