@@ -1,6 +1,7 @@
 .v-base-page {
   width: 100vw;
   height: 100vh;
+  padding: 24px;
 }
 
 .v-flex-center {
@@ -9,8 +10,18 @@
   align-items: center;
 }
 
+.v-flex-between-center {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .v-card-header {
   text-align: center;
   font-size: 20px;
   font-weight: bold;
+}
+
+.v-item {
+  margin: 0 8px;
 }
