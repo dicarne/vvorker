@@ -1,0 +1,40 @@
+{
+  "common": {
+    "baseColor": "#eceff4FF",
+    "primaryColor": "#81a1c1FF",
+    "primaryColorHover": "#88c0d0FF",
+    "primaryColorPressed": "#5e81acFF",
+    "primaryColorSuppl": "#88c0d0FF",
+    "successColor": "#18A058FF",
+    "errorColor": "#d03050",
+    "textColorBase": "#2e3440FF",
+    "textColor1": "#3b4252FF",
+    "textColor2": "#434c5eFF",
+    "textColor3": "#4c566aFF",
+    "textColorDisabled": "rgba(194, 194, 194, 1)",
+    "placeholderColor": "#434c5e80",
+    "iconColor": "#434c5e80",
+    "placeholderColorDisabled": "rgba(76, 86, 106, 0.5)",
+    "iconColorHover": "rgba(46, 52, 64, 0.5)",
+    "iconColorPressed": "rgba(59, 66, 82, 0.5)",
+    "iconColorDisabled": "#4C566A80",
+    "fontSize": "16px",
+    "fontSizeMini": "14px",
+    "fontSizeTiny": "14px",
+    "fontSizeSmall": "16px",
+    "fontSizeMedium": "16px",
+    "fontSizeLarge": "17px",
+    "fontSizeHuge": "17px",
+    "heightMini": "18px",
+    "heightTiny": "24px",
+    "heightSmall": "30px",
+    "heightMedium": "36px",
+    "heightLarge": "42px",
+    "heightHuge": "48px",
+    "borderRadiusSmall": "3",
+    "borderRadius": "4"
+  },
+  "Alert": {
+    "color": "#3B4252FF"
+  }
+}
