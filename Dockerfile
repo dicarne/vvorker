@@ -8,7 +8,7 @@ WORKDIR /app
 
 RUN npm config set registry https://registry.npmmirror.com/
 RUN npm install -g pnpm
-RUN npm i workerd -g
+RUN npm i workerd@v1.20250625.0 -g
 
 COPY . /app
 WORKDIR /app
@@ -49,7 +49,7 @@ RUN go build -o vvorker .
 
 #######################################################################################
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 # RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list && \
 # 	sed -i s@/security.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list && \
@@ -57,10 +57,10 @@ FROM ubuntu:22.04
 
 # RUN sed -i 's#http://archive.ubuntu.com/#http://mirrors.tuna.tsinghua.edu.cn/#' /etc/apt/sources.list;
 
-RUN rm /var/lib/dpkg/info/libc-bin.*
+# RUN rm /var/lib/dpkg/info/libc-bin.*
 RUN apt-get clean
 RUN apt-get update
-RUN apt-get install libc-bin
+# RUN apt-get install libc-bin
 
 RUN DEBIAN_FRONTEND="noninteractive" apt-get install -y \
 	apt-transport-https \
