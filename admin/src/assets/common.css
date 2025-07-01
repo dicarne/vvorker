@@ -1,0 +1,16 @@
+.v-base-page {
+  width: 100vw;
+  height: 100vh;
+}
+
+.v-flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.v-card-header {
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}

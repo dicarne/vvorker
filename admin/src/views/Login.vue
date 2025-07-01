@@ -44,15 +44,15 @@ const handleLogin = async () => {
     navigate('/admin')
   } catch (error) {
     console.error(error)
-    message.error('登录失败，请检查输入信息')
+    message.error('登录失败: ' + error)
   }
 }
 </script>
 <template>
-  <div class="login-container">
-    <NCard class="login-card">
+  <div class="v-base-page v-flex-center">
+    <NCard style="width: 400px">
       <template #header>
-        <div class="login-title">登录</div>
+        <div class="v-card-header">登录</div>
       </template>
       <NForm :model="form" :rules="rules" ref="formRef">
         <NFormItem label="用户名" path="userName">
@@ -68,23 +68,3 @@ const handleLogin = async () => {
     </NCard>
   </div>
 </template>
-
-<style scoped>
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100vw;
-  height: 100vh;
-}
-
-.login-card {
-  width: 400px;
-}
-
-.login-title {
-  text-align: center;
-  font-size: 20px;
-  font-weight: bold;
-}
-</style>
