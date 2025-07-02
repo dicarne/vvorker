@@ -28,6 +28,14 @@ func buildMysqlConnectionString() string {
 }
 
 func buildMysqlDBConnectionString(database string) string {
+	if conf.AppConfigInstance.ServerMySQLOneDBName != "" {
+		return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+			conf.AppConfigInstance.ServerMySQLUser,
+			conf.AppConfigInstance.ServerMySQLPassword,
+			conf.AppConfigInstance.ServerMySQLHost,
+			conf.AppConfigInstance.ServerMySQLPort,
+			conf.AppConfigInstance.ServerMySQLOneDBName)
+	}
 
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		conf.AppConfigInstance.ServerMySQLUser,
@@ -59,60 +67,64 @@ func CreateMySQLDatabase(userID uint64, UID string, req entities.CreateNewResour
 		Name:   req.Name,
 		UID:    UID,
 	}
-	mysqlResource.Database = cutDatabaseName("vvorker_" + mysqlResource.UID)
+	if conf.AppConfigInstance.ServerMySQLOneDBName != "" {
+		mysqlResource.Database = conf.AppConfigInstance.ServerMySQLOneDBName
+	} else {
+		mysqlResource.Database = cutDatabaseName("vvorker_" + mysqlResource.UID)
 
-	// 用户:密码@/库名?charset=utf8&parseTime=True&loc=Local
-	pgdb, err := sql.Open("mysql", buildMysqlConnectionString())
-	if err != nil {
-		return nil, err
+		// 用户:密码@/库名?charset=utf8&parseTime=True&loc=Local
+		pgdb, err := sql.Open("mysql", buildMysqlConnectionString())
+		if err != nil {
+			return nil, err
+		}
+		defer pgdb.Close()
+
+		// Create database with UTF8MB4 character set and case-insensitive collation
+		_, err = pgdb.Exec("CREATE DATABASE `" + mysqlResource.Database + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+		if err != nil {
+			return nil, err
+		}
+
+		// Generate random password
+		password := utils.GenerateUID()
+		pgUser := cutUserName("vorker_user_" + mysqlResource.UID)
+
+		// Create new user with password
+		_, err = pgdb.Exec(fmt.Sprintf("CREATE USER `%s`@'%%' IDENTIFIED BY '%s'", pgUser, password))
+		if err != nil {
+			return nil, err
+		}
+
+		// Grant all privileges on the database to the user
+		_, err = pgdb.Exec(fmt.Sprintf("GRANT ALL PRIVILEGES ON `%s`.* TO `%s`@'%%'", mysqlResource.Database, pgUser))
+		if err != nil {
+			return nil, err
+		}
+
+		// Flush privileges to apply changes
+		_, err = pgdb.Exec("FLUSH PRIVILEGES")
+		if err != nil {
+			return nil, err
+		}
+
+		// Connect to the newly created database to set up any additional permissions
+		targetConnStr := buildMysqlDBConnectionString(mysqlResource.Database)
+		targetPgdb, err := sql.Open("mysql", targetConnStr)
+		if err != nil {
+			return nil, err
+		}
+		defer targetPgdb.Close()
+
+		// In MySQL, the above GRANT statement already gives all necessary privileges
+		// No need for additional GRANT statements like in PostgreSQL
+
+		// For MySQL 8.0+, you might want to set the default role if using roles
+		// But for most cases, the above GRANT is sufficient
+
+		// 保存用户信息到 mysqlResource
+		mysqlResource.Username = pgUser
+		mysqlResource.Password = password
 	}
-	defer pgdb.Close()
-
-	// Create database with UTF8MB4 character set and case-insensitive collation
-	_, err = pgdb.Exec("CREATE DATABASE `" + mysqlResource.Database + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
-	if err != nil {
-		return nil, err
-	}
-
-	// Generate random password
-	password := utils.GenerateUID()
-	pgUser := cutUserName("vorker_user_" + mysqlResource.UID)
-
-	// Create new user with password
-	_, err = pgdb.Exec(fmt.Sprintf("CREATE USER `%s`@'%%' IDENTIFIED BY '%s'", pgUser, password))
-	if err != nil {
-		return nil, err
-	}
-
-	// Grant all privileges on the database to the user
-	_, err = pgdb.Exec(fmt.Sprintf("GRANT ALL PRIVILEGES ON `%s`.* TO `%s`@'%%'", mysqlResource.Database, pgUser))
-	if err != nil {
-		return nil, err
-	}
-
-	// Flush privileges to apply changes
-	_, err = pgdb.Exec("FLUSH PRIVILEGES")
-	if err != nil {
-		return nil, err
-	}
-
-	// Connect to the newly created database to set up any additional permissions
-	targetConnStr := buildMysqlDBConnectionString(mysqlResource.Database)
-	targetPgdb, err := sql.Open("mysql", targetConnStr)
-	if err != nil {
-		return nil, err
-	}
-	defer targetPgdb.Close()
-
-	// In MySQL, the above GRANT statement already gives all necessary privileges
-	// No need for additional GRANT statements like in PostgreSQL
-
-	// For MySQL 8.0+, you might want to set the default role if using roles
-	// But for most cases, the above GRANT is sufficient
-
-	// 保存用户信息到 mysqlResource
-	mysqlResource.Username = pgUser
-	mysqlResource.Password = password
 
 	db := database.GetDB()
 	if err := db.Create(mysqlResource).Error; err != nil {
@@ -199,27 +211,29 @@ func DeleteMySQLResourcesEndpoint(c *gin.Context) {
 		return
 	}
 
-	mysqlResourceDatabase := cutDatabaseName("vvorker_" + req.UID)
+	if conf.AppConfigInstance.ServerMySQLOneDBName == "" {
+		mysqlResourceDatabase := cutDatabaseName("vvorker_" + req.UID)
+		pgdb, err := sql.Open("mysql",
+			buildMysqlDBConnectionString(mysqlResourceDatabase))
+		if err != nil {
+			// 使用 common.RespErr 返回错误响应
+			common.RespOK(c, "success but not drop db because of unconnected db", entities.DeleteResourcesResp{
+				Status: 0,
+			})
+			return
+		}
+		defer pgdb.Close()
 
-	pgdb, err := sql.Open("mysql",
-		buildMysqlDBConnectionString(mysqlResourceDatabase))
-	if err != nil {
-		// 使用 common.RespErr 返回错误响应
-		common.RespOK(c, "success but not drop db because of unconnected db", entities.DeleteResourcesResp{
-			Status: 0,
-		})
-		return
+		_, err = pgdb.Exec("DROP DATABASE " + mysqlResourceDatabase)
+		if err != nil {
+			// 使用 common.RespErr 返回错误响应
+			common.RespOK(c, "success but not drop db", entities.DeleteResourcesResp{
+				Status: 0,
+			})
+			return
+		}
 	}
-	defer pgdb.Close()
 
-	_, err = pgdb.Exec("DROP DATABASE " + mysqlResourceDatabase)
-	if err != nil {
-		// 使用 common.RespErr 返回错误响应
-		common.RespOK(c, "success but not drop db", entities.DeleteResourcesResp{
-			Status: 0,
-		})
-		return
-	}
 	// 使用 common.RespOK 返回成功响应
 	common.RespOK(c, "success", entities.DeleteResourcesResp{
 		Status: 0,
@@ -230,14 +244,18 @@ func RecoverPGSQL(userID uint64, mysqlResource *models.MySQL) (*models.MySQL, er
 	mysqlResource.UserID = userID
 	db := database.GetDB()
 	// 如果有，则更新，如果无，则调用新增接口
-	if err := db.Where("uid =?", mysqlResource.UID).First(&models.MySQL{}).Error; err != nil {
+	if err := db.Where(&models.MySQL{
+		UID: mysqlResource.UID,
+	}).First(&models.MySQL{}).Error; err != nil {
 		pg, err := CreateMySQLDatabase(userID, mysqlResource.UID, entities.CreateNewResourcesRequest{Name: mysqlResource.Name})
 		return pg, err
 	} else {
 		mysqlResource.Password = ""
 		mysqlResource.Username = ""
 		mysqlResource.Database = ""
-		db.Where("uid =?", mysqlResource.UID).Updates(mysqlResource)
+		db.Where(&models.MySQL{
+			UID: mysqlResource.UID,
+		}).Updates(mysqlResource)
 	}
 
 	return mysqlResource, nil
@@ -274,7 +292,9 @@ func UpdateMigrate(c *gin.Context) {
 
 	if !strings.HasPrefix(req.ResourceID, "worker_resource:mysql:") {
 		mysqlResource := models.MySQL{}
-		if err := db.Where("uid =?", req.ResourceID).First(&mysqlResource).Error; err != nil {
+		if err := db.Where(&models.MySQL{
+			UID: req.ResourceID,
+		}).First(&mysqlResource).Error; err != nil {
 			common.RespErr(c, http.StatusInternalServerError, "Failed to get MySQL resource", gin.H{"error": err.Error()})
 			return
 		}
@@ -362,7 +382,9 @@ func MigrateMySQLDatabase(userID uint64, pgid string) error {
 		// Original migration logic for non-custom resources
 		db := database.GetDB()
 		mysqlResource := models.MySQL{}
-		if err := db.Where("uid =?", pgid).First(&mysqlResource).Error; err != nil {
+		if err := db.Where(&models.MySQL{
+			UID: pgid,
+		}).First(&mysqlResource).Error; err != nil {
 			return err
 		}
 

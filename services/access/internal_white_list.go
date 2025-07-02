@@ -52,7 +52,11 @@ func CreateInternalWhiteListEndpoint(c *gin.Context) {
 
 	// 查找 allow name 对应的 worker 的 uid
 	var allowWorker models.Worker
-	if err := db.Where("name = ?", request.AllowWorkerName).First(&allowWorker).Error; err != nil {
+	if err := db.Where(&models.Worker{
+		Worker: &entities.Worker{
+			Name: request.AllowWorkerName,
+		},
+	}).First(&allowWorker).Error; err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest, "allowed worker not found", nil)
 		return
 	}

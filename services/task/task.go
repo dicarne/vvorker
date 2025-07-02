@@ -3,6 +3,7 @@ package task
 import (
 	"time"
 	"vvorker/common"
+	"vvorker/entities"
 	"vvorker/models"
 	"vvorker/utils/database"
 
@@ -216,8 +217,11 @@ func ListTaskEndpoint(c *gin.Context) {
 	// 查询符合条件的任务总数
 	if err := db.Model(&models.Task{}).
 		Joins("JOIN workers ON tasks.worker_uid = workers.uid").
-		Where("workers.user_id = ?", userID).
-		// Where("tasks.worker_uid = ?", req.WorkerUID).
+		Where(&models.Worker{
+			Worker: &entities.Worker{
+				UserID: userID,
+			},
+		}).
 		Count(&total).Error; err != nil {
 		common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
 		return
@@ -228,9 +232,12 @@ func ListTaskEndpoint(c *gin.Context) {
 	if err := db.Table("tasks").
 		Select("tasks.*, workers.name as worker_name").
 		Joins("JOIN workers ON tasks.worker_uid = workers.uid").
-		Where("workers.user_id = ?", userID).
+		Where(&models.Worker{
+			Worker: &entities.Worker{
+				UserID: userID,
+			},
+		}).
 		Order("tasks.start_time desc").
-		// Where("tasks.worker_uid = ?", req.WorkerUID).
 		Offset((req.Page - 1) * req.PageSize).
 		Limit(req.PageSize).
 		Find(&tasks).Error; err != nil {
@@ -269,8 +276,14 @@ func GetLogsEndpoint(c *gin.Context) {
 	var count int64
 	if err := db.Model(&models.Task{}).
 		Joins("JOIN workers ON tasks.worker_uid = workers.uid").
-		Where("workers.user_id =?", userID).
-		Where("tasks.trace_id =?", req.TraceID).
+		Where(&models.Task{
+			TraceID: req.TraceID,
+		}).
+		Where(&models.Worker{
+			Worker: &entities.Worker{
+				UserID: userID,
+			},
+		}).
 		Limit(1).
 		Count(&count).Error; err != nil {
 		common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})

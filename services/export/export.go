@@ -117,7 +117,9 @@ func ExportResourcesConfigEndpoint(c *gin.Context) {
 			for _, ext := range wc.KV {
 				if len(ext.ResourceID) != 0 {
 					kvModel := &models.KV{}
-					if err := db.Where("uid = ?", ext.ResourceID).First(&kvModel).Error; err != nil {
+					if err := db.Where(&models.KV{
+						UID: ext.ResourceID,
+					}).First(&kvModel).Error; err != nil {
 						common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
 						return
 					}
@@ -130,7 +132,9 @@ func ExportResourcesConfigEndpoint(c *gin.Context) {
 			for _, ext := range wc.OSS {
 				if len(ext.ResourceID) != 0 {
 					ossModel := &models.OSS{}
-					if err := db.Where("uid =?", ext.ResourceID).First(&ossModel).Error; err != nil {
+					if err := db.Where(&models.OSS{
+						UID: ext.ResourceID,
+					}).First(&ossModel).Error; err != nil {
 						common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
 						return
 					}
@@ -145,7 +149,9 @@ func ExportResourcesConfigEndpoint(c *gin.Context) {
 			for _, ext := range wc.PgSql {
 				if len(ext.ResourceID) != 0 {
 					pgsqlModel := &models.PostgreSQL{}
-					if err := db.Where("uid =?", ext.ResourceID).First(&pgsqlModel).Error; err != nil {
+					if err := db.Where(&models.PostgreSQL{
+						UID: ext.ResourceID,
+					}).First(&pgsqlModel).Error; err != nil {
 						common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
 						return
 					}

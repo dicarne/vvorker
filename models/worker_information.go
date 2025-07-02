@@ -27,7 +27,11 @@ func CreateWorkerInformation(info *WorkerInformation) error {
 func GetWorkerInformationByUID(UID string) (*WorkerInformation, error) {
 	var info WorkerInformation
 	// 使用 database.GetDB() 获取数据库连接
-	err := database.GetDB().Where("uid = ?", UID).First(&info).Error
+	err := database.GetDB().Where(&WorkerInformation{
+		WorkerInformationBase: &WorkerInformationBase{
+			UID: UID,
+		},
+	}).First(&info).Error
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +41,11 @@ func GetWorkerInformationByUID(UID string) (*WorkerInformation, error) {
 // UpdateWorkerInformationByUID 根据 UID 更新 WorkerInformation 记录
 func UpdateWorkerInformationByUID(UID string, updateData *WorkerInformation) error {
 	// 使用 database.GetDB() 获取数据库连接
-	exsist := database.GetDB().Where("uid =?", UID).First(&WorkerInformation{}).Error
+	exsist := database.GetDB().Where(&WorkerInformation{
+		WorkerInformationBase: &WorkerInformationBase{
+			UID: UID,
+		},
+	}).First(&WorkerInformation{}).Error
 	if exsist != nil {
 		return database.GetDB().Create(
 			&WorkerInformation{
@@ -45,13 +53,21 @@ func UpdateWorkerInformationByUID(UID string, updateData *WorkerInformation) err
 			},
 		).Error
 	}
-	return database.GetDB().Model(&WorkerInformation{}).Where("uid = ?", UID).Updates(updateData).Error
+	return database.GetDB().Model(&WorkerInformation{}).Where(&WorkerInformation{
+		WorkerInformationBase: &WorkerInformationBase{
+			UID: UID,
+		},
+	}).Updates(updateData).Error
 }
 
 // DeleteWorkerInformationByUID 根据 UID 删除 WorkerInformation 记录
 func DeleteWorkerInformationByUID(UID string) error {
 	// 使用 database.GetDB() 获取数据库连接
-	result := database.GetDB().Where("uid = ?", UID).Delete(&WorkerInformation{})
+	result := database.GetDB().Where(&WorkerInformation{
+		WorkerInformationBase: &WorkerInformationBase{
+			UID: UID,
+		},
+	}).Delete(&WorkerInformation{})
 	if result.Error != nil {
 		return result.Error
 	}

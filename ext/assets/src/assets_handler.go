@@ -2,10 +2,12 @@ package assets
 
 import (
 	"mime"
+	"vvorker/entities"
 	"vvorker/models"
 	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type UploadAssetsReq struct {
@@ -37,7 +39,12 @@ func UploadAssetsEndpoint(c *gin.Context) {
 	}
 
 	var w models.Worker
-	if err := database.GetDB().Where("uid =?", req.WorkerUID).First(&w).Error; err != nil {
+	if err := database.GetDB().Where(&models.Worker{
+		Worker: &entities.Worker{
+			UID: req.WorkerUID,
+		},
+	}).First(&w).Error; err != nil {
+		logrus.Errorf("Worker not found: %v", err)
 		c.JSON(404, gin.H{"error": "Worker not found"})
 		return
 	}
@@ -50,7 +57,9 @@ func UploadAssetsEndpoint(c *gin.Context) {
 	db := database.GetDB()
 
 	var file models.File
-	if err := db.Where("uid = ?", req.UID).First(&file).Error; err != nil {
+	if err := db.Where(&models.File{
+		UID: req.UID,
+	}).First(&file).Error; err != nil {
 		c.JSON(404, gin.H{"error": "File not found"})
 		return
 	}
@@ -64,7 +73,10 @@ func UploadAssetsEndpoint(c *gin.Context) {
 	}
 	nkv := models.Assets{}
 	// 如果有，则更新，如果无，则新增
-	if err := db.Where("path = ?", req.Path).Where("worker_uid", req.WorkerUID).Assign(&asset).FirstOrCreate(&nkv).Error; err != nil {
+	if err := db.Where(&models.Assets{
+		Path:      req.Path,
+		WorkerUID: req.WorkerUID,
+	}).Assign(&asset).FirstOrCreate(&nkv).Error; err != nil {
 		c.JSON(500, gin.H{"error": "Failed to save asset"})
 		return
 	}
@@ -94,13 +106,18 @@ func GetAssetsEndpoint(c *gin.Context) {
 
 	db := database.GetDB()
 	var asset models.Assets
-	if err := db.Where("worker_uid = ? AND path = ?", req.WorkerUID, req.Path).First(&asset).Error; err != nil {
+	if err := db.Where(&models.Assets{
+		WorkerUID: req.WorkerUID,
+		Path:      req.Path,
+	}).First(&asset).Error; err != nil {
 		c.JSON(404, gin.H{"error": "Asset not found"})
 		return
 	}
 
 	var file models.File
-	if err := db.Where("uid =?", asset.UID).First(&file).Error; err != nil {
+	if err := db.Where(&models.File{
+		UID: asset.UID,
+	}).First(&file).Error; err != nil {
 		c.JSON(404, gin.H{"error": "File not found"})
 		return
 	}

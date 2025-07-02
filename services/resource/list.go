@@ -48,9 +48,12 @@ func ListResourceEndpoint(c *gin.Context) {
 	if request.RType == "kv" {
 		var total int64
 		var resources []models.KV
-		db.Model(&models.KV{}).Where("user_id = ?", uid).
-			Limit(request.PageSize).Offset((request.Page - 1) * request.PageSize).Find(&resources)
-		db.Model(&models.KV{}).Where("user_id =?", uid).Count(&total)
+		db.Model(&models.KV{}).Where(&models.KV{
+			UserID: uid,
+		}).Limit(request.PageSize).Offset((request.Page - 1) * request.PageSize).Find(&resources)
+		db.Model(&models.KV{}).Where(&models.KV{
+			UserID: uid,
+		}).Count(&total)
 
 		for _, resource := range resources {
 			response.Data = append(response.Data, ResourceData{
@@ -63,9 +66,12 @@ func ListResourceEndpoint(c *gin.Context) {
 	} else if request.RType == "oss" {
 		var total int64
 		var resources []models.OSS
-		db.Model(&models.OSS{}).Where("user_id =?", uid).
-			Limit(request.PageSize).Offset((request.Page - 1) * request.PageSize).Find(&resources)
-		db.Model(&models.OSS{}).Where("user_id =?", uid).Count(&total)
+		db.Model(&models.OSS{}).Where(&models.OSS{
+			UserID: uid,
+		}).Limit(request.PageSize).Offset((request.Page - 1) * request.PageSize).Find(&resources)
+		db.Model(&models.OSS{}).Where(&models.OSS{
+			UserID: uid,
+		}).Count(&total)
 		for _, resource := range resources {
 			response.Data = append(response.Data, ResourceData{
 				UID:  resource.UID,
@@ -77,9 +83,12 @@ func ListResourceEndpoint(c *gin.Context) {
 	} else if request.RType == "pgsql" {
 		var total int64
 		var resources []models.PostgreSQL
-		db.Model(&models.PostgreSQL{}).Where("user_id =?", uid).
-			Limit(request.PageSize).Offset((request.Page - 1) * request.PageSize).Find(&resources)
-		db.Model(&models.PostgreSQL{}).Where("user_id =?", uid).Count(&total)
+		db.Model(&models.PostgreSQL{}).Where(&models.PostgreSQL{
+			UserID: uid,
+		}).Limit(request.PageSize).Offset((request.Page - 1) * request.PageSize).Find(&resources)
+		db.Model(&models.PostgreSQL{}).Where(&models.PostgreSQL{
+			UserID: uid,
+		}).Count(&total)
 		for _, resource := range resources {
 			response.Data = append(response.Data, ResourceData{
 				UID:  resource.UID,
@@ -91,9 +100,12 @@ func ListResourceEndpoint(c *gin.Context) {
 	} else if request.RType == "mysql" {
 		var total int64
 		var resources []models.MySQL
-		db.Model(&models.MySQL{}).Where("user_id =?", uid).
-			Limit(request.PageSize).Offset((request.Page - 1) * request.PageSize).Find(&resources)
-		db.Model(&models.MySQL{}).Where("user_id =?", uid).Count(&total)
+		db.Model(&models.MySQL{}).Where(&models.MySQL{
+			UserID: uid,
+		}).Limit(request.PageSize).Offset((request.Page - 1) * request.PageSize).Find(&resources)
+		db.Model(&models.MySQL{}).Where(&models.MySQL{
+			UserID: uid,
+		}).Count(&total)
 		for _, resource := range resources {
 			response.Data = append(response.Data, ResourceData{
 				UID:  resource.UID,

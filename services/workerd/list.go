@@ -217,9 +217,15 @@ func FinishWorkerConfig(worker *models.Worker) string {
 				var mysqlresources = models.MySQL{}
 				db.Model(&models.MySQL{}).Where(&models.MySQL{UID: ext.ResourceID, UserID: uint64(UserID)}).First(&mysqlresources)
 				if mysqlresources.ID != 0 {
-					ext.Database = mysqlresources.Database
-					ext.Password = mysqlresources.Password
-					ext.User = mysqlresources.Username
+					if conf.AppConfigInstance.ServerMySQLOneDBName != "" {
+						ext.Database = conf.AppConfigInstance.ServerMySQLOneDBName
+						ext.User = conf.AppConfigInstance.ServerMySQLUser
+						ext.Password = conf.AppConfigInstance.ServerMySQLPassword
+					} else {
+						ext.Database = mysqlresources.Database
+						ext.Password = mysqlresources.Password
+						ext.User = mysqlresources.Username
+					}
 				} else {
 					ext.ResourceID = ""
 				}

@@ -233,14 +233,18 @@ func RecoverPGSQL(userID uint64, pgResource *models.PostgreSQL) (*models.Postgre
 	pgResource.UserID = userID
 	db := database.GetDB()
 	// 如果有，则更新，如果无，则调用新增接口
-	if err := db.Where("uid =?", pgResource.UID).First(&models.PostgreSQL{}).Error; err != nil {
+	if err := db.Where(&models.PostgreSQL{
+		UID: pgResource.UID,
+	}).First(&models.PostgreSQL{}).Error; err != nil {
 		pg, err := CreatePostgreSQLDatabase(userID, pgResource.UID, entities.CreateNewResourcesRequest{Name: pgResource.Name})
 		return pg, err
 	} else {
 		pgResource.Password = ""
 		pgResource.Username = ""
 		pgResource.Database = ""
-		db.Where("uid =?", pgResource.UID).Updates(pgResource)
+		db.Where(&models.PostgreSQL{
+			UID: pgResource.UID,
+		}).Updates(pgResource)
 	}
 
 	return pgResource, nil
@@ -277,7 +281,9 @@ func UpdateMigrate(c *gin.Context) {
 
 	if !strings.HasPrefix(req.ResourceID, "worker_resource:pgsql:") {
 		pgResource := models.PostgreSQL{}
-		if err := db.Where("uid =?", req.ResourceID).First(&pgResource).Error; err != nil {
+		if err := db.Where(&models.PostgreSQL{
+			UID: req.ResourceID,
+		}).First(&pgResource).Error; err != nil {
 			common.RespErr(c, http.StatusInternalServerError, "Failed to get PostgreSQL resource", gin.H{"error": err.Error()})
 			return
 		}
@@ -322,7 +328,9 @@ func UpdateMigrate(c *gin.Context) {
 func migrateResource(userID uint64, pgid string) error {
 	db := database.GetDB()
 	pgResource := models.PostgreSQL{}
-	if err := db.Where("uid =?", pgid).First(&pgResource).Error; err != nil {
+	if err := db.Where(&models.PostgreSQL{
+		UID: pgid,
+	}).First(&pgResource).Error; err != nil {
 		return err
 	}
 

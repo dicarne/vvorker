@@ -59,7 +59,9 @@ func CreateAccessKeyEndpoint(c *gin.Context) {
 func AccessKeyToUserID(accessKey string) (uint64, error) {
 	db := database.GetDB()
 	var accessKeyModel models.AccessKey
-	if err := db.Where("key = ?", accessKey).First(&accessKeyModel).Error; err != nil {
+	if err := db.Where(&models.AccessKey{
+		Key: accessKey,
+	}).First(&accessKeyModel).Error; err != nil {
 		return 0, err
 	}
 	return accessKeyModel.UserId, nil
@@ -75,7 +77,9 @@ func GetAccessKeysEndpoint(c *gin.Context) {
 	uid := uint64(c.GetUint(common.UIDKey))
 	db := database.GetDB()
 	var accessKeys []models.AccessKey
-	if err := db.Where("user_id = ?", uid).Find(&accessKeys).Error; err != nil {
+	if err := db.Where(&models.AccessKey{
+		UserId: uid,
+	}).Find(&accessKeys).Error; err != nil {
 		common.RespErr(c, http.StatusInternalServerError, "Get Access Keys Failed.", gin.H{"error": err.Error()})
 		return
 	}
@@ -97,7 +101,10 @@ func DeleteAccessKeyEndpoint(c *gin.Context) {
 	}
 	db := database.GetDB()
 	var accessKeyModel models.AccessKey
-	if err := db.Where("user_id =?", uid).Where("key =?", request.AccessKey).First(&accessKeyModel).Error; err != nil {
+	if err := db.Where(&models.AccessKey{
+		UserId: uid,
+		Key:    request.AccessKey,
+	}).First(&accessKeyModel).Error; err != nil {
 		common.RespErr(c, http.StatusInternalServerError, "Delete Access Key Failed.", gin.H{"error": err.Error()})
 		return
 	}
