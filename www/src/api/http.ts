@@ -1,21 +1,71 @@
-import axios from 'axios'
+import axios, { AxiosInstance } from 'axios'
+import { setupAxiosEncryption } from '@/lib/encrypt'
+import { $user } from '@/store/userState'
 
-const instance = axios.create({})
+const instance: AxiosInstance = axios.create({})
 
-instance.interceptors.request.use((request) => {
-  request.headers.Authorization = 'Bearer ' + localStorage.getItem('token')
-  return request
+// Setup request interceptor for authentication
+instance.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+}, (error) => {
+  return Promise.reject(error)
 })
 
+// Setup response interceptor for token refresh and error handling
 instance.interceptors.response.use((response) => {
-  // console.log(response.headers?.['x-authorization-token'])
+  // Update token if new one is provided
   if (response.headers?.['x-authorization-token']) {
-    localStorage.setItem('token', response.headers['x-authorization-token'])
+    const newToken = response.headers['x-authorization-token']
+    localStorage.setItem('token', newToken)
   }
-  if (!!response.data.code) {
-    throw response.data.msg
+
+  // Handle error responses
+  if (response.data?.code && response.data.code !== 0) {
+    throw new Error(response.data.msg || 'Request failed')
   }
+
   return response
+}, (error) => {
+  // Handle 401 Unauthorized
+  if (error.response?.status === 401) {
+    // Clear auth data and redirect to login
+    localStorage.removeItem('token')
+    window.location.href = '/login'
+  }
+  return Promise.reject(error)
 })
+
+// Setup encryption if user is authenticated
+const setupEncryption = () => {
+  if (!$user.value || !$user.value.userName) {
+    return false
+  }
+  // Get the encryption key from localStorage or user data
+  const user = $user.value
+  const encryptionKey = user?.vk
+
+  if (encryptionKey) {
+    try {
+      setupAxiosEncryption(instance, encryptionKey)
+    } catch (error) {
+      console.error('Failed to setup encryption:', error)
+    }
+  }
+  return true
+}
+
+// Initialize encryption when the module loads
+if (typeof window !== 'undefined') {
+  // Only run in browser environment
+  let int = setInterval(() => {
+    if (setupEncryption()) {
+      clearInterval(int)
+    }
+  }, 100)
+}
 
 export default instance

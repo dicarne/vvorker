@@ -7,6 +7,7 @@ import * as path from 'path'
 import { spawn } from 'node:child_process';
 
 import json5 from 'json5'
+import { encryptData } from './encrypt';
 
 interface EnvConfig {
   url?: string;
@@ -514,10 +515,17 @@ program
     prev.ExternalPath = undefined;
     prev.TunnelID = undefined;
 
-    resp = await axios.post(`${getUrl()}/api/worker/v2/update-worker`, prev, {
+    const userinfo = await axios.get(`${getUrl()}/api/user/info`, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+      },
+    })
+    const vk = userinfo.data?.data?.vk ?? ""
+    resp = await axios.post(`${getUrl()}/api/worker/v2/update-worker`, vk != "" ? await encryptData(prev, vk) : prev, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'x-encrypted-data': vk != "" ? 'true' : 'false'
       }
     })
     if (resp.data.code === 0) {

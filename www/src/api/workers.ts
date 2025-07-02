@@ -43,8 +43,19 @@ export const deleteWorker = (uid: string) => {
   return api.delete(`/api/worker/${uid}`, {}).then((res) => res.data)
 }
 
-export const updateWorker = (uid: string, worker: WorkerItem) => {
-  return api.post(`/api/worker/${uid}`, worker).then((res) => res.data)
+export const updateWorker = async (uid: string, worker: WorkerItem) => {
+  try {
+    const response = await api.post(`/api/worker/${uid}`, worker, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Encrypted-Data': 'true'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating worker:', error);
+    throw error;
+  }
 }
 
 export const flushWorker = (uid: string) => {

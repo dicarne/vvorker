@@ -70,6 +70,7 @@ func init() {
 	}
 
 	api := router.Group("/api")
+	econfig := utils.DefaultEncryptionConfig()
 	registerApi := func(api *gin.RouterGroup) {
 		if conf.IsMaster() {
 			workerApi := api.Group("/worker", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
@@ -79,7 +80,7 @@ func init() {
 				workerApi.GET("/run/:uid", workerd.RunWorkerEndpoint)
 				workerApi.POST("/create", workerd.CreateEndpoint)
 				workerApi.POST("/version/:workerId/:fileId", workerd.NewVersionEndpoint)
-				workerApi.POST("/:uid", workerd.UpdateEndpoint)
+				workerApi.POST("/:uid", utils.EncryptionMiddleware(econfig), workerd.UpdateEndpoint)
 				workerApi.DELETE("/:uid", workerd.DeleteEndpoint)
 
 				workerApi.GET("/information/:id", workerd.GetWorkerInformationByIDEndpoint)
@@ -123,7 +124,7 @@ func init() {
 				workerV2 := workerApi.Group("/v2")
 				{
 					workerV2.POST("/get-worker", workerd.GetWorkerEndpointJSON)
-					workerV2.POST("/update-worker", workerd.UpdateEndpointJSON)
+					workerV2.POST("/update-worker", utils.EncryptionMiddleware(econfig), workerd.UpdateEndpointJSON)
 
 					workerV2.POST("/export-workers", export.ExportResourcesConfigEndpoint)
 					workerV2.POST("/import-workers", export.ImportResourcesConfigEndpoint)
@@ -135,7 +136,7 @@ func init() {
 				workersApi.GET("/flush", workerd.FlushAllEndpoint)
 				workersApi.GET("/:offset/:limit", workerd.GetWorkersEndpoint)
 			}
-			userApi := api.Group("/user", authz.JWTMiddleware())
+			userApi := api.Group("/user", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
 			{
 				userApi.GET("/info", auth.GetUserEndpoint)
 				userApi.POST("/create-access-key", access.CreateAccessKeyEndpoint)

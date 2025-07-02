@@ -34,6 +34,8 @@ type AppConfig struct {
 	WorkerLimit    int    `env:"WORKER_LIMIT" env-default:"10000"`
 	WorkerdBinPath string `env:"WORKERD_BIN_PATH" env-default:"/bin/workerd"`
 
+	EncryptionKey string `env:"ENCRYPTION_KEY" env-default:"okwuxjaqpuiqplmhfrquzisldysgitpj"`
+
 	APIWebBaseURL  string `env:"API_WEB_BASE_URL"`
 	ListenAddr     string `env:"LISTEN_ADDR" env-default:"0.0.0.0"`
 	CookieName     string `env:"COOKIE_NAME" env-default:"authorization"`

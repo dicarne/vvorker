@@ -51,6 +51,7 @@ type GetUserResponse struct {
 	Role     string `json:"role"`
 	Email    string `json:"email"`
 	ID       uint   `json:"id"`
+	VK       string `json:"vk"`
 }
 
 type DeleteWorkerRequest struct {

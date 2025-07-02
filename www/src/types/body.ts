@@ -23,4 +23,5 @@ export interface UserInfo {
 	email: string;
 	role: string;
 	id: number;
+	vk: string;
 }

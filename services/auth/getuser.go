@@ -3,6 +3,7 @@ package auth
 import (
 	"runtime/debug"
 	"vvorker/common"
+	"vvorker/conf"
 	"vvorker/entities"
 	"vvorker/models"
 
@@ -28,5 +29,6 @@ func GetUserEndpoint(c *gin.Context) {
 		Role:     user.Role,
 		Email:    user.Email,
 		ID:       user.ID,
+		VK:       conf.AppConfigInstance.EncryptionKey,
 	})
 }
