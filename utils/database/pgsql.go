@@ -22,7 +22,11 @@ func initPgsql() {
 		return
 	}
 
-	databaseNmae := "vvorker_admin_" + conf.AppConfigInstance.NodeName
+	databaseName := "vvorker_admin_" + conf.AppConfigInstance.NodeName
+
+	if conf.AppConfigInstance.DBName != "" {
+		databaseName = conf.AppConfigInstance.DBName
+	}
 
 	pgdb, err := sql.Open("postgres",
 		"user="+conf.AppConfigInstance.ServerPostgreUser+
@@ -35,7 +39,7 @@ func initPgsql() {
 	}
 	defer pgdb.Close()
 
-	_, err = pgdb.Exec("CREATE DATABASE " + databaseNmae)
+	_, err = pgdb.Exec("CREATE DATABASE " + databaseName)
 	if err != nil {
 		logrus.Printf("Failed to create database: %v", err)
 	}
@@ -44,7 +48,7 @@ func initPgsql() {
 		conf.AppConfigInstance.ServerPostgreHost,
 		conf.AppConfigInstance.ServerPostgreUser,
 		conf.AppConfigInstance.ServerPostgrePassword,
-		databaseNmae,
+		databaseName,
 		conf.AppConfigInstance.ServerPostgrePort)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {

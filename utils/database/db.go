@@ -36,6 +36,8 @@ func InitDB() {
 		initSqlite()
 	case defs.DBTypePostgres:
 		initPgsql()
+	case defs.DBTypeMysql:
+		initMysql()
 	}
 
 	close(DBManagerInstance.ch)
@@ -79,6 +81,8 @@ func GetDB() *gorm.DB {
 		return mgr.GetSqlite()
 	case defs.DBTypePostgres:
 		return mgr.GetDB(defs.DBTypePostgres)
+	case defs.DBTypeMysql:
+		return mgr.GetDB(defs.DBTypeMysql)
 	}
 	return nil
 }

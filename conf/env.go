@@ -30,6 +30,7 @@ type AppConfig struct {
 	DBPath         string `env:"DB_PATH" env-default:"/app/data/db.sqlite"`
 	WorkerdDir     string `env:"WORKERD_DIR" env-default:"/app/data"`
 	DBType         string `env:"DB_TYPE" env-default:"sqlite"`
+	DBName         string `env:"DB_NAME" env-default:"vvorker"`
 	WorkerLimit    int    `env:"WORKER_LIMIT" env-default:"10000"`
 	WorkerdBinPath string `env:"WORKERD_BIN_PATH" env-default:"/bin/workerd"`
 
