@@ -8,7 +8,7 @@ WORKDIR /app
 
 RUN npm config set registry https://registry.npmmirror.com/
 RUN npm install -g pnpm
-RUN npm i workerd@v1.20250625.0 -g
+RUN npm i workerd@v1.20250619.0 -g
 
 COPY . /app
 WORKDIR /app
