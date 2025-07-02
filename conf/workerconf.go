@@ -25,6 +25,7 @@ type SQLDBConfig struct {
 	Database   string `json:"database"`
 	Binding    string `json:"binding"`
 	ResourceID string `json:"resource_id"`
+	Type       string `json:"type"` // "pgsql" or "mysql"
 }
 
 type OSSConfig struct {
@@ -69,6 +70,7 @@ type WorkerConfig struct {
 	Vars               json.RawMessage   `json:"vars"`
 	Ai                 []AiConfig        `json:"ai"`
 	PgSql              []SQLDBConfig     `json:"pgsql"`
+	Mysql              []SQLDBConfig     `json:"mysql"`
 	OSS                []OSSConfig       `json:"oss"`
 	KV                 []KV              `json:"kv"`
 	Assets             []Assets          `json:"assets"`
