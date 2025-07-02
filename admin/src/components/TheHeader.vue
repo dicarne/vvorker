@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { CH } from '@/lib/color'
 import { NAvatar, NButton, useMessage } from 'naive-ui'
 import FuncIcon from '@/components/icons/FuncIcon.vue'
-import { onMounted, ref } from 'vue'
 import type { UserInfo } from '@/types/auth'
 import { getUserInfo, logout } from '@/api/auth'
 import { useNavigate } from '@/composables/useNavigate'
@@ -35,7 +36,12 @@ onMounted(async () => {
       <span class="v-item" style="font-size: 24px">VVorker</span>
     </div>
     <div class="v-flex-center">
-      <NAvatar round>{{ userInfo?.userName.slice(0, 2).toLocaleUpperCase() }}</NAvatar>
+      <NAvatar
+        class="v-avatar"
+        :style="{ background: userInfo?.userName ? CH.hex(userInfo.userName) : '#cccccc' }"
+      >
+        {{ userInfo?.userName.slice(0, 2).toUpperCase() }}
+      </NAvatar>
       <NButton secondary type="primary" class="v-item" @click="handleLogout">登出</NButton>
     </div>
   </div>
