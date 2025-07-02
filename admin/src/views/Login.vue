@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { inject, ref, type Ref } from 'vue'
 import { useMessage, NCard, NForm, NFormItem, NInput, NButton } from 'naive-ui'
 import type { FormInst, FormRules } from 'naive-ui' // 导入 FormInst 类型
-import type { LoginRequest } from '@/types/auth'
+import type { LoginRequest, UserInfo } from '@/types/auth'
 import { passwordRules, usernameRules } from '@/constant/formrules'
-import { login } from '@/api/auth'
+import { getUserInfo, login } from '@/api/auth'
 import { useNavigate } from '@/composables/useNavigate'
 
 // 初始化表单数据
@@ -39,9 +39,18 @@ const handleLogin = async () => {
   try {
     // 调用登录接口
     const res = await login(form.value)
-    console.log(res)
-    message.success('登录成功')
-    navigate('/admin')
+    if (res.status === 0) {
+      // 登录成功获取用户信息
+      try {
+        const userInfo = inject<Ref<UserInfo>>("userInfo")!
+        userInfo.value = await getUserInfo()
+      } catch (error) {
+        console.error(error)
+        message.error('获取用户信息失败: ' + error)
+      }
+      message.success('登录成功')
+      navigate('/admin')
+    }
   } catch (error) {
     console.error(error)
     message.error('登录失败: ' + error)
