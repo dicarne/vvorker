@@ -26,10 +26,13 @@ require (
 	github.com/tiendc/go-deepcopy v1.6.0
 	golang.org/x/crypto v0.38.0
 	google.golang.org/protobuf v1.36.6
+	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.30.0
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/jonboulle/clockwork v0.5.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 )

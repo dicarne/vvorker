@@ -75,9 +75,9 @@ type AppConfig struct {
 	ServerPostgreUser     string `env:"SERVER_POSTGRE_USER" env-default:"postgres"`
 
 	ServerMySQLHost     string `env:"SERVER_MYSQL_HOST" env-default:"localhost"`
-	ServerMySQLPort     int    `env:"SERVER_MYSQL_PORT" env-default:"5432"`
-	ServerMySQLPassword string `env:"SERVER_MYSQL_PASSWORD" env-default:"postgres"`
-	ServerMySQLUser     string `env:"SERVER_MYSQL_USER" env-default:"postgres"`
+	ServerMySQLPort     int    `env:"SERVER_MYSQL_PORT" env-default:"3306"`
+	ServerMySQLPassword string `env:"SERVER_MYSQL_PASSWORD" env-default:"root123"`
+	ServerMySQLUser     string `env:"SERVER_MYSQL_USER" env-default:"root"`
 
 	ClientMinioPort   int `env:"CLIENT_MINIO_PORT" env-default:"19000"`
 	ClientPostgrePort int `env:"CLIENT_POSTGRE_PORT" env-default:"15432"`

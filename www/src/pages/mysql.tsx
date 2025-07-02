@@ -8,7 +8,7 @@ export function MySQLPage() {
   return (
     <Layout
       header={<HeaderComponent />}
-      side={<SideBarComponent selected="sql" />}
+      side={<SideBarComponent selected="mysql" />}
             main={<ResourceList rtype='mysql'/>}
     />
   )

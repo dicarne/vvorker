@@ -356,6 +356,7 @@ func HandleStaticFile(f embed.FS) {
 	router.StaticFileFS(prefix+"/user", "user.html", http.FS(fp))
 
 	router.StaticFileFS(prefix+"/sql", "sql.html", http.FS(fp))
+	router.StaticFileFS(prefix+"/mysql", "mysql.html", http.FS(fp))
 	router.StaticFileFS(prefix+"/oss", "oss.html", http.FS(fp))
 	router.StaticFileFS(prefix+"/kv", "kv.html", http.FS(fp))
 	router.StaticFileFS(prefix+"/task", "task.html", http.FS(fp))

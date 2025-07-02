@@ -13,9 +13,43 @@ import (
 	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 )
+
+func buildMysqlConnectionString() string {
+	// username:password@protocol(address)/dbname?param=value
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/?charset=utf8mb4&parseTime=True&loc=Local",
+		conf.AppConfigInstance.ServerMySQLUser,
+		conf.AppConfigInstance.ServerMySQLPassword,
+		conf.AppConfigInstance.ServerMySQLHost,
+		conf.AppConfigInstance.ServerMySQLPort)
+}
+
+func buildMysqlDBConnectionString(database string) string {
+
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		conf.AppConfigInstance.ServerMySQLUser,
+		conf.AppConfigInstance.ServerMySQLPassword,
+		conf.AppConfigInstance.ServerMySQLHost,
+		conf.AppConfigInstance.ServerMySQLPort,
+		database)
+}
+
+func cutDatabaseName(database string) string {
+	// database 不超过63个字符
+	if len(database) > 63 {
+		return database[:63]
+	}
+	return database
+}
+
+func cutUserName(user string) string {
+	if len(user) > 32 {
+		return user[:32]
+	}
+	return user
+}
 
 // CreateMySQLDatabase 创建 MySQL 数据库及相关用户，并授予权限
 func CreateMySQLDatabase(userID uint64, UID string, req entities.CreateNewResourcesRequest) (*models.MySQL, error) {
@@ -24,14 +58,10 @@ func CreateMySQLDatabase(userID uint64, UID string, req entities.CreateNewResour
 		Name:   req.Name,
 		UID:    UID,
 	}
-	mysqlResource.Database = "vvorker_" + mysqlResource.UID
+	mysqlResource.Database = cutDatabaseName("vvorker_" + mysqlResource.UID)
 
-	pgdb, err := sql.Open("mysql",
-		"user="+conf.AppConfigInstance.ServerMySQLUser+
-			" password="+conf.AppConfigInstance.ServerMySQLPassword+
-			" host="+conf.AppConfigInstance.ServerMySQLHost+
-			" port="+fmt.Sprintf("%d", conf.AppConfigInstance.ServerMySQLPort)+
-			" sslmode=disable")
+	// 用户:密码@/库名?charset=utf8&parseTime=True&loc=Local
+	pgdb, err := sql.Open("mysql", buildMysqlConnectionString())
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +74,7 @@ func CreateMySQLDatabase(userID uint64, UID string, req entities.CreateNewResour
 
 	// 生成随机密码
 	password := utils.GenerateUID() // 假设 utils 包有 GenerateRandomString 函数
-	pgUser := "vorker_user_" + mysqlResource.UID
+	pgUser := cutUserName("vorker_user_" + mysqlResource.UID)
 
 	// 创建新用户
 	_, err = pgdb.Exec(fmt.Sprintf("CREATE USER %s WITH PASSWORD '%s'", pgUser, password))
@@ -66,14 +96,7 @@ func CreateMySQLDatabase(userID uint64, UID string, req entities.CreateNewResour
 
 	// 授予用户对数据库的所有表的增删改查权限
 	// Connect to the newly created database
-	targetConnStr := fmt.Sprintf(
-		"user=%s password=%s host=%s port=%d dbname=%s sslmode=disable",
-		conf.AppConfigInstance.ServerMySQLUser,
-		conf.AppConfigInstance.ServerMySQLPassword,
-		conf.AppConfigInstance.ServerMySQLHost,
-		conf.AppConfigInstance.ServerMySQLPort,
-		mysqlResource.Database,
-	)
+	targetConnStr := buildMysqlDBConnectionString(mysqlResource.Database)
 	targetPgdb, err := sql.Open("mysql", targetConnStr)
 	if err != nil {
 		return nil, err
@@ -197,14 +220,10 @@ func DeleteMySQLResourcesEndpoint(c *gin.Context) {
 		return
 	}
 
-	mysqlResourceDatabase := "vvorker_" + req.UID
+	mysqlResourceDatabase := cutDatabaseName("vvorker_" + req.UID)
 
 	pgdb, err := sql.Open("mysql",
-		"user="+conf.AppConfigInstance.ServerMySQLUser+
-			" password="+conf.AppConfigInstance.ServerMySQLPassword+
-			" host="+conf.AppConfigInstance.ServerMySQLHost+
-			" port="+fmt.Sprintf("%d", conf.AppConfigInstance.ServerMySQLPort)+
-			" sslmode=disable")
+		buildMysqlDBConnectionString(mysqlResourceDatabase))
 	if err != nil {
 		// 使用 common.RespErr 返回错误响应
 		common.RespOK(c, "success but not drop db because of unconnected db", entities.DeleteResourcesResp{
@@ -316,15 +335,10 @@ func MigrateMySQLDatabase(userID uint64, pgid string) error {
 		return err
 	}
 
-	mysqlResource.Database = "vvorker_" + mysqlResource.UID
+	mysqlResource.Database = cutDatabaseName("vvorker_" + mysqlResource.UID)
 
 	pgdb, err := sql.Open("mysql",
-		"user="+conf.AppConfigInstance.ServerMySQLUser+
-			" password="+conf.AppConfigInstance.ServerMySQLPassword+
-			" host="+conf.AppConfigInstance.ServerMySQLHost+
-			" port="+fmt.Sprintf("%d", conf.AppConfigInstance.ServerMySQLPort)+
-			" sslmode=disable"+
-			" dbname="+mysqlResource.Database)
+		buildMysqlDBConnectionString(mysqlResource.Database))
 	if err != nil {
 		return err
 	}
