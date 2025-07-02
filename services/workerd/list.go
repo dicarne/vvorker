@@ -205,6 +205,10 @@ func FinishWorkerConfig(worker *models.Worker) string {
 				workerconfig.PgSql[i] = ext
 
 				funcs.MigratePostgreSQLDatabase(worker.UserID, ext.ResourceID)
+			} else {
+				if len(ext.Migrate) != 0 {
+					funcs.MigratePostgreSQLDatabase(worker.UserID, "worker_resource:pgsql:"+worker.UID+":"+ext.Migrate)
+				}
 			}
 		}
 
@@ -220,6 +224,12 @@ func FinishWorkerConfig(worker *models.Worker) string {
 					ext.ResourceID = ""
 				}
 				workerconfig.Mysql[i] = ext
+
+				funcs.MigrateMySQLDatabase(worker.UserID, ext.ResourceID)
+			} else {
+				if len(ext.Migrate) != 0 {
+					funcs.MigrateMySQLDatabase(worker.UserID, "worker_resource:mysql:"+worker.UID+":"+ext.Migrate)
+				}
 			}
 		}
 

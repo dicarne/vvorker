@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strings"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/entities"
@@ -251,8 +252,13 @@ type updateFile struct {
 }
 
 type updateMigrateReq struct {
-	ResourceID string       `json:"resource_id"`
-	Files      []updateFile `json:"files"`
+	ResourceID       string       `json:"resource_id"`
+	Files            []updateFile `json:"files"`
+	CustomDBName     string       `json:"custom_db_name"`
+	CustomDBUser     string       `json:"custom_db_user"`
+	CustomDBHost     string       `json:"custom_db_host"`
+	CustomDBPort     int          `json:"custom_db_port"`
+	CustomDBPassword string       `json:"custom_db_password"`
 }
 
 func UpdateMigrate(c *gin.Context) {
@@ -267,19 +273,26 @@ func UpdateMigrate(c *gin.Context) {
 		return
 	}
 	db := database.GetDB()
-	pgResource := models.PostgreSQL{}
-	if err := db.Where("uid =?", req.ResourceID).First(&pgResource).Error; err != nil {
-		common.RespErr(c, http.StatusInternalServerError, "Failed to get PostgreSQL resource", gin.H{"error": err.Error()})
-		return
-	}
-	if pgResource.UserID != userID {
-		common.RespErr(c, http.StatusUnauthorized, "Unauthorized", gin.H{"error": "Unauthorized"})
-		return
+	UID := ""
+
+	if !strings.HasPrefix(req.ResourceID, "worker_resource:pgsql:") {
+		pgResource := models.PostgreSQL{}
+		if err := db.Where("uid =?", req.ResourceID).First(&pgResource).Error; err != nil {
+			common.RespErr(c, http.StatusInternalServerError, "Failed to get PostgreSQL resource", gin.H{"error": err.Error()})
+			return
+		}
+		if pgResource.UserID != userID {
+			common.RespErr(c, http.StatusUnauthorized, "Unauthorized", gin.H{"error": "Unauthorized"})
+			return
+		}
+		UID = pgResource.UID
+	} else {
+		UID = req.ResourceID
 	}
 
 	if err := db.Where(&models.PostgreSQLMigration{
 		UserID: userID,
-		DBUID:  pgResource.UID,
+		DBUID:  UID,
 	}).Delete(&models.PostgreSQLMigration{}).Error; err != nil {
 		common.RespErr(c, http.StatusInternalServerError, "Failed to delete PostgreSQL migration", gin.H{"error": err.Error()})
 		return
@@ -287,11 +300,16 @@ func UpdateMigrate(c *gin.Context) {
 
 	for i, file := range req.Files {
 		if err := db.Model(&models.PostgreSQLMigration{}).Create(&models.PostgreSQLMigration{
-			UserID:      userID,
-			DBUID:       pgResource.UID,
-			FileName:    file.FileName,
-			FileContent: file.Content,
-			Sequence:    i,
+			UserID:           userID,
+			DBUID:            UID,
+			FileName:         file.FileName,
+			FileContent:      file.Content,
+			Sequence:         i,
+			CustomDBName:     req.CustomDBName,
+			CustomDBUser:     req.CustomDBUser,
+			CustomDBPassword: req.CustomDBPassword,
+			CustomDBHost:     req.CustomDBHost,
+			CustomDBPort:     req.CustomDBPort,
 		}).Error; err != nil {
 			common.RespErr(c, http.StatusInternalServerError, "Failed to create PostgreSQL migration", gin.H{"error": err.Error()})
 			return
@@ -301,7 +319,7 @@ func UpdateMigrate(c *gin.Context) {
 	common.RespOK(c, "success", gin.H{})
 }
 
-func MigratePostgreSQLDatabase(userID uint64, pgid string) error {
+func migrateResource(userID uint64, pgid string) error {
 	db := database.GetDB()
 	pgResource := models.PostgreSQL{}
 	if err := db.Where("uid =?", pgid).First(&pgResource).Error; err != nil {
@@ -311,7 +329,7 @@ func MigratePostgreSQLDatabase(userID uint64, pgid string) error {
 	migrates := []models.PostgreSQLMigration{}
 	if err := db.Where(&models.PostgreSQLMigration{
 		UserID: userID,
-		DBUID:  pgResource.UID,
+		DBUID:  pgid,
 	}).Order("sequence").Find(&migrates).Error; err != nil {
 		return err
 	}
@@ -338,6 +356,47 @@ func MigratePostgreSQLDatabase(userID uint64, pgid string) error {
 		}
 	}
 	return nil
+}
+
+func migrateCustomResource(userID uint64, pgid string) error {
+	db := database.GetDB()
+	migrates := []models.PostgreSQLMigration{}
+	if err := db.Where(&models.PostgreSQLMigration{
+		UserID: userID,
+		DBUID:  pgid,
+	}).Order("sequence").Find(&migrates).Error; err != nil {
+		return err
+	}
+	if len(migrates) == 0 {
+		return nil
+	}
+	config := migrates[0]
+	pgdb, err := sql.Open("postgres",
+		"user="+config.CustomDBUser+
+			" password="+config.CustomDBPassword+
+			" host="+config.CustomDBHost+
+			" port="+fmt.Sprintf("%d", config.CustomDBPort)+
+			" sslmode=disable")
+	if err != nil {
+		return err
+	}
+	defer pgdb.Close()
+	for _, migrate := range migrates {
+		_, err = pgdb.Exec(migrate.FileContent)
+		if err != nil {
+			logrus.Error(err)
+			// return err
+		}
+	}
+	return nil
+}
+
+func MigratePostgreSQLDatabase(userID uint64, pgid string) error {
+	if !strings.HasPrefix(pgid, "worker_resource:pgsql:") {
+		return migrateResource(userID, pgid)
+	} else {
+		return migrateCustomResource(userID, pgid)
+	}
 }
 
 func init() {

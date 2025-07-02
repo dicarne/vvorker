@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strings"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/entities"
@@ -248,8 +249,13 @@ type updateFile struct {
 }
 
 type updateMigrateReq struct {
-	ResourceID string       `json:"resource_id"`
-	Files      []updateFile `json:"files"`
+	ResourceID       string       `json:"resource_id"`
+	Files            []updateFile `json:"files"`
+	CustomDBName     string       `json:"custom_db_name"`
+	CustomDBUser     string       `json:"custom_db_user"`
+	CustomDBHost     string       `json:"custom_db_host"`
+	CustomDBPort     int          `json:"custom_db_port"`
+	CustomDBPassword string       `json:"custom_db_password"`
 }
 
 func UpdateMigrate(c *gin.Context) {
@@ -264,19 +270,26 @@ func UpdateMigrate(c *gin.Context) {
 		return
 	}
 	db := database.GetDB()
-	mysqlResource := models.MySQL{}
-	if err := db.Where("uid =?", req.ResourceID).First(&mysqlResource).Error; err != nil {
-		common.RespErr(c, http.StatusInternalServerError, "Failed to get MySQL resource", gin.H{"error": err.Error()})
-		return
-	}
-	if mysqlResource.UserID != userID {
-		common.RespErr(c, http.StatusUnauthorized, "Unauthorized", gin.H{"error": "Unauthorized"})
-		return
+	UID := ""
+
+	if !strings.HasPrefix(req.ResourceID, "worker_resource:mysql:") {
+		mysqlResource := models.MySQL{}
+		if err := db.Where("uid =?", req.ResourceID).First(&mysqlResource).Error; err != nil {
+			common.RespErr(c, http.StatusInternalServerError, "Failed to get MySQL resource", gin.H{"error": err.Error()})
+			return
+		}
+		if mysqlResource.UserID != userID {
+			common.RespErr(c, http.StatusUnauthorized, "Unauthorized", gin.H{"error": "Unauthorized"})
+			return
+		}
+		UID = mysqlResource.UID
+	} else {
+		UID = req.ResourceID
 	}
 
 	if err := db.Where(&models.MySQLMigration{
 		UserID: userID,
-		DBUID:  mysqlResource.UID,
+		DBUID:  UID,
 	}).Delete(&models.MySQLMigration{}).Error; err != nil {
 		common.RespErr(c, http.StatusInternalServerError, "Failed to delete MySQL migration", gin.H{"error": err.Error()})
 		return
@@ -284,11 +297,16 @@ func UpdateMigrate(c *gin.Context) {
 
 	for i, file := range req.Files {
 		if err := db.Model(&models.MySQLMigration{}).Create(&models.MySQLMigration{
-			UserID:      userID,
-			DBUID:       mysqlResource.UID,
-			FileName:    file.FileName,
-			FileContent: file.Content,
-			Sequence:    i,
+			UserID:           userID,
+			DBUID:            UID,
+			FileName:         file.FileName,
+			FileContent:      file.Content,
+			Sequence:         i,
+			CustomDBName:     req.CustomDBName,
+			CustomDBUser:     req.CustomDBUser,
+			CustomDBPassword: req.CustomDBPassword,
+			CustomDBHost:     req.CustomDBHost,
+			CustomDBPort:     req.CustomDBPort,
 		}).Error; err != nil {
 			common.RespErr(c, http.StatusInternalServerError, "Failed to create MySQL migration", gin.H{"error": err.Error()})
 			return
@@ -298,38 +316,85 @@ func UpdateMigrate(c *gin.Context) {
 	common.RespOK(c, "success", gin.H{})
 }
 
-func MigrateMySQLDatabase(userID uint64, pgid string) error {
+func migrateCustomMySQLResource(userID uint64, pgid string) error {
 	db := database.GetDB()
-	mysqlResource := models.MySQL{}
-	if err := db.Where("uid =?", pgid).First(&mysqlResource).Error; err != nil {
-		return err
-	}
-
 	migrates := []models.MySQLMigration{}
 	if err := db.Where(&models.MySQLMigration{
 		UserID: userID,
-		DBUID:  mysqlResource.UID,
+		DBUID:  pgid,
 	}).Order("sequence").Find(&migrates).Error; err != nil {
 		return err
 	}
 
-	mysqlResource.Database = cutDatabaseName("vvorker_" + mysqlResource.UID)
+	if len(migrates) == 0 {
+		return nil
+	}
 
-	pgdb, err := sql.Open("mysql",
-		buildMysqlDBConnectionString(mysqlResource.Database))
+	config := migrates[0]
+	dbConnectionStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&multiStatements=true",
+		config.CustomDBUser,
+		config.CustomDBPassword,
+		config.CustomDBHost,
+		config.CustomDBPort,
+		config.CustomDBName,
+	)
+	logrus.Infof("dbConnectionStr: %s", dbConnectionStr)
+
+	dbConn, err := sql.Open("mysql", dbConnectionStr)
 	if err != nil {
 		return err
 	}
-	defer pgdb.Close()
+	defer dbConn.Close()
 
 	for _, migrate := range migrates {
-		_, err = pgdb.Exec(migrate.FileContent)
+		_, err = dbConn.Exec(migrate.FileContent)
 		if err != nil {
 			logrus.Error(err)
-			// return err
+			// Continue with next migration even if one fails
 		}
 	}
+
 	return nil
+}
+
+func MigrateMySQLDatabase(userID uint64, pgid string) error {
+	if !strings.HasPrefix(pgid, "worker_resource:mysql:") {
+		// Original migration logic for non-custom resources
+		db := database.GetDB()
+		mysqlResource := models.MySQL{}
+		if err := db.Where("uid =?", pgid).First(&mysqlResource).Error; err != nil {
+			return err
+		}
+
+		migrates := []models.MySQLMigration{}
+		if err := db.Where(&models.MySQLMigration{
+			UserID: userID,
+			DBUID:  mysqlResource.UID,
+		}).Order("sequence").Find(&migrates).Error; err != nil {
+			return err
+		}
+
+		mysqlResource.Database = cutDatabaseName("vvorker_" + mysqlResource.UID)
+
+		dbConn, err := sql.Open("mysql", buildMysqlDBConnectionString(mysqlResource.Database)+"&multiStatements=true")
+		if err != nil {
+			return err
+		}
+		defer dbConn.Close()
+
+		for _, migrate := range migrates {
+			_, err = dbConn.Exec(migrate.FileContent)
+			if err != nil {
+				logrus.Error(err)
+				// Continue with next migration even if one fails
+			}
+		}
+
+		return nil
+	}
+
+	// Handle custom database connection
+	return migrateCustomMySQLResource(userID, pgid)
 }
 
 func init() {

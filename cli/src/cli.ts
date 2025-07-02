@@ -208,7 +208,7 @@ app.get("*", async (c) => {
 
 export default app;
         `
-        
+
         await new Promise((resolve, reject) => {
           // npm create cloudflare@latest -- my-vue-app --framework=vue
           const child = spawn('pnpm', ['create', "cloudflare@latest", projectName, "--framework=vue"], { stdio: 'inherit', shell: true });
@@ -437,13 +437,18 @@ program
             let migrateFileContent = fs.readFileSync(migrateFilePath, 'utf-8');
             allFile.push({
               name: migrateFile,
-              content: migrateFileContent
+              content: migrateFileContent.replaceAll("--> statement-breakpoint", "\n")
             })
           }
 
           let resp = await axios.post(`${getUrl()}/api/ext/pgsql/migrate`, {
-            resource_id: rid,
+            resource_id: rid ?? ("worker_resource:pgsql:" + uid + ":" + pgsql.migrate),
             files: allFile,
+            custom_db_name: pgsql.database,
+            custom_db_user: pgsql.user,
+            custom_db_host: pgsql.host,
+            custom_db_port: pgsql.port,
+            custom_db_password: pgsql.password,
           }, {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -454,6 +459,50 @@ program
             throw new Error(`迁移失败：${pgsql.migrate}`);
           }
           console.log(`迁移成功：${pgsql.migrate}`);
+        }
+      }
+    }
+
+
+    if (distVvorkerJson.mysql && distVvorkerJson.mysql.length > 0) {
+      for (let mysql of distVvorkerJson.mysql) {
+        let rid = mysql.resource_id;
+        if (mysql.migrate) {
+          let migrateFiles = fs.readdirSync(mysql.migrate);
+          let allFile: {
+            name: string,
+            content: string
+          }[] = []
+          for (let migrateFile of migrateFiles) {
+            if (!migrateFile.endsWith('.sql')) {
+              continue;
+            }
+            let migrateFilePath = path.join(mysql.migrate, migrateFile);
+            let migrateFileContent = fs.readFileSync(migrateFilePath, 'utf-8');
+            allFile.push({
+              name: migrateFile,
+              content: migrateFileContent.replaceAll("--> statement-breakpoint", "\n")
+            })
+          }
+
+          let resp = await axios.post(`${getUrl()}/api/ext/mysql/migrate`, {
+            resource_id: rid ?? ("worker_resource:mysql:" + uid + ":" + mysql.migrate),
+            files: allFile,
+            custom_db_name: mysql.database,
+            custom_db_user: mysql.user,
+            custom_db_host: mysql.host,
+            custom_db_port: mysql.port,
+            custom_db_password: mysql.password,
+          }, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          })
+          if (resp.data.code !== 0) {
+            console.log(`迁移失败：${mysql.migrate}`);
+            throw new Error(`迁移失败：${mysql.migrate}`);
+          }
+          console.log(`迁移成功：${mysql.migrate}`);
         }
       }
     }

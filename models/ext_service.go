@@ -40,11 +40,16 @@ type PostgreSQL struct {
 
 type PostgreSQLMigration struct {
 	gorm.Model
-	UserID      uint64
-	DBUID       string
-	FileName    string
-	FileContent string
-	Sequence    int
+	UserID           uint64
+	DBUID            string
+	FileName         string
+	FileContent      string
+	Sequence         int
+	CustomDBName     string `json:"custom_db_name"`
+	CustomDBUser     string `json:"custom_db_user"`
+	CustomDBHost     string `json:"custom_db_host"`
+	CustomDBPort     int    `json:"custom_db_port"`
+	CustomDBPassword string `json:"custom_db_password"`
 }
 
 type MySQL struct {
@@ -59,11 +64,16 @@ type MySQL struct {
 
 type MySQLMigration struct {
 	gorm.Model
-	UserID      uint64
-	DBUID       string
-	FileName    string
-	FileContent string
-	Sequence    int
+	UserID           uint64
+	DBUID            string
+	FileName         string
+	FileContent      string
+	Sequence         int
+	CustomDBName     string `json:"custom_db_name"`
+	CustomDBUser     string `json:"custom_db_user"`
+	CustomDBHost     string `json:"custom_db_host"`
+	CustomDBPort     int    `json:"custom_db_port"`
+	CustomDBPassword string `json:"custom_db_password"`
 }
 
 type Assets struct {

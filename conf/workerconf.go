@@ -25,7 +25,8 @@ type SQLDBConfig struct {
 	Database   string `json:"database"`
 	Binding    string `json:"binding"`
 	ResourceID string `json:"resource_id"`
-	Type       string `json:"type"` // "postgres" or "mysql"
+	Type       string `json:"type"`    // "postgres" or "mysql"
+	Migrate    string `json:"migrate"` // 迁移文件目录
 }
 
 type OSSConfig struct {
