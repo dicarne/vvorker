@@ -7,14 +7,6 @@ import { getUserInfo, logout } from '@/api/auth'
 import { useNavigate } from '@/composables/useNavigate'
 const userInfo = ref<UserInfo>()
 const message = useMessage()
-onMounted(async () => {
-  try {
-    userInfo.value = await getUserInfo()
-  } catch (error) {
-    console.error(error)
-    message.error('获取用户信息失败: ' + error)
-  }
-})
 const { navigate } = useNavigate()
 const handleLogout = async () => {
   try {
@@ -25,6 +17,14 @@ const handleLogout = async () => {
     message.error('退出登录失败: ' + error)
   }
 }
+onMounted(async () => {
+  try {
+    userInfo.value = await getUserInfo()
+  } catch (error) {
+    console.error(error)
+    message.error('获取用户信息失败: ' + error)
+  }
+})
 </script>
 
 <template>
