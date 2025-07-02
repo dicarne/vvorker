@@ -70,6 +70,10 @@ func GetAllWorkersEndpoint(c *gin.Context) {
 		return
 	}
 
+	for _, worker := range workers {
+		worker.Worker.Code = nil
+	}
+
 	common.RespOK(c, "get all workers success", models.Trans2Entities(workers))
 }
 
@@ -91,6 +95,7 @@ func GetWorkerEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}
+	worker.Worker.Code = nil
 	common.RespOK(c, "get workers success", models.Trans2Entities([]*models.Worker{worker}))
 }
 
@@ -122,6 +127,7 @@ func GetWorkerEndpointJSON(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}
+	worker.Worker.Code = nil
 	common.RespOK(c, "get workers success", models.Trans2Entities([]*models.Worker{worker}))
 }
 

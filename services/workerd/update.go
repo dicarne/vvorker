@@ -40,6 +40,14 @@ func UpdateEndpoint(c *gin.Context) {
 
 	userID := c.GetUint(common.UIDKey)
 
+	if worker.Worker.Code == nil {
+		oldworker, err := models.GetWorkerByUID(userID, UID)
+		if err != nil {
+			common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
+			return
+		}
+		worker.Worker.Code = oldworker.Code
+	}
 	if err := UpdateWorker(userID, UID, worker.Worker); err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
@@ -67,6 +75,15 @@ func UpdateEndpointJSON(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint(common.UIDKey)
+
+	if worker.Worker.Code == nil {
+		oldworker, err := models.GetWorkerByUID(userID, UID)
+		if err != nil {
+			common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
+			return
+		}
+		worker.Worker.Code = oldworker.Code
+	}
 
 	if err := UpdateWorker(userID, UID, worker.Worker); err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
