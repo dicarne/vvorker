@@ -4,6 +4,10 @@
   padding: 24px;
 }
 
+.v-main {
+  padding: 24px;
+}
+
 .v-flex-center {
   display: flex;
   justify-content: center;

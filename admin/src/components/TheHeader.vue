@@ -35,7 +35,7 @@ const handleLogout = async () => {
     </div>
     <div class="v-flex-center">
       <NAvatar round>{{ userInfo?.userName.slice(0, 2).toLocaleUpperCase() }}</NAvatar>
-      <NButton tertiary type="primary" class="v-item" @click="handleLogout">登出</NButton>
+      <NButton secondary type="primary" class="v-item" @click="handleLogout">登出</NButton>
     </div>
   </div>
 </template>
