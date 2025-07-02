@@ -126,7 +126,7 @@ const handleDeleteAccessKeyConfirm = async () => {
     // 调用创建 Access Key 接口
     IsDeletingAccessKey.value = true
     await deleteAccessKey(accessKeyToDelete.value)
-    accessKeys.value = accessKeys.value.filter(key => key.key !== accessKeyToDelete.value)
+    accessKeys.value = accessKeys.value.filter((key) => key.key !== accessKeyToDelete.value)
     message.success('删除 Access Key 成功')
     handleDeleteAccessKeyClose()
   } catch (error) {
@@ -208,24 +208,26 @@ onMounted(async () => {
             <div style="min-width: 400px">Key Name: {{ item.name }}</div>
           </template>
           <template #suffix>
-            <NButton type="error" secondary @click="handleDeleteAccessKeyClick(item.key)">删除</NButton>
+            <NButton type="error" secondary @click="handleDeleteAccessKeyClick(item.key)"
+              >删除</NButton
+            >
           </template>
           <div class="v-item" style="min-width: 400px">Key ID: {{ item.key }}</div>
         </NListItem>
-        <NModal
-          v-model:show="showDeleteAccessKeyModal"
-          preset="dialog"
-          title="删除 Access Key"
-          positive-text="确认"
-          negative-text="取消"
-          :loading="IsDeletingAccessKey"
-          :mask-closable="false"
-          @positive-click="handleDeleteAccessKeyConfirm"
-          @negative-click="handleDeleteAccessKeyClose"
-        >
-          <div>确认要删除这个 Access Key ？</div>
-        </NModal>
       </NList>
     </NCard>
+    <NModal
+      v-model:show="showDeleteAccessKeyModal"
+      preset="dialog"
+      title="删除 Access Key"
+      positive-text="确认"
+      negative-text="取消"
+      :loading="IsDeletingAccessKey"
+      :mask-closable="false"
+      @positive-click="handleDeleteAccessKeyConfirm"
+      @negative-click="handleDeleteAccessKeyClose"
+    >
+      <div>确认要删除这个 Access Key ？</div>
+    </NModal>
   </div>
 </template>
