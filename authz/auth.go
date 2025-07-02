@@ -1,6 +1,7 @@
 package authz
 
 import (
+	"net/http"
 	"strings"
 	"time"
 	"vvorker/common"
@@ -34,14 +35,16 @@ func JWTMiddleware() func(c *gin.Context) {
 		tokenOrigin := c.Request.Header.Get(common.AuthorizationKey)
 		tokenList := strings.Split(tokenOrigin, " ")
 		if len(tokenList) != 2 {
-			common.RespErr(c, common.RespCodeNotAuthed, common.RespMsgNotAuthed, nil)
+			// common.RespErr(c, common.RespCodeNotAuthed, common.RespMsgNotAuthed, nil)
+			c.JSON(http.StatusForbidden, gin.H{"error": "Unauthorized"})
 			c.Abort()
 			return
 		}
 		tokenStr := tokenList[1]
 
 		if tokenStr == "" {
-			common.RespErr(c, common.RespCodeNotAuthed, common.RespMsgNotAuthed, nil)
+			// common.RespErr(c, common.RespCodeNotAuthed, common.RespMsgNotAuthed, nil)
+			c.JSON(http.StatusForbidden, gin.H{"error": "Unauthorized"})
 			c.Abort()
 			return
 		}
@@ -53,7 +56,8 @@ func JWTMiddleware() func(c *gin.Context) {
 			return
 		}
 
-		common.RespErr(c, common.RespCodeNotAuthed, common.RespMsgNotAuthed, nil)
+		// common.RespErr(c, common.RespCodeNotAuthed, common.RespMsgNotAuthed, nil)
+		c.JSON(http.StatusForbidden, gin.H{"error": "Unauthorized"})
 		c.Abort()
 	}
 }
