@@ -13,42 +13,43 @@ import {
   Person24Regular as UserIcon,
 } from '@vicons/fluent'
 import TheHeader from '@/components/TheHeader.vue'
-import { renderIcon } from '@/utils/render'
+import { renderIcon, renderMenuRouterLink } from '@/utils/render'
+
 const collapsed = ref<boolean>(true)
 const activeKey = ref<string>('')
 const menuOptions: MenuOption[] = [
   {
-    label: 'Workers',
+    label: renderMenuRouterLink('Workers', 'Workers'),
     key: 'workers',
     icon: renderIcon(WorkersIcon),
   },
   {
-    label: 'Status',
+    label: renderMenuRouterLink('Status', 'Status'),
     key: 'status',
     icon: renderIcon(StatusIcon),
   },
   {
-    label: 'Task',
+    label: renderMenuRouterLink('Task', 'Task'),
     key: 'task',
     icon: renderIcon(TaskIcon),
   },
   {
-    label: 'SQL',
+    label: renderMenuRouterLink('SQL', 'SQL'),
     key: 'sql',
     icon: renderIcon(SQLIcon),
   },
   {
-    label: 'OSS',
+    label: renderMenuRouterLink('OSS', 'OSS'),
     key: 'oss',
     icon: renderIcon(OSSIcon),
   },
   {
-    label: 'KV',
+    label: renderMenuRouterLink('KV', 'KV'),  
     key: 'kv',
     icon: renderIcon(KVIcon),
   },
   {
-    label: 'User',
+    label: renderMenuRouterLink('User', 'User'),
     key: 'user',
     icon: renderIcon(UserIcon),
   },

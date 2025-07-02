@@ -17,12 +17,37 @@ const router = createRouter({
       path: '/',
       name: 'Index',
       component: () => import('@/views/Index.vue'),
-      redirect: '/admin',
+      redirect: '/workers',
       children: [
         {
-          path: '/admin',
-          name: 'Admin',
-          component: () => import('@/views/Admin.vue'),
+          path: '/workers',
+          name: 'Workers',
+          component: () => import('@/views/Workers.vue'),
+        },
+        {
+          path: '/status',
+          name: 'Status',
+          component: () => import('@/views/Status.vue'),
+        },
+        {
+          path: '/task',
+          name: 'Task',
+          component: () => import('@/views/Task.vue'),
+        },
+        {
+          path: '/sql',
+          name: 'SQL',
+          component: () => import('@/views/SQL.vue'),
+        },
+        {
+          path: '/oss',
+          name: 'OSS',
+          component: () => import('@/views/OSS.vue'),
+        },
+        {
+          path: '/kv',
+          name: 'KV',
+          component: () => import('@/views/KV.vue'),
         },
         {
           path: '/user',
