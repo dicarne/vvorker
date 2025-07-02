@@ -90,7 +90,7 @@ export function WorkersComponent() {
         )
       } else {
         window.open(
-          `${appConf?.Scheme}://${appConf?.ApiUrl}/${item.Name}/`,
+          `${appConf?.ApiUrl}/${item.Name}/`,
           '_blank'
         )
       }
