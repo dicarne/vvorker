@@ -50,7 +50,7 @@ const handleLogin = async () => {
         message.error('登录成功后获取用户信息失败: ' + error)
       }
       message.success('登录成功')
-      navigate('/admin')
+      navigate('/workers')
     }
   } catch (error) {
     console.error(error)

@@ -11,6 +11,9 @@ importers:
       axios:
         specifier: ^1.10.0
         version: 1.10.0
+      color-hash:
+        specifier: ^2.0.2
+        version: 2.0.2
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -689,6 +692,9 @@ packages:
 
   caniuse-lite@1.0.30001726:
     resolution: {integrity: sha512-VQAUIUzBiZ/UnlM28fSp2CRF3ivUn1BWEvxMcVTNwpw91Py1pGbPIyIKtd+tzct9C3ouceCVdGAXxZOpZAsgdw==}
+
+  color-hash@2.0.2:
+    resolution: {integrity: sha512-6exeENAqBTuIR1wIo36mR8xVVBv6l1hSLd7Qmvf6158Ld1L15/dbahR9VUOiX7GmGJBCnQyS0EY+I8x+wa7egg==}
 
   combined-stream@1.0.8:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
@@ -1890,6 +1896,8 @@ snapshots:
       function-bind: 1.1.2
 
   caniuse-lite@1.0.30001726: {}
+
+  color-hash@2.0.2: {}
 
   combined-stream@1.0.8:
     dependencies:
