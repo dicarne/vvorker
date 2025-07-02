@@ -1,13 +1,32 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { CH } from '@/lib/color'
-import { NCard, NList, NListItem, NButton, useMessage, NAvatar, NTag } from 'naive-ui'
+import {
+  NCard,
+  NList,
+  NListItem,
+  NButton,
+  useMessage,
+  NAvatar,
+  NTag,
+  NDropdown,
+  NModal,
+  NIcon,
+} from 'naive-ui'
+import { MoreHorizontal24Regular as DropdownIcon } from '@vicons/fluent'
 import { DEFAULT_WORKER_ITEM, type WorkerItem } from '@/types/workers'
-import { createWorker, getAllWorkers } from '@/api/workers'
+import {
+  createWorker,
+  deleteWorker,
+  flushAllWorkers,
+  flushWorker,
+  getAllWorkers,
+} from '@/api/workers'
 
 const message = useMessage()
 
 const workers = ref<WorkerItem[]>([])
+
 // 加载所有 Worker
 const loadWorkers = async () => {
   try {
@@ -15,6 +34,22 @@ const loadWorkers = async () => {
   } catch (error) {
     console.error(error)
     message.error('获取 Worker 列表失败: ' + error)
+  }
+}
+
+const handleReloadWorkersClick = async () => {
+  await loadWorkers()
+  message.success('刷新 Worker 列表成功')
+}
+
+// 同步所有 Worker
+const handleFlushAllWorkersClick = async () => {
+  try {
+    await flushAllWorkers()
+    message.success('同步 Workers 成功')
+  } catch (error) {
+    console.error(error)
+    message.error('同步 Workers 失败: ' + error)
   }
 }
 
@@ -30,6 +65,73 @@ const handleCreateWorkerClick = async () => {
   }
 }
 
+// TODO 编辑 Worker
+
+// TODO 运行 Worker
+
+// TODO 打开 Worker
+
+// 同步 Worker
+const handleFlushWorkerClick = async (uid: string) => {
+  try {
+    await flushWorker(uid)
+    message.success('同步 Worker 成功')
+  } catch (error) {
+    console.error(error)
+    message.error('同步 Worker 失败: ' + error)
+  }
+}
+// 删除 Worker
+const showDeleteWorkerModal = ref<boolean>(false)
+const IsDeletingWorker = ref<boolean>(false)
+const workerToDelete = ref<WorkerItem>()
+const handleDeleteWorkerClick = async (worker: WorkerItem) => {
+  workerToDelete.value = worker
+  showDeleteWorkerModal.value = true
+}
+const handleDeleteWorkerConfirm = async () => {
+  if (!workerToDelete.value) return
+  try {
+    IsDeletingWorker.value = true
+    await deleteWorker(workerToDelete.value.UID)
+    await loadWorkers()
+    message.success('删除 Worker 成功')
+    handleDeleteWorkerClose()
+  } catch (error) {
+    console.error(error)
+    message.error('删除 Worker 失败: ' + error)
+  } finally {
+    IsDeletingWorker.value = false
+  }
+}
+const handleDeleteWorkerClose = () => {
+  showDeleteWorkerModal.value = false
+  workerToDelete.value = undefined
+}
+
+// Worker 下拉菜单
+const dropdownOptions = [
+  {
+    label: '同步',
+    key: 'sync',
+  },
+  {
+    label: '删除',
+    key: 'delete',
+  },
+]
+
+const handleDropdownSelect = (worker: WorkerItem, key: string) => {
+  if (key === 'sync') {
+    handleFlushWorkerClick(worker.UID)
+    return
+  }
+  if (key == 'delete') {
+    handleDeleteWorkerClick(worker)
+    return
+  }
+}
+
 onMounted(async () => {
   loadWorkers()
 })
@@ -38,6 +140,10 @@ onMounted(async () => {
   <div>
     <NCard title="Workers">
       <template #header-extra>
+        <NButton type="primary" secondary @click="handleReloadWorkersClick">刷新</NButton>
+        <NButton class="v-item" type="primary" secondary @click="handleFlushAllWorkersClick">
+          同步
+        </NButton>
         <NButton type="primary" secondary @click="handleCreateWorkerClick">创建</NButton>
       </template>
       <NList>
@@ -48,7 +154,20 @@ onMounted(async () => {
             </NAvatar>
           </template>
           <template #suffix>
-            <!-- <NButton type="error" secondary @click="handleDeleteAccessKeyClick(item.key)">删除</NButton> -->
+            <div class="v-flex-center">
+              <NButton quaternary type="primary">编辑</NButton>
+              <NButton class="v-item" quaternary type="primary">运行</NButton>
+              <NButton quaternary type="primary">打开</NButton>
+              <NDropdown
+                trigger="hover"
+                :options="dropdownOptions"
+                @select="(key) => handleDropdownSelect(item, key)"
+              >
+                <NButton quaternary
+                  ><NIcon><DropdownIcon /></NIcon
+                ></NButton>
+              </NDropdown>
+            </div>
           </template>
           <div class="v-flex-center-start-column">
             <div class="v-item">{{ item.Name }}</div>
@@ -62,5 +181,18 @@ onMounted(async () => {
         </NListItem>
       </NList>
     </NCard>
+    <NModal
+      v-model:show="showDeleteWorkerModal"
+      preset="dialog"
+      title="删除 Worker"
+      positive-text="确认"
+      negative-text="取消"
+      :loading="IsDeletingWorker"
+      :mask-closable="false"
+      @positive-click="handleDeleteWorkerConfirm"
+      @negative-click="handleDeleteWorkerClose"
+    >
+      <div>确认要删除 {{ workerToDelete?.Name }}（ID: {{ workerToDelete?.UID }}）？</div>
+    </NModal>
   </div>
 </template>
