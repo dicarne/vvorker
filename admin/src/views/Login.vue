@@ -26,6 +26,8 @@ const message = useMessage()
 
 const { navigate } = useNavigate()
 
+const userInfo = inject<Ref<UserInfo>>('userInfo')!
+
 // 处理登录逻辑的函数
 const handleLogin = async () => {
   if (!formRef.value) return
@@ -42,7 +44,6 @@ const handleLogin = async () => {
     if (res.status === 0) {
       // 登录成功获取用户信息
       try {
-        const userInfo = inject<Ref<UserInfo>>("userInfo")!
         userInfo.value = await getUserInfo()
       } catch (error) {
         console.error(error)
