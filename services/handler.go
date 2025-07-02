@@ -422,7 +422,7 @@ func modifyProxyRequestHeaders(c *gin.Context) {
 		// 按 / 分割路径
 		if conf.AppConfigInstance.WorkerHostPath == "" {
 			parts := strings.SplitN(url, "/", 2)
-			if len(parts) > 0 && parts[0] != "" {
+			if len(parts) >= 2 && parts[0] != "" {
 				host := parts[0] + conf.AppConfigInstance.WorkerURLSuffix
 				c.Request.Header.Set("Host", host)
 				c.Request.Host = host
@@ -435,7 +435,7 @@ func modifyProxyRequestHeaders(c *gin.Context) {
 			}
 		} else {
 			parts := strings.SplitN(url, "/", 3)
-			if len(parts) > 0 && parts[0] != "" {
+			if len(parts) >= 3 && parts[0] != "" {
 				host := parts[1] + conf.AppConfigInstance.WorkerURLSuffix
 				c.Request.Header.Set("Host", host)
 				c.Request.Host = host

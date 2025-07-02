@@ -233,6 +233,11 @@ func (w *Worker) Create() error {
 	if w.NodeName == conf.AppConfigInstance.NodeName {
 		w.Port = tunnel.GetPortManager().ClaimWorkerPort(c, w.GetUID())
 		tunnel.GetClient().Add(w.GetUID(), utils.WorkerHostPrefix(w.GetName()), int(w.GetPort()))
+
+		controlPort := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetUID()+"-control")
+		w.ControlPort = controlPort
+		tunnel.GetClient().Add(w.GetUID()+"-control", w.GetUID()+"-control", int(controlPort))
+
 		if err := w.UpdateFile(); err != nil {
 			return err
 		}
