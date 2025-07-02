@@ -15,7 +15,7 @@ func MigrateNormalModel() {
 		&User{}, &Worker{}, &WorkerVersion{}, &File{}, &KV{}, &OSS{}, &PostgreSQL{}, &AccessKey{},
 		&WorkerInformation{}, &exec.WorkerLog{}, &ResponseLog{}, &Assets{}, &Task{}, &TaskLog{},
 		&InternalServerWhiteList{}, &ExternalServerAKSK{}, &ExternalServerToken{}, &AccessRule{},
-		&PostgreSQLMigration{},
+		&PostgreSQLMigration{}, &MySQL{}, &MySQLMigration{},
 	}
 	if conf.AppConfigInstance.LitefsEnabled {
 		if !conf.IsMaster() {

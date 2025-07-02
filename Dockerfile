@@ -22,7 +22,7 @@ RUN cd /app/ext/pgsql && pnpm i && pnpm run build
 RUN cd /app/ext/assets && pnpm i && pnpm run build
 RUN cd /app/ext/task && pnpm i && pnpm run build
 RUN cd /app/ext/control && pnpm i && pnpm run build
-
+RUN cd /app/ext/mysql && pnpm i && pnpm run build
 
 ######################################################################################
 FROM golang:1.24-alpine AS go-builder

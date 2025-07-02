@@ -47,6 +47,25 @@ type PostgreSQLMigration struct {
 	Sequence    int
 }
 
+type MySQL struct {
+	gorm.Model
+	UserID   uint64
+	UID      string `gorm:"unique"`
+	Database string
+	Name     string
+	Username string
+	Password string
+}
+
+type MySQLMigration struct {
+	gorm.Model
+	UserID      uint64
+	DBUID       string
+	FileName    string
+	FileContent string
+	Sequence    int
+}
+
 type Assets struct {
 	gorm.Model
 	UserID    uint64

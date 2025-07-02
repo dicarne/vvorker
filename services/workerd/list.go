@@ -208,6 +208,21 @@ func FinishWorkerConfig(worker *models.Worker) string {
 			}
 		}
 
+		for i, ext := range workerconfig.Mysql {
+			if len(ext.ResourceID) != 0 {
+				var mysqlresources = models.MySQL{}
+				db.Model(&models.MySQL{}).Where(&models.MySQL{UID: ext.ResourceID, UserID: uint64(UserID)}).First(&mysqlresources)
+				if mysqlresources.ID != 0 {
+					ext.Database = mysqlresources.Database
+					ext.Password = mysqlresources.Password
+					ext.User = mysqlresources.Username
+				} else {
+					ext.ResourceID = ""
+				}
+				workerconfig.Mysql[i] = ext
+			}
+		}
+
 		for i, ext := range workerconfig.KV {
 			if len(ext.ResourceID) != 0 {
 				var kvresources = models.KV{}

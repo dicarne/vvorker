@@ -199,6 +199,42 @@ func BuildCapfile(workers []*entities.Worker, workerQuery funcs.WorkerQuery) map
 			}
 		}
 
+		if len(workerconfig.Mysql) > 0 {
+			for _, ext := range workerconfig.Mysql {
+				extName := "mysql"
+				allowExtensionFn, ok := defs.AllowWorkersMap[extName]
+				if ok {
+					if len(ext.Binding) == 0 {
+						ext.Binding = extName
+					}
+					if len(ext.ResourceID) != 0 {
+						ext.Host = "localhost"
+						ext.Port = conf.AppConfigInstance.ClientMySQLPort
+					}
+					allowExtension := allowExtensionFn(ext.Binding, template.HTML(`
+	( name = "HOST", text = "`+ext.Host+`" ), 
+	( name = "PORT", text = "`+strconv.Itoa(ext.Port)+`" ), 
+	( name = "USER", text = "`+ext.User+`" ),
+	( name = "PASSWORD", text = "`+ext.Password+`" ),
+	( name = "DATABASE", text = "`+ext.Database+`" ),`))
+					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
+					bindingsText = bindingsText + allowExtension.BindingTemplate
+
+					servicesText = servicesText + allowExtension.ServiceInjectTemplate
+
+					// 构建文件路径
+					filePath := filepath.Join(conf.AppConfigInstance.WorkerdDir,
+						defs.WorkerInfoPath,
+						worker.GetUID(), "../../lib", extName+".js")
+
+					writeFileIfNotExists(filePath, allowExtension.Script)
+
+				} else {
+					logrus.Warnf("service %v not found", ext)
+				}
+			}
+		}
+
 		if len(workerconfig.KV) > 0 {
 			for _, ext := range workerconfig.KV {
 				extName := "kv"

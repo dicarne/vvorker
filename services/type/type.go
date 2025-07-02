@@ -136,6 +136,16 @@ export interface EnvBinding {
 `, v.Binding)
 	}
 
+	//mysql
+	if len(worker.WorkerConfig.Mysql) > 0 {
+		finalStr += ext.TypeBindingMysql + "\n"
+	}
+	for _, v := range worker.WorkerConfig.Mysql {
+		typeStr += fmt.Sprintf(`
+	%s: MYSQLBinding
+`, v.Binding)
+	}
+
 	//task
 	if len(worker.WorkerConfig.Task) > 0 {
 		finalStr += ext.TypeBindingTask + "\n"

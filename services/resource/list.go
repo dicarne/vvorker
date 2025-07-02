@@ -88,6 +88,20 @@ func ListResourceEndpoint(c *gin.Context) {
 			})
 		}
 		response.Total = total
+	} else if request.RType == "mysql" {
+		var total int64
+		var resources []models.MySQL
+		db.Model(&models.MySQL{}).Where("user_id =?", uid).
+			Limit(request.PageSize).Offset((request.Page - 1) * request.PageSize).Find(&resources)
+		db.Model(&models.MySQL{}).Where("user_id =?", uid).Count(&total)
+		for _, resource := range resources {
+			response.Data = append(response.Data, ResourceData{
+				UID:  resource.UID,
+				Name: resource.Name,
+				Type: "mysql",
+			})
+		}
+		response.Total = total
 	}
 	common.RespOK(c, "success", response)
 }

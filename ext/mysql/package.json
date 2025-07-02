@@ -1,0 +1,25 @@
+{
+	"name": "@dicarne/vvorker-mysql",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"test": "vitest",
+		"cf-typegen": "wrangler types",
+		"build": "wrangler deploy --dry-run --outdir dist",
+		"package": "tsc"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.8.19",
+		"@types/pg": "^8.15.2",
+		"typescript": "^5.5.2",
+		"vitest": "~3.0.7",
+		"wrangler": "^4.16.1"
+	},
+	"dependencies": {
+		
+	},
+	"types": "distpkg/index.d.ts"
+}

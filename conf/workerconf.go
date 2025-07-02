@@ -25,7 +25,7 @@ type SQLDBConfig struct {
 	Database   string `json:"database"`
 	Binding    string `json:"binding"`
 	ResourceID string `json:"resource_id"`
-	Type       string `json:"type"` // "pgsql" or "mysql"
+	Type       string `json:"type"` // "postgres" or "mysql"
 }
 
 type OSSConfig struct {

@@ -8,6 +8,9 @@ var ExtAiScript string
 //go:embed pgsql/dist/index.js
 var ExtPgsqlScript string
 
+//go:embed mysql/dist/index.js
+var ExtMysqlScript string
+
 //go:embed oss/dist/index.js
 var ExtOSSScript string
 
@@ -27,6 +30,9 @@ var TypeBindingAI string
 
 //go:embed pgsql/src/binding.ts
 var TypeBindingPgsql string
+
+//go:embed mysql/src/binding.ts
+var TypeBindingMysql string
 
 //go:embed oss/src/binding.ts
 var TypeBindingOSS string

@@ -32,6 +32,7 @@ export const SideBarComponent = ({ selected }: { selected: string }) => {
     oss: '/oss',
     kv: '/kv',
     sql: '/sql',
+    mysql: '/mysql',
     user: '/user',
     users: '/users'
   } as any
@@ -52,6 +53,7 @@ export const SideBarComponent = ({ selected }: { selected: string }) => {
           { itemKey: 'status', text: 'Status', icon: <IconHourglass /> },
           { itemKey: 'task', text: 'Task', icon: <IconMenu /> },
           { itemKey: 'sql', text: 'SQL', icon: <IconServer /> },
+          { itemKey: 'mysql', text: 'MySQL', icon: <IconServer /> },
           { itemKey: 'oss', text: 'OSS', icon: <IconArchive /> },
           { itemKey: 'kv', text: 'KV', icon: <IconLayers /> },
           { itemKey: 'user', text: 'User', icon: <IconUser /> },

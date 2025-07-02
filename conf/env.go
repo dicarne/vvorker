@@ -74,12 +74,19 @@ type AppConfig struct {
 	ServerPostgrePassword string `env:"SERVER_POSTGRE_PASSWORD" env-default:"postgres"`
 	ServerPostgreUser     string `env:"SERVER_POSTGRE_USER" env-default:"postgres"`
 
+	ServerMySQLHost     string `env:"SERVER_MYSQL_HOST" env-default:"localhost"`
+	ServerMySQLPort     int    `env:"SERVER_MYSQL_PORT" env-default:"5432"`
+	ServerMySQLPassword string `env:"SERVER_MYSQL_PASSWORD" env-default:"postgres"`
+	ServerMySQLUser     string `env:"SERVER_MYSQL_USER" env-default:"postgres"`
+
 	ClientMinioPort   int `env:"CLIENT_MINIO_PORT" env-default:"19000"`
 	ClientPostgrePort int `env:"CLIENT_POSTGRE_PORT" env-default:"15432"`
+	ClientMySQLPort   int `env:"CLIENT_MYSQL_PORT" env-default:"15433"`
 	ClientRedisPort   int `env:"CLIENT_REDIS_PORT" env-default:"16379"`
 
 	LocalTMPPostgrePort int `env:"LOCAL_TMP_POSTGRE_PORT" env-default:"13420"`
 	LocalTMPRedisPort   int `env:"LOCAL_TMP_REDIS_PORT" env-default:"13421"`
+	LocalTMPMySQLPort   int `env:"LOCAL_TMP_MYSQL_PORT" env-default:"13422"`
 }
 
 type JwtConfig struct {

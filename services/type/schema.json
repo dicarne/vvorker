@@ -292,6 +292,13 @@
                 "$ref": "#/definitions/SQLDBConfig"
             }
         },
+        "mysql": {
+            "type": "array",
+            "title": "MySQL 数据库配置列表",
+            "items": {
+                "$ref": "#/definitions/SQLDBConfig"
+            }
+        },
         "oss": {
             "type": "array",
             "title": "对象存储服务配置列表",

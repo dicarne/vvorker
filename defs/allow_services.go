@@ -167,6 +167,19 @@ var AllowWorkersMap = map[string]func(name string, workerBindings template.HTML)
 			WorkerBindingText:     workerBindings,
 		})
 	},
+	"mysql": func(name string, workerBindings template.HTML) AllowServiceTemplate {
+		return GenerateExtensionTemplate(AllowServiceTemplate{
+			Name:                  name,
+			Path:                  "mysql",
+			BasicServiceTemplate:  commonWorkerTemplate,
+			BasicBindingTemplate:  commonWorkerBindingTemplate,
+			ServiceInjectTemplate: commonServiceInjectTemplate,
+			Type:                  "worker",
+			Script:                ext.ExtMysqlScript,
+			FlagsText:             template.HTML(` "nodejs_compat" `),
+			WorkerBindingText:     workerBindings,
+		})
+	},
 }
 
 type ServiceNetworkTemplate struct {

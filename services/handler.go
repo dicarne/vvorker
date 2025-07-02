@@ -15,6 +15,7 @@ import (
 	"vvorker/conf"
 	assets "vvorker/ext/assets/src"
 	kv "vvorker/ext/kv/src"
+	extmysql "vvorker/ext/mysql/src"
 	oss "vvorker/ext/oss/src"
 	pgsql "vvorker/ext/pgsql/src"
 	"vvorker/models"
@@ -207,6 +208,14 @@ func init() {
 					pgsqlAPI.POST("/migrate", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.UpdateMigrate)
 				}
 			}
+			mysqlAPI := extAPI.Group("/mysql")
+			{
+				if conf.IsMaster() {
+					mysqlAPI.POST("/create-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), extmysql.CreateNewMySQLResourcesEndpoint)
+					mysqlAPI.POST("/delete-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), extmysql.DeleteMySQLResourcesEndpoint)
+					mysqlAPI.POST("/migrate", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), extmysql.UpdateMigrate)
+				}
+			}
 			kvAPI := extAPI.Group("/kv")
 			{
 				if conf.IsMaster() {
@@ -318,6 +327,7 @@ func Run(f embed.FS) {
 		// 将master；临时本地端口代理到worker本地端口
 		initTunnelService(conf.AppConfigInstance.NodeName+"postgresql", conf.AppConfigInstance.LocalTMPPostgrePort, conf.AppConfigInstance.ClientPostgrePort)
 		initTunnelService(conf.AppConfigInstance.NodeName+"redis", conf.AppConfigInstance.LocalTMPRedisPort, conf.AppConfigInstance.ClientRedisPort)
+		initTunnelService(conf.AppConfigInstance.NodeName+"mysql", conf.AppConfigInstance.LocalTMPMySQLPort, conf.AppConfigInstance.ClientMySQLPort)
 	})
 	wg.Go(func() {
 		router.Run(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ListenAddr, conf.AppConfigInstance.APIPort))
