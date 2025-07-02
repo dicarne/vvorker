@@ -67,35 +67,35 @@ func CreateMySQLDatabase(userID uint64, UID string, req entities.CreateNewResour
 	}
 	defer pgdb.Close()
 
-	_, err = pgdb.Exec("CREATE DATABASE " + mysqlResource.Database)
+	// Create database with UTF8MB4 character set and case-insensitive collation
+	_, err = pgdb.Exec("CREATE DATABASE `" + mysqlResource.Database + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
 	if err != nil {
 		return nil, err
 	}
 
-	// 生成随机密码
-	password := utils.GenerateUID() // 假设 utils 包有 GenerateRandomString 函数
+	// Generate random password
+	password := utils.GenerateUID()
 	pgUser := cutUserName("vorker_user_" + mysqlResource.UID)
 
-	// 创建新用户
-	_, err = pgdb.Exec(fmt.Sprintf("CREATE USER %s WITH PASSWORD '%s'", pgUser, password))
+	// Create new user with password
+	_, err = pgdb.Exec(fmt.Sprintf("CREATE USER `%s`@'%%' IDENTIFIED BY '%s'", pgUser, password))
 	if err != nil {
 		return nil, err
 	}
 
-	// 授予用户对数据库的连接权限
-	_, err = pgdb.Exec(fmt.Sprintf("GRANT CONNECT ON DATABASE %s TO %s", mysqlResource.Database, pgUser))
+	// Grant all privileges on the database to the user
+	_, err = pgdb.Exec(fmt.Sprintf("GRANT ALL PRIVILEGES ON `%s`.* TO `%s`@'%%'", mysqlResource.Database, pgUser))
 	if err != nil {
 		return nil, err
 	}
 
-	// 切换到新创建的数据库
-	_, err = pgdb.Exec(fmt.Sprintf("REVOKE ALL ON DATABASE %s FROM public", mysqlResource.Database))
+	// Flush privileges to apply changes
+	_, err = pgdb.Exec("FLUSH PRIVILEGES")
 	if err != nil {
 		return nil, err
 	}
 
-	// 授予用户对数据库的所有表的增删改查权限
-	// Connect to the newly created database
+	// Connect to the newly created database to set up any additional permissions
 	targetConnStr := buildMysqlDBConnectionString(mysqlResource.Database)
 	targetPgdb, err := sql.Open("mysql", targetConnStr)
 	if err != nil {
@@ -103,33 +103,11 @@ func CreateMySQLDatabase(userID uint64, UID string, req entities.CreateNewResour
 	}
 	defer targetPgdb.Close()
 
-	// 授予用户对现有表和序列的所有权限
-	_, err = targetPgdb.Exec(fmt.Sprintf(`
-	    GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO %s;
-	    GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO %s;
-	    GRANT USAGE ON SCHEMA public TO %s;
-	`, pgUser, pgUser, pgUser))
-	if err != nil {
-		return nil, err
-	}
+	// In MySQL, the above GRANT statement already gives all necessary privileges
+	// No need for additional GRANT statements like in PostgreSQL
 
-	// 设置默认权限，确保未来创建的对象也被授予权限
-	_, err = targetPgdb.Exec(fmt.Sprintf(`
-	    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO %s;
-	    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO %s;
-	    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE ON SEQUENCES TO %s;
-	`, pgUser, pgUser, pgUser))
-	if err != nil {
-		return nil, err
-	}
-
-	// 授予用户创建表、视图、函数等权限
-	_, err = targetPgdb.Exec(fmt.Sprintf(`
-	    GRANT CREATE ON SCHEMA public TO %s;
-	`, pgUser))
-	if err != nil {
-		return nil, err
-	}
+	// For MySQL 8.0+, you might want to set the default role if using roles
+	// But for most cases, the above GRANT is sufficient
 
 	// 保存用户信息到 mysqlResource
 	mysqlResource.Username = pgUser
@@ -177,7 +155,7 @@ func CreateNewMySQLResourcesEndpoint(c *gin.Context) {
 	common.RespOK(c, "success", entities.CreateNewResourcesResponse{
 		UID:  mysqlResource.UID,
 		Name: mysqlResource.Name,
-		Type: "pgsql",
+		Type: "mysql",
 	})
 }
 
