@@ -11,6 +11,7 @@ const { navigate } = useNavigate()
 const handleLogout = async () => {
   try {
     await logout()
+    message.success('已退出登录')
     navigate('/login')
   } catch (error) {
     console.error(error)

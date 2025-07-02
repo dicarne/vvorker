@@ -47,7 +47,7 @@ const handleLogin = async () => {
         userInfo.value = await getUserInfo()
       } catch (error) {
         console.error(error)
-        message.error('获取用户信息失败: ' + error)
+        message.error('登录成功后获取用户信息失败: ' + error)
       }
       message.success('登录成功')
       navigate('/admin')
