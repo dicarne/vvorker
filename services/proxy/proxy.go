@@ -174,6 +174,8 @@ func Endpoint(c *gin.Context) {
 					}
 					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName, authInfo.UserID)
 					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName, authInfo.Token)
+					authed = true
+					break
 				}
 			}
 		}
