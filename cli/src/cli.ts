@@ -227,16 +227,18 @@ export default app;
 
         const jsFilePath = `${projectName}/server/index.ts`;
         await fs.writeFile(jsFilePath, vueJSCode);
+
+        (jsonData as any)["assets"] = [
+          {
+            "directory": "./dist/client",
+            "binding": "ASSETS"
+          }
+        ]
       }
 
       const jsonFilePath = `vvorker.json`;
-      (jsonData as any)["assets"] = [
-        {
-          "directory": "./dist/client",
-          "binding": "ASSETS"
-        }
-      ],
-        await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
+      
+      await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
       console.log(`项目 ${projectName} 初始化完成`);
       console.log(`运行 vvcli types 生成相关类型提示`);
     } else {
