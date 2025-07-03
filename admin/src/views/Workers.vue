@@ -12,8 +12,11 @@ import {
   NDropdown,
   NModal,
   NIcon,
+  NNotificationProvider,
 } from 'naive-ui'
-import { MoreHorizontal24Regular as DropdownIcon } from '@vicons/fluent'
+import { MoreHorizontal24Regular as DropdownIcon, Edit24Regular as EditIcon } from '@vicons/fluent'
+// 引入 WorkerRun 组件
+import WorkerRun from '@/components/WorkerRun.vue'
 import { DEFAULT_WORKER_ITEM, type WorkerItem } from '@/types/workers'
 import {
   createWorker,
@@ -66,8 +69,6 @@ const handleCreateWorkerClick = async () => {
 }
 
 // TODO 编辑 Worker
-
-// TODO 运行 Worker
 
 // TODO 打开 Worker
 
@@ -156,7 +157,10 @@ onMounted(async () => {
           <template #suffix>
             <div class="v-flex-center">
               <NButton quaternary type="primary">编辑</NButton>
-              <NButton class="v-item" quaternary type="primary">运行</NButton>
+              <!-- 使用 WorkerRun 组件 -->
+              <NNotificationProvider placement="bottom-right">
+                <WorkerRun :uid="item.UID" />
+              </NNotificationProvider>
               <NButton quaternary type="primary">打开</NButton>
               <NDropdown
                 trigger="hover"
