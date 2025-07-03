@@ -286,7 +286,7 @@ async function vars<T extends { vars: any }>(binding: any): Promise<T['vars']> {
         })
         return (await r.json()).data
     }
-    return binding
+    return binding.vars
 }
 
 /**
