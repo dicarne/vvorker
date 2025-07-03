@@ -21,6 +21,7 @@ import {
 } from 'naive-ui'
 import { Copy24Regular as CopyIcon } from '@vicons/fluent'
 import WorkerRun from '@/components/WorkerRun.vue'
+import WorkerLogs from '@/components/WorkerLogs.vue'
 import {
   DEFAULT_WORKER_ITEM,
   type VorkerSettingsProperties,
@@ -133,7 +134,9 @@ onMounted(async () => {
           </NLayoutContent>
         </NLayout>
       </NTabPane>
-      <NTabPane name="logs" tab="日志"> logs tab </NTabPane>
+      <NTabPane name="logs" tab="日志">
+        <WorkerLogs :uid="worker.UID" />
+      </NTabPane>
       <NTabPane name="rules" tab="规则"> rules tab </NTabPane>
       <NTabPane name="auth" tab="鉴权"> auth tab </NTabPane>
       <template #suffix>
