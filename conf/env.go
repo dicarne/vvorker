@@ -91,6 +91,10 @@ type AppConfig struct {
 	LocalTMPPostgrePort int `env:"LOCAL_TMP_POSTGRE_PORT" env-default:"13420"`
 	LocalTMPRedisPort   int `env:"LOCAL_TMP_REDIS_PORT" env-default:"13421"`
 	LocalTMPMySQLPort   int `env:"LOCAL_TMP_MYSQL_PORT" env-default:"13422"`
+
+	// sso
+	SSOAuthURL    string `env:"SSO_AUTH_URL"`
+	SSOCookieName string `env:"SSO_COOKIE_NAME" env-default:"vv-sso"`
 }
 
 type JwtConfig struct {

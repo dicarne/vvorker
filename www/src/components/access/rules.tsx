@@ -167,6 +167,7 @@ const RulesTabPane: React.FC<RulesTabPaneProps> = ({ workerUid }) => {
                             <Form.Select.Option value="internal">内部认证</Form.Select.Option>
                             <Form.Select.Option value="token">外部TOKEN</Form.Select.Option>
                             <Form.Select.Option value="open">开放</Form.Select.Option>
+                            <Form.Select.Option value="sso">SSO</Form.Select.Option>
                         </Form.Select>
                     </Row>
                     <Row>

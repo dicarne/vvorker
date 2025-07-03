@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
@@ -18,6 +19,11 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm/clause"
 )
+
+type SSOAuthInfo struct {
+	UserID string `json:"user_id"`
+	Token  string `json:"token"`
+}
 
 func Endpoint(c *gin.Context) {
 	defer func() {
@@ -79,57 +85,96 @@ func Endpoint(c *gin.Context) {
 		}).Order(clause.OrderByColumn{Column: clause.Column{Name: "length"}, Desc: true}).Find(&rules)
 
 		requestPath := c.Request.URL.Path
+		// TODO 如果有prefix，或许需要裁切url
 		for _, rule := range rules {
 			if strings.HasPrefix(requestPath, rule.Path) {
 				if rule.RuleType == "open" {
 					authed = true
 					break
 				}
-			}
 
-			accesstoken := c.Request.Header.Get("vvorker-access-token")
-			if accesstoken != "" {
-				db := database.GetDB()
-				var workerToken models.ExternalServerToken
-				d := db.Where(&models.ExternalServerToken{
-					WorkerUID: worker.UID,
-					Token:     accesstoken,
-				}).First(&workerToken)
-				if d.Error != nil {
-					c.AbortWithStatus(http.StatusForbidden)
-					return
+				if rule.RuleType == "token" {
+					accesstoken := c.Request.Header.Get("vvorker-access-token")
+					if accesstoken != "" {
+						db := database.GetDB()
+						var workerToken models.ExternalServerToken
+						d := db.Where(&models.ExternalServerToken{
+							WorkerUID: worker.UID,
+							Token:     accesstoken,
+						}).First(&workerToken)
+						if d.Error != nil {
+							c.AbortWithStatus(http.StatusForbidden)
+							return
+						}
+						c.Request.Header.Del("vvorker-access-token")
+						authed = true
+						break
+					}
 				}
-				c.Request.Header.Del("vvorker-access-token")
-				authed = true
-				break
-			}
 
-			internaltoken := c.Request.Header.Get("vvorker-internal-token")
-			if internaltoken != "" {
-				db := database.GetDB()
-				tokens := strings.Split(internaltoken, ":")
-				if len(tokens) != 2 {
-					c.AbortWithStatus(http.StatusUnauthorized)
-					return
+				if rule.RuleType == "internal" {
+					internaltoken := c.Request.Header.Get("vvorker-internal-token")
+					if internaltoken != "" {
+						db := database.GetDB()
+						tokens := strings.Split(internaltoken, ":")
+						if len(tokens) != 2 {
+							c.AbortWithStatus(http.StatusUnauthorized)
+							return
+						}
+						if tokens[1] != conf.RPCToken {
+							c.AbortWithStatus(http.StatusForbidden)
+							return
+						}
+						if tokens[1] != worker.UID {
+							var workerToken models.InternalServerWhiteList
+							d := db.Where(&models.InternalServerWhiteList{
+								WorkerUID:      worker.UID,
+								AllowWorkerUID: tokens[0],
+							}).First(&workerToken)
+							if d.Error != nil {
+								c.AbortWithStatus(http.StatusForbidden)
+								return
+							}
+						}
+						c.Request.Header.Del("vvorker-internal-token")
+						authed = true
+						break
+					}
 				}
-				if tokens[1] != conf.RPCToken {
-					c.AbortWithStatus(http.StatusForbidden)
-					return
-				}
-				if tokens[1] != worker.UID {
-					var workerToken models.InternalServerWhiteList
-					d := db.Where(&models.InternalServerWhiteList{
-						WorkerUID:      worker.UID,
-						AllowWorkerUID: tokens[0],
-					}).First(&workerToken)
-					if d.Error != nil {
+
+				if rule.RuleType == "sso" && conf.AppConfigInstance.SSOAuthURL != "" {
+					// 将c的cookie请求conf.AppConfigInstance.SSOAuthURL，获取用户是否登录的信息
+					client := &http.Client{}
+					req, err := http.NewRequest("POST", conf.AppConfigInstance.SSOAuthURL, nil)
+					if err != nil {
+						c.AbortWithStatus(http.StatusNonAuthoritativeInfo)
+						return
+					}
+					cookies := c.Request.Cookies()
+					for _, cookie := range cookies {
+						if cookie.Name == conf.AppConfigInstance.SSOCookieName {
+							req.AddCookie(cookie)
+							break
+						}
+					}
+					resp, err := client.Do(req)
+					if err != nil {
+						c.AbortWithStatus(http.StatusNonAuthoritativeInfo)
+						return
+					}
+					defer resp.Body.Close()
+					if resp.StatusCode != http.StatusOK {
+						c.AbortWithStatus(resp.StatusCode)
+						return
+					}
+					var authInfo SSOAuthInfo
+					if err := json.NewDecoder(resp.Body).Decode(&authInfo); err != nil {
 						c.AbortWithStatus(http.StatusForbidden)
 						return
 					}
+					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName, authInfo.UserID)
+					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName, authInfo.Token)
 				}
-				c.Request.Header.Del("vvorker-internal-token")
-				authed = true
-				break
 			}
 		}
 
