@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defineProps, h } from 'vue'
-import { NButton, useMessage, useNotification } from 'naive-ui'
+import { NButton, useMessage, useNotification, NIcon } from 'naive-ui'
+import { Play24Regular as RunIcon } from '@vicons/fluent'
 import { runWorker } from '@/api/workers'
 import { decodeBase64 } from '@/utils/utils'
 
@@ -20,7 +21,7 @@ const handleRun = async () => {
     const decodedResp = decodeBase64(resp?.data?.run_resp)
     notification.info({
       title: 'Worker Run Result',
-      content: () => h('div', {}, decodedResp)
+      content: () => h('div', {}, decodedResp),
     })
   } catch (error) {
     console.error(error)
@@ -29,5 +30,8 @@ const handleRun = async () => {
 }
 </script>
 <template>
-  <NButton quaternary type="primary" @click="handleRun">运行</NButton>
+  <NButton quaternary type="primary" @click="handleRun">
+    <NIcon><RunIcon /></NIcon>
+    运行
+  </NButton>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { inject, onMounted, ref, type Ref } from 'vue'
 import { CH } from '@/lib/color'
 import {
   NCard,
@@ -14,10 +14,18 @@ import {
   NIcon,
   NNotificationProvider,
 } from 'naive-ui'
-import { MoreHorizontal24Regular as DropdownIcon, Edit24Regular as EditIcon } from '@vicons/fluent'
+import {
+  MoreHorizontal24Regular as DropdownIcon,
+  Edit24Regular as EditIcon,
+  Link24Regular as LinkIcon,
+} from '@vicons/fluent'
 // 引入 WorkerRun 组件
 import WorkerRun from '@/components/WorkerRun.vue'
-import { DEFAULT_WORKER_ITEM, type WorkerItem } from '@/types/workers'
+import {
+  DEFAULT_WORKER_ITEM,
+  type VorkerSettingsProperties,
+  type WorkerItem,
+} from '@/types/workers'
 import {
   createWorker,
   deleteWorker,
@@ -27,7 +35,7 @@ import {
 } from '@/api/workers'
 
 const message = useMessage()
-
+const appConfig = inject<Ref<VorkerSettingsProperties>>('appConfig')!
 const workers = ref<WorkerItem[]>([])
 
 // 加载所有 Worker
@@ -71,6 +79,16 @@ const handleCreateWorkerClick = async () => {
 // TODO 编辑 Worker
 
 // TODO 打开 Worker
+const handleOpenWorkerClick = async (worker: WorkerItem) => {
+  if (appConfig.value?.UrlType === 'host') {
+    window.open(
+      `${appConfig.value?.Scheme}://${worker.Name}${appConfig.value?.WorkerURLSuffix}/`,
+      '_blank',
+    )
+  } else {
+    window.open(`${appConfig.value?.ApiUrl}/${worker.Name}/`, '_blank')
+  }
+}
 
 // 同步 Worker
 const handleFlushWorkerClick = async (uid: string) => {
@@ -156,20 +174,24 @@ onMounted(async () => {
           </template>
           <template #suffix>
             <div class="v-flex-center">
-              <NButton quaternary type="primary">编辑</NButton>
+              <NButton quaternary type="primary">
+                <NIcon><EditIcon /></NIcon>编辑
+              </NButton>
               <!-- 使用 WorkerRun 组件 -->
               <NNotificationProvider placement="bottom-right">
                 <WorkerRun :uid="item.UID" />
               </NNotificationProvider>
-              <NButton quaternary type="primary">打开</NButton>
+              <NButton quaternary type="primary" @click="handleOpenWorkerClick(item)">
+                <NIcon><LinkIcon /></NIcon>打开
+              </NButton>
               <NDropdown
                 trigger="hover"
                 :options="dropdownOptions"
                 @select="(key) => handleDropdownSelect(item, key)"
               >
-                <NButton quaternary
-                  ><NIcon><DropdownIcon /></NIcon
-                ></NButton>
+                <NButton quaternary>
+                  <NIcon><DropdownIcon /></NIcon>
+                </NButton>
               </NDropdown>
             </div>
           </template>
