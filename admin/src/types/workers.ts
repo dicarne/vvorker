@@ -22,6 +22,7 @@ export const DEFAULT_WORKER_ITEM: WorkerItem = {
   async fetch(req, env) {
     try {
 		let resp = new Response("worker: " + req.url + " is online! -- " + new Date())
+    console.log(resp)
 		return resp
 	} catch(e) {
 		return new Response(e.stack, { status: 500 })

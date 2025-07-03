@@ -21,7 +21,6 @@ const fetchLogs = async () => {
   const res = await getWorkerLogs(props.uid, curPage.value, DEFAULT_PAGE_SIZE)
   logs.value = res.data.data.logs
   totalCount.value = res.data.data.total
-  console.log('logs', logs.value)
 }
 
 let intervalId: number | null = null

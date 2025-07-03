@@ -139,17 +139,18 @@ export interface ExternalServerToken {
 }
 
 // AccessRule 实体接口
+export type AccessRuleType = "internal" | "aksk" | "token" | "sso" | "open";
 export interface AccessRule {
   // 自增 ID
   id?: number;
   // 关联的 Worker UID
   worker_uid: string;
   // 规则类型
-  rule_type: "internal" | "aksk" | "token" | "sso" | "open";
+  rule_type: AccessRuleType;
   // 规则描述信息
   description: string;
   // path
-  path: boolean;
+  path: string;
   rule_uid: string;
 }
 
