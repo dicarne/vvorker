@@ -17,3 +17,12 @@ export const decodeBase64 = (base64String: string | undefined) => {
     return '';
   }
 }
+
+export const  copyContent = (content: string) => {
+  const input = document.createElement('input');
+  input.value = content;
+  document.body.appendChild(input);
+  input.select();
+  document.execCommand('copy');
+  document.body.removeChild(input);
+}

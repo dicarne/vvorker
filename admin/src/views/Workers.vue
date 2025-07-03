@@ -33,8 +33,10 @@ import {
   flushWorker,
   getAllWorkers,
 } from '@/api/workers'
+import { useNavigate } from '@/composables/useNavigate'
 
 const message = useMessage()
+const { navigate } = useNavigate()
 const appConfig = inject<Ref<VorkerSettingsProperties>>('appConfig')!
 const workers = ref<WorkerItem[]>([])
 
@@ -156,8 +158,8 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <div>
-    <NCard title="Workers">
+  <div class="v-main">
+    <NCard title="Workers" :bordered="false">
       <template #header-extra>
         <NButton type="primary" secondary @click="handleReloadWorkersClick">刷新</NButton>
         <NButton class="v-item" type="primary" secondary @click="handleFlushAllWorkersClick">
@@ -174,7 +176,7 @@ onMounted(async () => {
           </template>
           <template #suffix>
             <div class="v-flex-center">
-              <NButton quaternary type="primary">
+              <NButton quaternary type="primary" @click="navigate(`/workeredit?uid=${item.UID}`)">
                 <NIcon><EditIcon /></NIcon>编辑
               </NButton>
               <!-- 使用 WorkerRun 组件 -->
