@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { inject, onMounted, ref, type Ref } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   NButton,
   useMessage,
@@ -16,20 +17,20 @@ import {
   NSelect,
   NLayout,
   NLayoutContent,
+  NNotificationProvider,
 } from 'naive-ui'
 import { Copy24Regular as CopyIcon } from '@vicons/fluent'
-import { getWorker, updateWorker } from '@/api/workers'
-import { useRouter } from 'vue-router'
+import WorkerRun from '@/components/WorkerRun.vue'
 import {
   DEFAULT_WORKER_ITEM,
   type VorkerSettingsProperties,
   type WorkerItem,
 } from '@/types/workers'
 import type { Node } from '@/types/nodes'
-import { useNavigate } from '@/composables/useNavigate'
 import { copyContent } from '@/utils/utils'
+import { getWorker, updateWorker } from '@/api/workers'
 import { getNodes } from '@/api/nodes'
-
+import { useNavigate } from '@/composables/useNavigate'
 const router = useRouter()
 const uid = router.currentRoute.value.query.uid as string
 const { navigate } = useNavigate()
@@ -132,10 +133,15 @@ onMounted(async () => {
           </NLayoutContent>
         </NLayout>
       </NTabPane>
-      <NTabPane name="config" tab="配置"> config tab </NTabPane>
       <NTabPane name="logs" tab="日志"> logs tab </NTabPane>
       <NTabPane name="rules" tab="规则"> rules tab </NTabPane>
       <NTabPane name="auth" tab="鉴权"> auth tab </NTabPane>
+      <template #suffix>
+        <!-- 使用 WorkerRun 组件 -->
+        <NNotificationProvider placement="bottom-right">
+          <WorkerRun :uid="worker.UID" />
+        </NNotificationProvider>
+      </template>
     </NTabs>
   </div>
 </template>
