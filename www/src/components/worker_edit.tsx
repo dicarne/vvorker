@@ -113,25 +113,22 @@ export const WorkerEditComponent = () => {
   useEffect(() => {
     if (worker) {
       setEditItem(worker)
-      $code.set(Buffer.from(worker.Code, 'base64').toString('utf8'))
       if (worker.Template) setTemplateContent(worker.Template)
       else { setTemplateContent(DEFAUTL_WORKER_ITEM.Template) }
     }
   }, [worker])
 
   useEffect(() => {
-    if (code && editItem) {
-      const newCode = Buffer.from(code).toString('base64');
+    if (editItem) {
       // 检查 Code 或 Template 是否发生变化
-      if (editItem.Code !== newCode || editItem.Template !== templateContent) {
+      if (editItem.Template !== templateContent) {
         setEditItem((item) => ({
           ...item,
           Template: templateContent,
-          Code: newCode,
         }));
       }
     }
-  }, [code, editItem, templateContent]);
+  }, [editItem, templateContent]);
 
   // useEffect(() => {
   //   worker?.Code
@@ -237,19 +234,6 @@ export const WorkerEditComponent = () => {
           </Button>
         }
       >
-        <TabPane
-          itemKey="code"
-          style={{ overflow: 'initial' }}
-          tab={<span>{t.code}</span>}
-        >
-          {worker ? (
-            <div className="flex flex-col my-1">
-              <div>
-                <MonacoEditor uid={worker.UID} />
-              </div>
-            </div>
-          ) : null}
-        </TabPane>
         <TabPane itemKey="config" tab={<span>{t.property}</span>}>
           <div className="flex flex-col">
             <div className="flex flex-row m-2">

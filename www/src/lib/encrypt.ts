@@ -12,10 +12,10 @@ export async function encryptData<T>(data: T, key: string): Promise<string> {
   try {
     // Convert data to string if it's an object
     const dataStr = typeof data === 'string' ? data : JSON.stringify(data);
-    
+
     // Generate a random IV (Initialization Vector)
     const iv = crypto.getRandomValues(new Uint8Array(12));
-    
+
     // Import the key
     const cryptoKey = await window.crypto.subtle.importKey(
       'raw',
@@ -101,14 +101,14 @@ export async function decryptData<T = any>(encryptedData: string, key: string): 
  * @param encryptionKey The encryption key
  */
 export function setupAxiosEncryption(axiosInstance: any, encryptionKey: string) {
+  if (!encryptionKey || encryptionKey == "") return
   // Request interceptor for encrypting request data
   axiosInstance.interceptors.request.use(async (config: any) => {
     // Only encrypt POST, PUT, PATCH requests with data
-    if (['post', 'put', 'patch'].includes(config.method?.toLowerCase()) && config.data) {
+    if (['post', 'put', 'patch'].includes(config.method?.toLowerCase()) && config.data && config.headers['X-Encrypted-Data'] === 'true') {
       try {
         const encryptedData = await encryptData(config.data, encryptionKey);
         config.data = encryptedData;
-        config.headers['X-Encrypted-Data'] = 'true';
       } catch (error) {
         console.error('Request encryption failed:', error);
         throw error;
