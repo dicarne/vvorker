@@ -4,8 +4,8 @@ export interface KVBinding {
 
 export interface KV {
     get(key: string): Promise<string>;
-    set(key: string, value: string): Promise<void>;
+    set(key: string, value: string, ttl?: number): Promise<void>;
     del(key: string): Promise<void>;
-    keys(pattern: string): Promise<string[]>;
+    keys(pattern: string, offset: number, size: number): Promise<string[]>;
 
 }

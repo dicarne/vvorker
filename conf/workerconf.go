@@ -47,6 +47,7 @@ type KV struct {
 	Port       int    `json:"port"`
 	Binding    string `json:"binding"`
 	ResourceID string `json:"resource_id"`
+	Provider   string `json:"provider"`
 }
 
 type Assets struct {

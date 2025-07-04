@@ -252,6 +252,10 @@ func BuildCapfile(workers []*entities.Worker, workerQuery funcs.WorkerQuery) map
 	( name = "HOST", text = "`+ext.Host+`" ),
 	( name = "PORT", text = "`+strconv.Itoa(ext.Port)+`" ),	
 	( name = "RESOURCE_ID", text = "`+ext.ResourceID+`" ),
+	( name = "KVPROVIDER", text = "`+ext.Provider+`" ),
+	( name = "MASTER_ENDPOINT", text = "`+conf.AppConfigInstance.MasterEndpoint+`" ),
+	( name = "X_SECRET", text = "`+conf.RPCToken+`" ),
+	( name = "X_NODENAME", text = "`+conf.AppConfigInstance.NodeName+`" ),
 `))
 					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
 					bindingsText = bindingsText + allowExtension.BindingTemplate
