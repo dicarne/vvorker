@@ -78,9 +78,7 @@ const handleCreateWorkerClick = async () => {
   }
 }
 
-// TODO 编辑 Worker
-
-// TODO 打开 Worker
+// 打开 Worker
 const handleOpenWorkerClick = async (worker: WorkerItem) => {
   if (appConfig.value?.UrlType === 'host') {
     window.open(
