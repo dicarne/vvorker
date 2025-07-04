@@ -167,6 +167,9 @@ func Endpoint(c *gin.Context) {
 						if conf.AppConfigInstance.SSORedirectURL != "" && strings.Contains(c.Request.Header.Get("Accept"), "text/html") {
 							// Add original URL as query parameter
 							rpath := c.Request.URL.Path
+							if conf.AppConfigInstance.SSOBaseURL != "" {
+								rpath = conf.AppConfigInstance.SSOBaseURL + rpath
+							}
 							if conf.AppConfigInstance.WorkerHostMode == "path" {
 								rpath = "/" + workerName + rpath
 							}
