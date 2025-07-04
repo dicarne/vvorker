@@ -20,6 +20,8 @@ var db *nutsdb.DB
 
 var buckets *defs.SyncMap[string, bool]
 
+var SystemBucket = "system"
+
 func init() {
 	db2, err := nutsdb.Open(
 		nutsdb.DefaultOptions,
@@ -29,7 +31,8 @@ func init() {
 	if err != nil {
 		logrus.Panic(err)
 	}
-	buckets = defs.NewSyncMap[string, bool](map[string]bool{})
+	buckets = defs.NewSyncMap(map[string]bool{})
+	ExistBucket(SystemBucket)
 }
 
 func Close() {
@@ -152,13 +155,12 @@ func InvokeKVEndpoint(c *gin.Context) {
 	switch req.Method {
 	case "get":
 		{
-			if err := Get(req.RID, req.Key, func(value []byte) error {
-				common.RespOK(c, "success", string(value))
-				return nil
-			}); err != nil {
+			value, err := Get(req.RID, req.Key)
+			if err != nil {
 				common.RespErr(c, http.StatusInternalServerError, "Failed to get KV resource", gin.H{"error": err.Error()})
 				return
 			}
+			common.RespOK(c, "success", string(value))
 		}
 	case "set":
 		{
@@ -178,13 +180,12 @@ func InvokeKVEndpoint(c *gin.Context) {
 		}
 	case "keys":
 		{
-			if err := Keys(req.RID, req.Key, req.Offset, req.Size, func(keys []string) error {
-				common.RespOK(c, "success", keys)
-				return nil
-			}); err != nil {
+			keys, err := Keys(req.RID, req.Key, req.Offset, req.Size)
+			if err != nil {
 				common.RespErr(c, http.StatusInternalServerError, "Failed to get KV resource", gin.H{"error": err.Error()})
 				return
 			}
+			common.RespOK(c, "success", keys)
 		}
 	default:
 		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": "invalid request"})
@@ -210,20 +211,24 @@ func Put(bucket string, key string, value string, ttl int) error {
 	})
 }
 
-func Get(bucket string, key string, callback func(value []byte) error) error {
+func Get(bucket string, key string) ([]byte, error) {
 	ExistBucket(bucket)
-	return db.View(func(tx *nutsdb.Tx) error {
-		value, err := tx.Get(bucket, []byte(key))
+	var value []byte
+	err := db.View(func(tx *nutsdb.Tx) error {
+		v, err := tx.Get(bucket, []byte(key))
 		if err != nil {
-			if errors.Is(err, nutsdb.ErrKeyNotFound) {
-				callback([]byte(""))
-				return nil
-			}
 			return err
 		}
-		callback(value)
+		value = v
 		return nil
 	})
+	if err != nil {
+		if errors.Is(err, nutsdb.ErrKeyNotFound) {
+			return []byte(""), nil
+		}
+		return nil, err
+	}
+	return value, nil
 }
 
 func Del(bucket string, key string) error {
@@ -233,20 +238,27 @@ func Del(bucket string, key string) error {
 	})
 }
 
-func Keys(bucket string, prefix string, offset int, size int, callback func(keys []string) error) error {
+func Keys(bucket string, prefix string, offset int, size int) ([]string, error) {
 	ExistBucket(bucket)
-	return db.View(
+	var result []string
+	err := db.View(
 		func(tx *nutsdb.Tx) error {
-			prefix := []byte(prefix)
-			result := []string{}
-			if entries, err := tx.PrefixScan(bucket, prefix, offset, size); err != nil {
+			prefixBytes := []byte(prefix)
+			// Based on compiler feedback, tx.PrefixScan appears to return a slice of keys ([]byte),
+			// not a slice of Entry structs.
+			entries, err := tx.PrefixScan(bucket, prefixBytes, offset, size)
+			if err != nil {
 				return err
-			} else {
-				for _, entry := range entries {
-					result = append(result, string(entry))
-				}
 			}
-			callback(result)
+			result = make([]string, 0, len(entries))
+			for _, entry := range entries {
+				result = append(result, string(entry))
+			}
 			return nil
 		})
+
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
