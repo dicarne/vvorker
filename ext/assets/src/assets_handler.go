@@ -11,6 +11,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var AssetBucket = "assets"
+
 type UploadAssetsReq struct {
 	UID       string `json:"uid"`
 	WorkerUID string `json:"worker_uid"`
@@ -115,7 +117,7 @@ func GetAssetsEndpoint(c *gin.Context) {
 		return
 	}
 
-	cache, err := kv.Get(kv.SystemBucket, asset.UID+":data")
+	cache, err := kv.Get(AssetBucket, asset.UID+":data")
 	if len(cache) == 0 || err != nil {
 		var file models.File
 		if err := db.Where(&models.File{
@@ -130,11 +132,11 @@ func GetAssetsEndpoint(c *gin.Context) {
 			// 如果没有匹配的 MIME 类型，默认使用 application/octet-stream
 			mimeType = "application/octet-stream"
 		}
-		kv.Put(kv.SystemBucket, asset.UID+":data", file.Data, 3600)
-		kv.Put(kv.SystemBucket, asset.UID+":mime", []byte(mimeType), 3600)
+		kv.Put(AssetBucket, asset.UID+":data", file.Data, 3600)
+		kv.Put(AssetBucket, asset.UID+":mime", []byte(mimeType), 3600)
 		c.Data(200, mimeType, file.Data)
 	} else {
-		bmimeType, _ := kv.Get(kv.SystemBucket, asset.UID+":mime")
+		bmimeType, _ := kv.Get(AssetBucket, asset.UID+":mime")
 		mimeType := string(bmimeType)
 		if mimeType == "" {
 			// 如果没有匹配的 MIME 类型，默认使用 application/octet-stream

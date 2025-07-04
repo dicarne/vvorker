@@ -32,7 +32,6 @@ func init() {
 		logrus.Panic(err)
 	}
 	buckets = defs.NewSyncMap(map[string]bool{})
-	ExistBucket(SystemBucket)
 }
 
 func Close() {
