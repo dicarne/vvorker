@@ -23,6 +23,7 @@ import { Copy24Regular as CopyIcon } from '@vicons/fluent'
 import WorkerRun from '@/components/WorkerRun.vue'
 import WorkerLogs from '@/components/WorkerLogs.vue'
 import WorkerRules from '@/components/WorkerRules.vue'
+import WorkerAuth from '@/components/WorkerAuth.vue'
 import {
   DEFAULT_WORKER_ITEM,
   type VorkerSettingsProperties,
@@ -141,7 +142,9 @@ onMounted(async () => {
       <NTabPane name="rules" tab="规则">
         <WorkerRules :uid="worker.UID" />
       </NTabPane>
-      <NTabPane name="auth" tab="鉴权"> auth tab </NTabPane>
+      <NTabPane name="auth" tab="鉴权">
+        <WorkerAuth :uid="worker.UID" />
+      </NTabPane>
       <template #suffix>
         <!-- 使用 WorkerRun 组件 -->
         <NNotificationProvider placement="bottom-right">
