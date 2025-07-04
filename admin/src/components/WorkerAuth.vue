@@ -132,7 +132,6 @@ const createTokenForm = ref({
 const newToken = ref<string>('')
 const showTokenModal = ref<boolean>(false)
 const handleTokenModalClose = () => {
-  console.log('close')
   showTokenModal.value = false
   newToken.value = ''
 }
