@@ -324,6 +324,7 @@ func Run(f embed.FS) {
 		if conf.IsMaster() {
 			proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerPostgreHost, conf.AppConfigInstance.ServerPostgrePort), fmt.Sprintf(":%d", conf.AppConfigInstance.LocalTMPPostgrePort))
 			proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerRedisHost, conf.AppConfigInstance.ServerRedisPort), fmt.Sprintf(":%d", conf.AppConfigInstance.LocalTMPRedisPort))
+			proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerMySQLHost, conf.AppConfigInstance.ServerMySQLPort), fmt.Sprintf(":%d", conf.AppConfigInstance.LocalTMPMySQLPort))
 		}
 		// 将master；临时本地端口代理到worker本地端口
 		initTunnelService(conf.AppConfigInstance.NodeName+"postgresql", conf.AppConfigInstance.LocalTMPPostgrePort, conf.AppConfigInstance.ClientPostgrePort)

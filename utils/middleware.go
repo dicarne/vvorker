@@ -34,6 +34,10 @@ func DefaultEncryptionConfig() EncryptionConfig {
 // EncryptionMiddleware creates a new encryption middleware
 func EncryptionMiddleware(config EncryptionConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if conf.AppConfigInstance.EncryptionKey == "" {
+			c.Next()
+			return
+		}
 		// Skip if not a POST, PUT, or PATCH request
 		if c.Request.Method != http.MethodPost &&
 			c.Request.Method != http.MethodPut &&
@@ -107,7 +111,6 @@ func encrypt(plaintext []byte, key []byte) ([]byte, error) {
 // Decrypt decrypts ciphertext using AES-GCM
 func decrypt(encrypted []byte, key []byte) ([]byte, error) {
 	encrypted = encrypted[1 : len(encrypted)-1]
-	logrus.Info("Decrypted data:", string(encrypted))
 	ciphertext, err := base64.StdEncoding.DecodeString(string(encrypted))
 	if err != nil {
 		logrus.Error("Failed to decode base64 data:", err)

@@ -163,7 +163,23 @@ func Endpoint(c *gin.Context) {
 						return
 					}
 					defer resp.Body.Close()
+					if resp.StatusCode == 403 {
+						if conf.AppConfigInstance.SSORedirectURL != "" && strings.Contains(c.Request.Header.Get("Accept"), "text/html") {
+							// Add original URL as query parameter
+							rpath := c.Request.URL.Path
+							if conf.AppConfigInstance.WorkerHostMode == "path" {
+								rpath = "/" + workerName + rpath
+							}
+							if conf.AppConfigInstance.WorkerHostPath != "" {
+								rpath = "/" + conf.AppConfigInstance.WorkerHostPath + rpath
+							}
+							newUrl := fmt.Sprintf("%s?name=%s", conf.AppConfigInstance.SSORedirectURL, url.QueryEscape(rpath))
+							c.Redirect(http.StatusFound, newUrl)
+							return
+						}
+					}
 					if resp.StatusCode != http.StatusOK {
+						logrus.Infof("sso auth failed, status code: %d, url: %s", resp.StatusCode, conf.AppConfigInstance.SSOAuthURL)
 						c.AbortWithStatus(resp.StatusCode)
 						return
 					}

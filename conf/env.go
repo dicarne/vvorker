@@ -34,7 +34,7 @@ type AppConfig struct {
 	WorkerLimit    int    `env:"WORKER_LIMIT" env-default:"10000"`
 	WorkerdBinPath string `env:"WORKERD_BIN_PATH" env-default:"/bin/workerd"`
 
-	EncryptionKey string `env:"ENCRYPTION_KEY" env-default:"okwuxjaqpuiqplmhfrquzisldysgitpj"`
+	EncryptionKey string `env:"ENCRYPTION_KEY" env-default:""`
 
 	APIWebBaseURL  string `env:"API_WEB_BASE_URL"`
 	ListenAddr     string `env:"LISTEN_ADDR" env-default:"0.0.0.0"`
@@ -93,8 +93,9 @@ type AppConfig struct {
 	LocalTMPMySQLPort   int `env:"LOCAL_TMP_MYSQL_PORT" env-default:"13422"`
 
 	// sso
-	SSOAuthURL    string `env:"SSO_AUTH_URL"`
-	SSOCookieName string `env:"SSO_COOKIE_NAME" env-default:"vv-sso"`
+	SSOAuthURL     string `env:"SSO_AUTH_URL"`
+	SSOCookieName  string `env:"SSO_COOKIE_NAME" env-default:"vv-sso"`
+	SSORedirectURL string `env:"SSO_REDIRECT_URL"`
 }
 
 type JwtConfig struct {
