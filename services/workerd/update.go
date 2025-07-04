@@ -115,7 +115,7 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker) error {
 		return err
 	}
 
-	newWorker := &models.Worker{Worker: worker}
+	newWorker := &models.Worker{Worker: worker, EnableAccessControl: workerRecord.EnableAccessControl}
 	err = newWorker.Create()
 	if err != nil {
 		return err
