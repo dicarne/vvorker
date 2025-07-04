@@ -4,6 +4,7 @@ import { KVBinding } from "@dicarne/vvorker-kv";
 import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
 import { OSSBinding } from "@dicarne/vvorker-oss";
 import { isDev } from "../common/common";
+import { MYSQLBinding } from "@dicarne/vvorker-mysql";
 
 export function useDebugEndpoint(app: any) {
     if (!isDev()) return
@@ -47,6 +48,19 @@ export function useDebugEndpoint(app: any) {
                             return c.json({ message: "pgsql", data: await client.query(req.params.sql) });
                         case "connectionString":
                             return c.json({ message: "pgsql", data: await pgsql.connectionString() });
+                        default:
+                            return c.json({ error: "method not found", req }, 404)
+                    }
+                }
+            case "mysql":
+                {
+                    let mysql = ((c.env as any)[req.binding] as MYSQLBinding)
+                    if (!mysql) {
+                        return c.json({ error: "mysql binding not found", req }, 404)
+                    }
+                    switch (req.method) {
+                        case "connectionString":
+                            return c.json({ message: "mysql", data: await mysql.connectionString() });
                         default:
                             return c.json({ error: "method not found", req }, 404)
                     }

@@ -1,6 +1,6 @@
 {
   "name": "@dicarne/vvorker-sdk",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "VVorker SDK for JavaScript/TypeScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -28,6 +28,7 @@
     "@dicarne/vvorker-kv": "link:..\\..\\ext\\kv",
     "@dicarne/vvorker-oss": "link:..\\..\\ext\\oss",
     "@dicarne/vvorker-pgsql": "link:..\\..\\ext\\pgsql",
+    "@dicarne/vvorker-mysql": "link:..\\..\\ext\\mysql",
     "hono": "^4.8.3"
   }
 }

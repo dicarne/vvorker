@@ -1,6 +1,7 @@
 import { KVBinding, KV } from "@dicarne/vvorker-kv";
 import { OSSBinding } from "@dicarne/vvorker-oss";
 import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
+import { MYSQLBinding } from "@dicarne/vvorker-mysql";
 import { config, isDev } from "../common/common";
 
 
@@ -184,6 +185,31 @@ function vvpgsql(key: string, binding: PGSQLBinding): PGSQLBinding {
     }
 }
 
+function vvmysql(key: string, binding: MYSQLBinding): MYSQLBinding {
+    if (isDev()) {
+        return {
+            connectionString: async () => {
+                const r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "mysql",
+                        binding: key,
+                        method: "connectionString",
+                        params: {}
+                    })
+                })
+                return (await r.json()).data
+            },
+        }
+    } else {
+        return binding
+    }
+}
+
 function vvkv(binding_key: string, binding: KVBinding): KVBinding {
     console.log(`${config().url}/__vvorker__debug`)
     if (isDev()) {
@@ -297,6 +323,7 @@ export function vvbind<T extends { env: { vars: any, [key: string]: any } }>(c: 
     return {
         oss: (key: string) => vvoss(key, c.env[key]),
         pgsql: (key: string) => vvpgsql(key, c.env[key]),
+        mysql: (key: string) => vvmysql(key, c.env[key]),
         kv: (key: string) => vvkv(key, c.env[key]),
         vars: () => vars<{ vars: T['env']['vars'] }>(c.env)
     }
