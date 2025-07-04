@@ -23,6 +23,7 @@ import { Copy24Regular as CopyIcon } from '@vicons/fluent'
 import WorkerRun from '@/components/WorkerRun.vue'
 import WorkerLogs from '@/components/WorkerLogs.vue'
 import WorkerRules from '@/components/WorkerRules.vue'
+import WorkerAuth from '@/components/WorkerAuth.vue'
 import {
   DEFAULT_WORKER_ITEM,
   type VorkerSettingsProperties,
@@ -95,13 +96,13 @@ onMounted(async () => {
     </div>
     <div class="v-flex-start-center v-item-column">
       <div>
-        ID: <NTag>{{ worker.UID }}</NTag>
+        ID: <NTag class="v-item">{{ worker.UID }}</NTag>
         <NButton quaternary type="primary" @click="copyContent(worker.UID)">
           <NIcon><CopyIcon /></NIcon>
         </NButton>
       </div>
       <div class="v-item">
-        URL: <NTag>{{ workerURL }}</NTag>
+        URL: <NTag class="v-item">{{ workerURL }}</NTag>
         <NButton quaternary type="primary" @click="copyContent(workerURL)">
           <NIcon><CopyIcon /></NIcon>
         </NButton>
@@ -141,7 +142,9 @@ onMounted(async () => {
       <NTabPane name="rules" tab="规则">
         <WorkerRules :uid="worker.UID" />
       </NTabPane>
-      <NTabPane name="auth" tab="鉴权"> auth tab </NTabPane>
+      <NTabPane name="auth" tab="鉴权">
+        <WorkerAuth :uid="worker.UID" />
+      </NTabPane>
       <template #suffix>
         <!-- 使用 WorkerRun 组件 -->
         <NNotificationProvider placement="bottom-right">

@@ -4,10 +4,6 @@ export interface AccessTokenCreateRequest {
   worker_uid: string;
   // 访问令牌描述信息
   description: string;
-  // 令牌是否永久有效
-  forever: boolean;
-  // 令牌过期时间
-  expiration_time: string;
 }
 
 // 访问令牌列表请求接口
@@ -30,8 +26,8 @@ export interface AccessTokenDeleteRequest {
 export interface InternalWhiteListCreateRequest {
   // 关联的 Worker UID
   worker_uid: string;
-  // 允许访问的 Worker UID
-  allow_worker_uid: string;
+  // 允许访问的 Worker Name
+  name: string;
   // 白名单描述信息
   description: string;
 }
@@ -82,7 +78,7 @@ export interface AccessKey {
 // InternalServerWhiteList 实体接口
 export interface InternalServerWhiteList {
   // 自增 ID
-  id: number;
+  ID: number;
   // 关联的 Worker UID
   worker_uid: string;
   // 允许访问的 Worker UID
@@ -119,7 +115,7 @@ export interface ExternalServerAKSK {
 // ExternalServerToken 实体接口
 export interface ExternalServerToken {
   // 自增 ID
-  id: number;
+  ID: number;
   // 创建时间
   created_at: string;
   // 更新时间

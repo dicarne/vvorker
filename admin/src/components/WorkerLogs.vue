@@ -62,7 +62,7 @@ onUnmounted(() => {
 <style scoped>
 .log-container {
   /* 运算符前后添加空格 */
-  height: calc(100vh - 300px);
+  height: calc(100vh - 310px);
   overflow-y: auto;
 }
 </style>
