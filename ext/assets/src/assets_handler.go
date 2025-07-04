@@ -3,6 +3,7 @@ package assets
 import (
 	"mime"
 	"vvorker/entities"
+	kv "vvorker/ext/kv/src"
 	"vvorker/models"
 	"vvorker/utils/database"
 
@@ -114,19 +115,32 @@ func GetAssetsEndpoint(c *gin.Context) {
 		return
 	}
 
-	var file models.File
-	if err := db.Where(&models.File{
-		UID: asset.UID,
-	}).First(&file).Error; err != nil {
-		c.JSON(404, gin.H{"error": "File not found"})
-		return
+	cache, err := kv.Get(kv.SystemBucket, asset.UID+":data")
+	if len(cache) == 0 || err != nil {
+		var file models.File
+		if err := db.Where(&models.File{
+			UID: asset.UID,
+		}).First(&file).Error; err != nil {
+			c.JSON(404, gin.H{"error": "File not found"})
+			return
+		}
+
+		mimeType := mime.TypeByExtension(file.Mimetype)
+		if mimeType == "" {
+			// 如果没有匹配的 MIME 类型，默认使用 application/octet-stream
+			mimeType = "application/octet-stream"
+		}
+		kv.Put(kv.SystemBucket, asset.UID+":data", file.Data, 3600)
+		kv.Put(kv.SystemBucket, asset.UID+":mime", []byte(mimeType), 3600)
+		c.Data(200, mimeType, file.Data)
+	} else {
+		bmimeType, _ := kv.Get(kv.SystemBucket, asset.UID+":mime")
+		mimeType := string(bmimeType)
+		if mimeType == "" {
+			// 如果没有匹配的 MIME 类型，默认使用 application/octet-stream
+			mimeType = "application/octet-stream"
+		}
+		c.Data(200, mimeType, cache)
 	}
 
-	mimeType := mime.TypeByExtension(file.Mimetype)
-	if mimeType == "" {
-		// 如果没有匹配的 MIME 类型，默认使用 application/octet-stream
-		mimeType = "application/octet-stream"
-	}
-
-	c.Data(200, mimeType, file.Data)
 }

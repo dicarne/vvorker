@@ -164,7 +164,7 @@ func InvokeKVEndpoint(c *gin.Context) {
 		}
 	case "set":
 		{
-			if err := Put(req.RID, req.Key, req.Value, req.TTL); err != nil {
+			if err := Put(req.RID, req.Key, []byte(req.Value), req.TTL); err != nil {
 				common.RespErr(c, http.StatusInternalServerError, "Failed to set KV resource", gin.H{"error": err.Error()})
 				return
 			}
@@ -204,10 +204,10 @@ func ExistBucket(bucket string) error {
 	})
 }
 
-func Put(bucket string, key string, value string, ttl int) error {
+func Put(bucket string, key string, value []byte, ttl int) error {
 	ExistBucket(bucket)
 	return db.Update(func(tx *nutsdb.Tx) error {
-		return tx.Put(bucket, []byte(key), []byte(value), uint32(ttl))
+		return tx.Put(bucket, []byte(key), value, uint32(ttl))
 	})
 }
 
