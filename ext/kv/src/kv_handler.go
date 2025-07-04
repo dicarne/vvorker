@@ -1,8 +1,10 @@
 package kv
 
 import (
+	"errors"
 	"net/http"
 	"vvorker/common"
+	"vvorker/defs"
 	"vvorker/entities"
 	"vvorker/models"
 	"vvorker/utils"
@@ -10,7 +12,31 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/nutsdb/nutsdb"
+	"github.com/sirupsen/logrus"
 )
+
+var db *nutsdb.DB
+
+var buckets *defs.SyncMap[string, bool]
+
+func init() {
+	db2, err := nutsdb.Open(
+		nutsdb.DefaultOptions,
+		nutsdb.WithDir("tmp"), // 数据库会自动创建这个目录文件
+	)
+	db = db2
+	if err != nil {
+		logrus.Panic(err)
+	}
+	buckets = defs.NewSyncMap[string, bool](map[string]bool{})
+}
+
+func Close() {
+	if db != nil {
+		db.Close()
+	}
+}
 
 func CreateKVResourcesEndpoint(c *gin.Context) {
 	var req = entities.CreateNewResourcesRequest{}
@@ -72,12 +98,10 @@ func DeleteKVResourcesEndpoint(c *gin.Context) {
 
 	var req = entities.DeleteResourcesReq{}
 	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {
-		// 使用 common.RespErr 返回错误响应
 		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": err.Error()})
 		return
 	}
 	if !req.Validate() {
-		// 使用 common.RespErr 返回错误响应
 		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": "invalid request"})
 		return
 	}
@@ -101,4 +125,128 @@ func DeleteKVResourcesEndpoint(c *gin.Context) {
 	common.RespOK(c, "success", entities.DeleteResourcesResp{
 		Status: 0,
 	})
+}
+
+type InvokeKVRequest struct {
+	RID    string `json:"rid"`
+	Key    string `json:"key"`
+	Value  string `json:"value"`
+	Method string `json:"method"`
+	TTL    int    `json:"ttl"`
+	Offset int    `json:"offset"`
+	Size   int    `json:"size"`
+}
+
+func InvokeKVEndpoint(c *gin.Context) {
+	defer func() {
+		if err := recover(); err != nil {
+			common.RespErr(c, http.StatusInternalServerError, "Failed to invoke KV resource", gin.H{"error": err})
+		}
+	}()
+	var req = InvokeKVRequest{}
+	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {
+		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": err.Error()})
+		return
+	}
+
+	switch req.Method {
+	case "get":
+		{
+			if err := Get(req.RID, req.Key, func(value []byte) error {
+				common.RespOK(c, "success", string(value))
+				return nil
+			}); err != nil {
+				common.RespErr(c, http.StatusInternalServerError, "Failed to get KV resource", gin.H{"error": err.Error()})
+				return
+			}
+		}
+	case "set":
+		{
+			if err := Put(req.RID, req.Key, req.Value, req.TTL); err != nil {
+				common.RespErr(c, http.StatusInternalServerError, "Failed to set KV resource", gin.H{"error": err.Error()})
+				return
+			}
+			common.RespOK(c, "success", nil)
+		}
+	case "del":
+		{
+			if err := Del(req.RID, req.Key); err != nil {
+				common.RespErr(c, http.StatusInternalServerError, "Failed to delete KV resource", gin.H{"error": err.Error()})
+				return
+			}
+			common.RespOK(c, "success", nil)
+		}
+	case "keys":
+		{
+			if err := Keys(req.RID, req.Key, req.Offset, req.Size, func(keys []string) error {
+				common.RespOK(c, "success", keys)
+				return nil
+			}); err != nil {
+				common.RespErr(c, http.StatusInternalServerError, "Failed to get KV resource", gin.H{"error": err.Error()})
+				return
+			}
+		}
+	default:
+		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": "invalid request"})
+		return
+	}
+}
+
+func ExistBucket(bucket string) error {
+	if _, exist := buckets.Get(bucket); exist {
+		return nil
+	}
+	return db.Update(func(tx *nutsdb.Tx) error {
+		tx.NewKVBucket(bucket)
+		buckets.Set(bucket, true)
+		return nil
+	})
+}
+
+func Put(bucket string, key string, value string, ttl int) error {
+	ExistBucket(bucket)
+	return db.Update(func(tx *nutsdb.Tx) error {
+		return tx.Put(bucket, []byte(key), []byte(value), uint32(ttl))
+	})
+}
+
+func Get(bucket string, key string, callback func(value []byte) error) error {
+	ExistBucket(bucket)
+	return db.View(func(tx *nutsdb.Tx) error {
+		value, err := tx.Get(bucket, []byte(key))
+		if err != nil {
+			if errors.Is(err, nutsdb.ErrKeyNotFound) {
+				callback([]byte(""))
+				return nil
+			}
+			return err
+		}
+		callback(value)
+		return nil
+	})
+}
+
+func Del(bucket string, key string) error {
+	ExistBucket(bucket)
+	return db.Update(func(tx *nutsdb.Tx) error {
+		return tx.Delete(bucket, []byte(key))
+	})
+}
+
+func Keys(bucket string, prefix string, offset int, size int, callback func(keys []string) error) error {
+	ExistBucket(bucket)
+	return db.View(
+		func(tx *nutsdb.Tx) error {
+			prefix := []byte(prefix)
+			result := []string{}
+			if entries, err := tx.PrefixScan(bucket, prefix, offset, size); err != nil {
+				return err
+			} else {
+				for _, entry := range entries {
+					result = append(result, string(entry))
+				}
+			}
+			callback(result)
+			return nil
+		})
 }

@@ -222,6 +222,7 @@ func init() {
 				if conf.IsMaster() {
 					kvAPI.POST("/create-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), kv.CreateKVResourcesEndpoint)
 					kvAPI.POST("/delete-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), kv.DeleteKVResourcesEndpoint)
+					kvAPI.POST("/invoke", authz.AgentAuthz(), kv.InvokeKVEndpoint)
 				}
 			}
 			assetsAPI := extAPI.Group("/assets")

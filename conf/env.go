@@ -55,6 +55,8 @@ type AppConfig struct {
 	TunnelToken       string
 	NodeID            string
 
+	KVProvider string `env:"KV_PROVIDER" env-default:"redis"` // redis nutsdb
+
 	WorkerHostMode string `env:"WORKER_HOST_MODE" env-default:"host"` // host path  // host 模式需要使用域名进行访问，path则url的第一段为服务名（不包含域名后缀
 	WorkerHostPath string `env:"WORKER_HOST_PATH" env-default:""`     // host 模式需要使用域名进行访问，path则url的第一段为服务名（不包含域名后缀，如example.com/xxxx/admin
 	AdminAPIProxy  bool   `env:"ADMIN_API_PROXY" env-default:"false"` // 允许admin页面代理api请求，这可能会导致路径冲突，并且WORKER_HOST_MODE必须为path

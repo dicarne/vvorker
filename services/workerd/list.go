@@ -255,6 +255,7 @@ func FinishWorkerConfig(worker *models.Worker) string {
 				} else {
 					ext.ResourceID = ""
 				}
+				ext.Provider = conf.AppConfigInstance.KVProvider
 				workerconfig.KV[i] = ext
 			}
 		}
