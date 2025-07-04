@@ -1,5 +1,5 @@
 import { Context, Env, Hono } from "hono";
-import { DebugEndpointRequest } from "../types/debug-endpoint";
+import { DebugEndpointRequest, ServiceBinding } from "../types/debug-endpoint";
 import { KVBinding } from "@dicarne/vvorker-kv";
 import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
 import { OSSBinding } from "@dicarne/vvorker-oss";
@@ -90,6 +90,19 @@ export function useDebugEndpoint(app: any) {
                     switch (req.method) {
                         case "get":
                             return c.json({ message: "vars", data: await c.env.vars });
+                        default:
+                            return c.json({ error: "method not found", req }, 404)
+                    }
+                }
+            case "service":
+                {
+                    let service = ((c.env as any)[req.binding] as ServiceBinding)
+                    if (!service) {
+                        return c.json({ error: "service binding not found", req }, 404)
+                    }
+                    switch (req.method) {
+                        case "fetch":
+                            return c.json({ message: "service", data: await (await service.fetch(req.params.path, req.params.init)).json() });
                         default:
                             return c.json({ error: "method not found", req }, 404)
                     }

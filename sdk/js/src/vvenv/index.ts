@@ -3,6 +3,7 @@ import { OSSBinding } from "@dicarne/vvorker-oss";
 import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
 import { MYSQLBinding } from "@dicarne/vvorker-mysql";
 import { config, isDev } from "../common/common";
+import { ServiceBinding } from "../types/debug-endpoint";
 
 
 function vvoss(key: string, binding: OSSBinding): OSSBinding {
@@ -315,6 +316,36 @@ async function vars<T extends { vars: any }>(binding: any): Promise<T['vars']> {
     return binding.vars
 }
 
+function service(key: string, binding: ServiceBinding) {
+    if (isDev()) {
+        return {
+            fetch: async (path: string, init?: RequestInit) => {
+                let r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "service",
+                        binding: key,
+                        method: "fetch",
+                        params: {
+                            path: "http://vvorker.local" + (path.startsWith("/") ? path : "/" + path),
+                            init: init
+                        }
+                    })
+                })
+                return (await r.json()).data
+            }
+        }
+    }
+    return {
+        fetch: async (path: string, init?: RequestInit) =>
+            (await binding.fetch("http://vvorker.local" + (path.startsWith("/") ? path : "/" + path), init)).json()
+    }
+}
+
 /**
  * 用于转换环境变量和绑定，在开发时（env.vars.MODE="development"）将通过代理和节点进行交互，从而获取节点的绑定和变量。
  * 在生产时，将直接返回绑定和变量。
@@ -325,6 +356,7 @@ export function vvbind<T extends { env: { vars: any, [key: string]: any } }>(c: 
         pgsql: (key: string) => vvpgsql(key, c.env[key]),
         mysql: (key: string) => vvmysql(key, c.env[key]),
         kv: (key: string) => vvkv(key, c.env[key]),
-        vars: () => vars<{ vars: T['env']['vars'] }>(c.env)
+        vars: () => vars<{ vars: T['env']['vars'] }>(c.env),
+        service: (name: string) => service(name, c.env[name])
     }
 }
