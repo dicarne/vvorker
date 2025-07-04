@@ -21,8 +21,11 @@ import (
 )
 
 type SSOAuthInfo struct {
-	UserID string `json:"user_id"`
-	Token  string `json:"token"`
+	UserID   string `json:"user_id"`
+	Token    string `json:"token"`
+	RealName string `json:"real_name"`
+	Gender   string `json:"gender"`
+	ZzdUid   string `json:"zzd_uid"`
 }
 
 func Endpoint(c *gin.Context) {
@@ -147,7 +150,7 @@ func Endpoint(c *gin.Context) {
 					client := &http.Client{}
 					req, err := http.NewRequest("POST", conf.AppConfigInstance.SSOAuthURL, nil)
 					if err != nil {
-						c.AbortWithStatus(http.StatusNonAuthoritativeInfo)
+						c.AbortWithStatus(http.StatusUnauthorized)
 						return
 					}
 					cookies := c.Request.Cookies()
@@ -159,7 +162,7 @@ func Endpoint(c *gin.Context) {
 					}
 					resp, err := client.Do(req)
 					if err != nil {
-						c.AbortWithStatus(http.StatusNonAuthoritativeInfo)
+						c.AbortWithStatus(http.StatusUnauthorized)
 						return
 					}
 					defer resp.Body.Close()
@@ -188,11 +191,15 @@ func Endpoint(c *gin.Context) {
 					}
 					var authInfo SSOAuthInfo
 					if err := json.NewDecoder(resp.Body).Decode(&authInfo); err != nil {
+						logrus.Errorf("decode error %v", err)
 						c.AbortWithStatus(http.StatusForbidden)
 						return
 					}
-					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName, authInfo.UserID)
-					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName, authInfo.Token)
+					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName+"-user-id", authInfo.UserID)
+					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName+"-token", authInfo.Token)
+					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName+"-real-name", authInfo.RealName)
+					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName+"-gender", authInfo.Gender)
+					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName+"-zzd-uid", authInfo.ZzdUid)
 					authed = true
 					break
 				}
