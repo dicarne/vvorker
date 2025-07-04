@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { CH } from '@/lib/color'
 import {
   NCard,
   NForm,
@@ -11,6 +12,7 @@ import {
   NTag,
   NList,
   NListItem,
+  NAvatar,
   type FormInst,
   type FormRules,
 } from 'naive-ui'
@@ -233,6 +235,11 @@ onMounted(async () => {
       </template>
       <NList bordered>
         <NListItem v-for="item in internalWhiteLists" :key="item.ID">
+          <template #prefix>
+            <NAvatar class="v-avatar" :style="{ background: CH.hex(item.WorkerName) }">
+              {{ item.WorkerName.slice(0, 2).toUpperCase() }}
+            </NAvatar>
+          </template>
           <span>{{ item.WorkerName }}</span>
           <template #suffix>
             <NButton quaternary type="primary" @click="handleDeleteClick(item.ID, 'internal')">
@@ -248,8 +255,12 @@ onMounted(async () => {
       </template>
       <NList bordered>
         <NListItem v-for="item in accessTokens" :key="item.ID">
-          <div>{{ item.token }}</div>
-          <div>描述：{{ item.description }}</div>
+          <template #prefix>
+            <div style="width: 300px">
+              <NTag size="large">{{ item.token }}</NTag>
+            </div>
+          </template>
+          <div>{{ item.description }}</div>
           <template #suffix>
             <NButton quaternary type="primary" @click="handleDeleteClick(item.ID, 'token')">
               删除

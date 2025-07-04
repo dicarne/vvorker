@@ -96,13 +96,13 @@ onMounted(async () => {
     </div>
     <div class="v-flex-start-center v-item-column">
       <div>
-        ID: <NTag>{{ worker.UID }}</NTag>
+        ID: <NTag class="v-item">{{ worker.UID }}</NTag>
         <NButton quaternary type="primary" @click="copyContent(worker.UID)">
           <NIcon><CopyIcon /></NIcon>
         </NButton>
       </div>
       <div class="v-item">
-        URL: <NTag>{{ workerURL }}</NTag>
+        URL: <NTag class="v-item">{{ workerURL }}</NTag>
         <NButton quaternary type="primary" @click="copyContent(workerURL)">
           <NIcon><CopyIcon /></NIcon>
         </NButton>
