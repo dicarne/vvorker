@@ -1,18 +1,24 @@
 import { Command } from 'commander';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { getToken, getUrl, setUrl } from '../utils/config';
+import { config, getToken, getUrl, setUrl } from '../utils/config';
 import { loadVVorkerConfig } from '../utils/vvorker-config';
 import { runCommand } from '../utils/system';
 import { apiClient, encryptData } from '../utils/api';
+import pc from "picocolors"
 
 export const deployCommand = new Command('deploy')
-  .description('部署到vvorker')
+  .description('部署到VVorker')
   .action(async () => {
     if (!getUrl()) {
-      console.error('请先配置vvorker平台的url');
+      console.error('请先配置VVorker平台的url');
       return;
     }
+    if (!getToken()) {
+      console.error('请先配置VVorker平台的token');
+      return;
+    }
+    console.log(`环境：${pc.yellow(config.current_env)}`)
     // 读取当前目录下的 vvorker.json 文件
     const vvorkerJson = loadVVorkerConfig();
     const packageJson = await fs.readJson('package.json');
@@ -47,16 +53,19 @@ export const deployCommand = new Command('deploy')
       await runCommand('npm', ['run', 'build']);
     }
 
-    let jsFilePath = "";
+    console.log(pc.gray("--------------"))
 
     let up1 = await apiClient.post(`/api/ext/assets/clear-assets`, {
       worker_uid: uid,
     })
+    if (up1.data.delete_count > 0) {
+      console.log(pc.green("✓") + pc.gray(` 已清除 ${up1.data.delete_count} 个 Assets 文件，又为数据库腾出了空间！`))
+    }
 
-    if (up1.data.delete_count > 0)
-      console.log(`已清除 ${up1.data.delete_count} 个Assets文件`)
+    let jsFilePath = "";
 
     if (vvorkerJson.assets && vvorkerJson.assets.length > 0) {
+      console.log(pc.white("Assets 文件上传开始..."))
       let wwwAssetsPath = path.join(process.cwd(), vvorkerJson.assets[0].directory)
       // walk wwwAssetsPath，调用接口上传每一个文件
       const walk = async (dir: string) => {
@@ -69,7 +78,7 @@ export const deployCommand = new Command('deploy')
           } else {
             const fileContent = fs.readFileSync(filePath);
             const fileUrl = filePath.replace(wwwAssetsPath, '').replace(/\\/g, '/');
-            console.log(fileUrl);
+            console.log(pc.gray(fileUrl));
 
             const formData = new FormData();
             formData.append('file', new Blob([fileContent]), fileUrl);
@@ -86,20 +95,15 @@ export const deployCommand = new Command('deploy')
 
             let fileuid = up1.data.data.fileId;
 
-            try {
-              let resp = await apiClient.post(`/api/ext/assets/create-assets`, {
-                uid: fileuid,
-                "worker_uid": uid,
-                "path": fileUrl,
-              })
+            let resp = await apiClient.post(`/api/ext/assets/create-assets`, {
+              uid: fileuid,
+              "worker_uid": uid,
+              "path": fileUrl,
+            })
 
-              if (resp.status != 200) {
-                console.log(`上传失败：${fileUrl} ${resp.status} ${resp.statusText}`);
-                throw new Error(`上传失败：${fileUrl}`);
-              }
-
-            } catch (error) {
-              console.log(`上传失败：${fileUrl} ${error}`);
+            if (resp.status != 200) {
+              console.log(pc.red("✗") + pc.gray(`${fileUrl} ${resp.status} ${resp.statusText}`));
+              throw new Error(`上传失败：${fileUrl} ${resp.status} ${resp.statusText}`);
             }
           }
         }
@@ -126,6 +130,7 @@ export const deployCommand = new Command('deploy')
 
     const distVvorkerJson = await fs.readJson(`${process.cwd()}/dist/vvorker.json`);
     if (distVvorkerJson.pgsql && distVvorkerJson.pgsql.length > 0) {
+      console.log("开始迁移PostgreSQL数据库...")
       for (let pgsql of distVvorkerJson.pgsql) {
         let rid = pgsql.resource_id;
         if (pgsql.migrate) {
@@ -165,6 +170,7 @@ export const deployCommand = new Command('deploy')
     }
 
     if (distVvorkerJson.mysql && distVvorkerJson.mysql.length > 0) {
+      console.log("开始迁移MYSQL数据库...")
       for (let mysql of distVvorkerJson.mysql) {
         let rid = mysql.resource_id;
         if (mysql.migrate) {
@@ -218,6 +224,9 @@ export const deployCommand = new Command('deploy')
       }
     })
     if (resp.data.code === 0) {
-      console.log('部署成功');
+      console.log(pc.green("✓ 部署成功！"));
+    } else {
+      console.log(pc.red("✗ 部署失败！"));
+      throw new Error(`部署失败：${resp.data.message}`);
     }
   });
