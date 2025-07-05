@@ -26,8 +26,8 @@ const loadKvs = async () => {
     const response = await getResourceList(0, 10000, 'kv')
     kvs.value = response.data
   } catch (error) {
-    console.error(error)
-    message.error('获取 KV 列表失败: ' + error)
+    console.error('getResourceList Error', error)
+    message.error('获取 KV 列表失败')
   }
 }
 
@@ -50,7 +50,7 @@ const handleCreateKVConfirm = async () => {
     // 校验表单
     await createKVFormRef.value.validate()
   } catch (error) {
-    console.error(error)
+    console.error('createKVFormRef validate Error', error)
     return
   }
   try {
@@ -61,8 +61,8 @@ const handleCreateKVConfirm = async () => {
     message.success('创建 KV 成功')
     handleCreateKVClose()
   } catch (error) {
-    console.error(error)
-    message.error('创建 KV 失败: ' + error)
+    console.error('createResource KV Error', error)
+    message.error('创建 KV 失败')
   } finally {
     IsCreatingKV.value = false
   }
@@ -89,8 +89,8 @@ const handleDeleteKVConfirm = async () => {
     message.success('删除 KV 成功')
     handleDeleteKVClose()
   } catch (error) {
-    console.error(error)
-    message.error('删除 KV 失败: ' + error)
+    console.error('deleteResource KV Error', error)
+    message.error('删除 KV 失败')
   } finally {
     IsDeletingKV.value = false
   }

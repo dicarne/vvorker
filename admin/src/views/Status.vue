@@ -25,8 +25,8 @@ const loadNodes = async () => {
     const a = Object.fromEntries(v) as PingMapList
     pingMapList.value = a
   } catch (error) {
-    console.error(error)
-    message.error('获取 Node 列表失败: ' + error)
+    console.error('getNodes Error', error)
+    message.error('获取 Node 列表失败')
   }
 }
 

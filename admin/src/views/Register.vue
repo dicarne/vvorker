@@ -35,7 +35,7 @@ const handleRegister = async () => {
     // 校验表单
     await formRef.value.validate()
   } catch (error) {
-    console.error(error)
+    console.error('formRef validate Error', error)
     return
   }
   try {
@@ -46,8 +46,8 @@ const handleRegister = async () => {
       navigate('/login')
     }
   } catch (error) {
-    console.error(error)
-    message.error('注册失败: ' + error)
+    console.error('register Error', error)
+    message.error('注册失败')
   }
 }
 </script>

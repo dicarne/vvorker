@@ -35,7 +35,7 @@ const handleLogin = async () => {
     // 校验表单
     await formRef.value.validate()
   } catch (error) {
-    console.error(error)
+    console.error('formRef validate Error', error)
     return
   }
   try {
@@ -46,15 +46,15 @@ const handleLogin = async () => {
       try {
         userInfo.value = await getUserInfo()
       } catch (error) {
-        console.error(error)
-        message.error('登录成功后获取用户信息失败: ' + error)
+        console.error('getUserInfo Error', error)
+        message.error('登录成功后获取用户信息失败')
       }
       message.success('登录成功')
       navigate('/workers')
     }
   } catch (error) {
-    console.error(error)
-    message.error('登录失败: ' + error)
+    console.error('login Error', error)
+    message.error('登录失败')
   }
 }
 </script>

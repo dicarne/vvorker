@@ -13,7 +13,7 @@ export const decodeBase64 = (base64String: string | undefined) => {
     // 使用 TextDecoder 处理 Unicode 字符
     return new TextDecoder().decode(bytes)
   } catch (error) {
-    console.error('Base64 解码失败:', error)
+    console.error('decodeBase64 Error', error)
     return ''
   }
 }

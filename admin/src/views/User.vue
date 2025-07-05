@@ -38,7 +38,7 @@ const handleChangePasswordConfirm = async () => {
     // 校验表单
     await pswdFormRef.value.validate()
   } catch (error) {
-    console.error(error)
+    console.error('pswdFormRef validate Error', error)
     return
   }
   try {
@@ -48,8 +48,8 @@ const handleChangePasswordConfirm = async () => {
     message.success('修改密码成功')
     handleChangePasswordClose()
   } catch (error) {
-    console.error(error)
-    message.error('修改密码失败: ' + error)
+    console.error('changePassword Error', error)
+    message.error('修改密码失败')
   } finally {
     isChangingPassword.value = false
   }
@@ -67,8 +67,8 @@ const loadAccessKeys = async () => {
     const data = await getAccessKeys()
     accessKeys.value = data.data.data
   } catch (error) {
-    console.error(error)
-    message.error('获取 Access Key 列表失败: ' + error)
+    console.error('getAccessKeys Error', error)
+    message.error('获取 Access Key 列表失败')
   }
 }
 
@@ -91,7 +91,7 @@ const handleCreateAccessKeyConfirm = async () => {
     // 校验表单
     await createAccessKeyFormRef.value.validate()
   } catch (error) {
-    console.error(error)
+    console.error('createAccessKeyFormRef validate Error', error)
     return
   }
   try {
@@ -102,8 +102,8 @@ const handleCreateAccessKeyConfirm = async () => {
     message.success('创建 Access Key 成功')
     handleCreateAccessKeyClose()
   } catch (error) {
-    console.error(error)
-    message.error('创建 Access Key 失败: ' + error)
+    console.error('createAccessKey Error', error)
+    message.error('创建 Access Key 失败')
   } finally {
     IsCreatingAccessKey.value = false
   }
@@ -130,8 +130,8 @@ const handleDeleteAccessKeyConfirm = async () => {
     message.success('删除 Access Key 成功')
     handleDeleteAccessKeyClose()
   } catch (error) {
-    console.error(error)
-    message.error('删除 Access Key 失败: ' + error)
+    console.error('deleteAccessKey Error', error)
+    message.error('删除 Access Key 失败')
   } finally {
     IsDeletingAccessKey.value = false
   }

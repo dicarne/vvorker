@@ -46,7 +46,8 @@ const handleSwitchChange = async (checked: boolean) => {
     isAccessControlEnabled.value = checked
     message.success('更新访问控制状态成功')
   } catch (error) {
-    console.error('Failed to update access control status', error)
+    console.error('updateEnableAccessControl Error', error)
+    message.error('更新访问控制状态失败')
   }
 }
 const renderAccessControl = () =>
@@ -72,7 +73,7 @@ const fetchRules = async () => {
     })
     rules.value = response.data.access_rules
   } catch (error) {
-    console.error('Failed to fetch access rules', error)
+    console.error('listAccessRules Error', error)
     message.error('获取访问规则失败')
   }
 }
@@ -124,7 +125,7 @@ const handleCreateRuleConfirm = async () => {
     // 校验表单
     await createRuleFormRef.value.validate()
   } catch (error) {
-    console.error(error)
+    console.error('createRuleFormRef validate Error', error)
     return
   }
   try {
@@ -141,8 +142,8 @@ const handleCreateRuleConfirm = async () => {
     message.success('创建规则成功')
     handleCreateRuleClose()
   } catch (error) {
-    console.error(error)
-    message.error('创建规则失败: ' + error)
+    console.error('addAccessRule Error', error)
+    message.error('创建规则失败')
   } finally {
     IsCreatingRule.value = false
   }
@@ -175,8 +176,8 @@ const handleDeleteRuleConfirm = async () => {
     message.success('删除规则成功')
     handleDeleteRuleClose()
   } catch (error) {
-    console.error(error)
-    message.error('删除规则失败: ' + error)
+    console.error('deleteAccessRule Error', error)
+    message.error('删除规则失败')
   } finally {
     IsDeletingRule.value = false
   }
