@@ -24,12 +24,12 @@ const fetchLogs = async () => {
 }
 
 let intervalId: number | null = null
-onMounted(() => {
+onMounted(async () => {
   // 立即获取一次日志
-  fetchLogs()
+  await fetchLogs()
   // 启动定时任务，每秒获取一次日志
-  intervalId = window.setInterval(() => {
-    fetchLogs()
+  intervalId = window.setInterval(async () => {
+    await fetchLogs()
   }, 1000)
 })
 onUnmounted(() => {

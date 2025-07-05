@@ -101,7 +101,7 @@ const handleDeleteKVClose = () => {
 }
 
 onMounted(async () => {
-  loadKvs()
+  await loadKvs()
 })
 </script>
 <template>
