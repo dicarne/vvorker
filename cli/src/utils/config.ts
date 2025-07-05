@@ -56,3 +56,7 @@ export function setUrl(url: string) {
   ensureEnv(env);
   config.env[env].url = url;
 }
+
+export function getEnv() {
+  return config.current_env ?? "default"
+}
