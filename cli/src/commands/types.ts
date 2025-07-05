@@ -7,11 +7,7 @@ export const typesCommand = new Command('types')
   .description("用于自动生成配置文件对应的TypeScript类型")
   .action(async () => {
     const vvv = loadVVorkerConfig();
-    let resp = await apiClient.post(`/api/ext/types`, vvv, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    })
+    let resp = await apiClient.post(`/api/ext/types`, vvv)
     if (resp.status !== 200) {
       throw new Error(`获取类型失败：${resp.status} ${resp.statusText}`);
     }
