@@ -53,8 +53,8 @@ const handleSaveWorkerClick = async () => {
     await updateWorker(uid, worker.value)
     message.success('保存 Worker 成功')
   } catch (error) {
-    console.error(error)
-    message.error('保存 Worker 失败: ' + error)
+    console.error('updateWorker Error', error)
+    message.error('保存 Worker 失败')
   }
 }
 
@@ -63,8 +63,8 @@ onMounted(async () => {
   try {
     worker.value = await getWorker(uid)
   } catch (error) {
-    console.error(error)
-    message.error('获取 Worker 失败: ' + error)
+    console.error('getWorker Error', error)
+    message.error('获取 Worker 失败')
   }
 
   try {
@@ -73,8 +73,8 @@ onMounted(async () => {
       nodes.value = res.data.nodes
     }
   } catch (error) {
-    console.error(error)
-    message.error('获取节点列表失败: ' + error)
+    console.error('getNodes Error', error)
+    message.error('获取节点列表失败')
   }
 })
 </script>

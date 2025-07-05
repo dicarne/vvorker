@@ -50,7 +50,7 @@ const fetchInternalWhiteLists = async () => {
     })
     internalWhiteLists.value = response.data.internal_white_lists
   } catch (error) {
-    console.error('Failed to fetch internal white lists', error)
+    console.error('listInternalWhiteLists Error', error)
     message.error('获取内部白名单列表失败')
   }
 }
@@ -79,7 +79,7 @@ const handleCreateInternalConfirm = async () => {
     // 校验表单
     await createInternalFormRef.value.validate()
   } catch (error) {
-    console.error(error)
+    console.error('createInternalFormRef validate Error', error)
     return
   }
   try {
@@ -95,8 +95,8 @@ const handleCreateInternalConfirm = async () => {
     message.success('创建内部访问白名单成功')
     handleCreateInternalClose()
   } catch (error) {
-    console.error(error)
-    message.error('创建内部访问白名单失败: ' + error)
+    console.error('createInternalWhiteList Error', error)
+    message.error('创建内部访问白名单失败')
   } finally {
     IsCreatingInternal.value = false
   }
@@ -118,7 +118,7 @@ const fetchAccessTokens = async () => {
     })
     accessTokens.value = response.data.access_tokens
   } catch (error) {
-    console.error('Failed to fetch access tokens', error)
+    console.error('listAccessTokens Error', error)
     message.error('获取访问密钥列表失败')
   }
 }
@@ -148,11 +148,11 @@ const handleCreateTokenConfirm = async () => {
     // 校验表单
     await createTokenFormRef.value.validate()
   } catch (error) {
-    console.error(error)
+    console.error('createTokenFormRef validate Error', error)
     return
   }
   try {
-    // 调用创建内部访问白名单接口
+    // 调用创建Token接口
     IsCreatingToken.value = true
     const request: AccessTokenCreateRequest = {
       worker_uid: props.uid,
@@ -164,8 +164,8 @@ const handleCreateTokenConfirm = async () => {
     message.success('创建Token成功')
     handleCreateTokenClose()
   } catch (error) {
-    console.error(error)
-    message.error('创建Token失败: ' + error)
+    console.error('createAccessToken Error', error)
+    message.error('创建 Token 失败')
   } finally {
     IsCreatingToken.value = false
   }
@@ -208,8 +208,8 @@ const handleDeleteConfirm = async () => {
       message.success('删除Token成功')
     }
   } catch (error) {
-    console.error(error)
-    message.error('删除失败: ' + error)
+    console.error('deleteAccessToken or deleteInternalWhiteList Error', error)
+    message.error('删除Token失败')
   } finally {
     IsDeleting.value = false
   }

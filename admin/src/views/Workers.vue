@@ -45,8 +45,8 @@ const loadWorkers = async () => {
   try {
     workers.value = await getAllWorkers()
   } catch (error) {
-    console.error(error)
-    message.error('获取 Worker 列表失败: ' + error)
+    console.error('getAllWorkers Error', error)
+    message.error('获取 Worker 列表失败')
   }
 }
 
@@ -61,8 +61,8 @@ const handleFlushAllWorkersClick = async () => {
     await flushAllWorkers()
     message.success('同步 Workers 成功')
   } catch (error) {
-    console.error(error)
-    message.error('同步 Workers 失败: ' + error)
+    console.error('flushAllWorkers Error', error)
+    message.error('同步 Workers 失败')
   }
 }
 
@@ -73,8 +73,8 @@ const handleCreateWorkerClick = async () => {
     await loadWorkers()
     message.success('创建 Worker 成功')
   } catch (error) {
-    console.error(error)
-    message.error('创建 Worker 失败: ' + error)
+    console.error('createWorker Error', error)
+    message.error('创建 Worker 失败')
   }
 }
 
@@ -96,8 +96,8 @@ const handleFlushWorkerClick = async (uid: string) => {
     await flushWorker(uid)
     message.success('同步 Worker 成功')
   } catch (error) {
-    console.error(error)
-    message.error('同步 Worker 失败: ' + error)
+    console.error('flushWorker Error', error)
+    message.error('同步 Worker 失败')
   }
 }
 // 删除 Worker
@@ -117,8 +117,8 @@ const handleDeleteWorkerConfirm = async () => {
     message.success('删除 Worker 成功')
     handleDeleteWorkerClose()
   } catch (error) {
-    console.error(error)
-    message.error('删除 Worker 失败: ' + error)
+    console.error('deleteWorker Error', error)
+    message.error('删除 Worker 失败')
   } finally {
     IsDeletingWorker.value = false
   }

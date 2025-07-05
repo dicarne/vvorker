@@ -24,8 +24,8 @@ const handleRun = async () => {
       content: () => h('div', {}, decodedResp),
     })
   } catch (error) {
-    console.error(error)
-    message.error('运行 Worker 失败: ' + error)
+    console.error('runWorker Error', error)
+    message.error('运行 Worker 失败')
   }
 }
 </script>

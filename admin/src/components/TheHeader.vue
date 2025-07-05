@@ -15,16 +15,16 @@ const handleLogout = async () => {
     message.success('已退出登录')
     navigate('/login')
   } catch (error) {
-    console.error(error)
-    message.error('退出登录失败: ' + error)
+    console.error("logout Error", error)
+    message.error('退出登录失败')
   }
 }
 onMounted(async () => {
   try {
     userInfo.value = await getUserInfo()
   } catch (error) {
-    console.error(error)
-    message.error('获取用户信息失败: ' + error)
+    console.error("getUserInfo Error", error)
+    message.error('获取用户信息失败')
   }
 })
 </script>

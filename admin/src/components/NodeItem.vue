@@ -4,6 +4,7 @@ import { NCard, NButton, useMessage } from 'naive-ui'
 import VVorkerTracker from '@/components/VVorkerTracker.vue'
 import type { Node } from '@/types/nodes'
 import { syncNodes } from '@/api/nodes'
+import { error } from 'naive-ui/es/_utils/naive/warn'
 
 const props = defineProps<{
   node: Node
@@ -41,8 +42,8 @@ const handleSyncNodeClick = async () => {
   try {
     await syncNodes(props.node.Name)
     message.info('同步成功')
-  } catch (e) {
-    console.error('syncNodes Error', e)
+  } catch (error) {
+    console.error('syncNodes Error', error)
     message.error('同步失败')
   }
 }
