@@ -65,7 +65,14 @@ honoApi.get("/someapi", async (c) => {
     var oss = await vvbind(c).oss("ossBindName")
     var pgsql = await vvbind(c).pgsql("pgsqlBindName")
     var kv = await vvbind(c).kv("kvBindName")
-
+    var some_worker = await vvbind(c).service("SomeWorker")
+    var res = await some_worker.fetch("/someapi", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    // res 返回json，不需要手动转换成json。并且也不支持其他类型的响应。
     ...
 });
 ```
