@@ -25,6 +25,13 @@ export default withMermaid({
         ]
       },
       {
+        text: "CONFIG",
+        items: [
+          { text: '环境变量', link: '/config/env' },
+          { text: '节点配置', link: '/config/node_config' },
+        ]
+      },
+      {
         text: "DESIGN",
         items: [
           { text: '钦定', link: '/design/must' },

@@ -1,6 +1,6 @@
 # VVorker
 
-VVorker 是一个简单强大的自部署 Cloudflare worker 替代系统。本项目基于 [Cloudflare Workerd](https://github.com/cloudflare/workerd) ，并在 [Vorker](https://github.com/VaalaCat/vorker) 的基础上进行改进。由于比 Vorker 多一点功能，因此本项目的名称为 VVorker。由于根据个人需求进行一定程度的魔改，因此难以向上游提交。
+VVorker 是一个简单强大的自部署 Cloudflare worker 替代系统。本项目基于 [Cloudflare Workerd](https://github.com/cloudflare/workerd) ，并在 [Vorker](https://github.com/VaalaCat/vorker) 的基础上进行改进。由于比 Vorker 多一点功能，因此本项目的名称为 VVorker。
 
 ## 特色
 
@@ -11,14 +11,18 @@ VVorker 是一个简单强大的自部署 Cloudflare worker 替代系统。本�
 - [x] 分布式多节点支持
 - [x] litefs(HA) 支持（实验性）
 - [x] 基于 PostgreSQL 的结构化数据库支持
+- [x] 基于 MySQL 的结构化数据库支持
 - [x] 基于 Redis 的 KV 缓存支持
 - [x] 基于 Minio 的对象存储支持
+- [x] 实现对于单数据库和单Bucket的兼容模式
 - [x] 快速绑定内部数据库资源而无需管理AccessKey与SecretKey，即插即用
 - [x] 全局日志收集
 - [x] 性能与状态监控
 - [x] 命令行工具`vvcli`快速部署 Worker
 - [x] 打包某个服务及其所有依赖，用于迁移到其它系统
-- [ ] 对 SQL 的变更支持（当前可以自行创建表，但没有比较自动化的流程）
+- [x] 对 SQL 的变更支持
+- [x] 网关级的单点登录鉴权支持
+- [x] CLI命令行工具与SDK工具包支持
 - [ ] Worker 版本控制，包括灰度发布与测试分支
 - [ ] Worker Debugging
 - [ ] Cloudflare Durable Objects (实验性)
@@ -67,28 +71,6 @@ wrangler deploy --dry-run --outdir dist
 
 `dist/index.js`应该包含所有你的代码，将其拷贝到 VVorker 中的代码编辑区即可，点击保存后自动生效。
 
-
-## Screenshots
-
-- Admin Page
-
-![](./images/worker-admin.png)
-
-- Worker Editor
-
-![](./images/worker-edit.png)
-
-- Worker Config
-
-![](./images/worker-config.png)
-
-- Agent Status
-
-![](./images/status.png)
-
-- Worker Execution
-
-![](https://vaala.cat/images/vorkerexec.png)
 
 ## 其他
 

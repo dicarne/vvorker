@@ -20,7 +20,7 @@ type AppConfig struct {
 	TunnelEntryPort int    `env:"TUNNEL_ENTRY_PORT" env-default:"10080"` // 【主节点内部】提供http服务，主节点用这个端口向其他节点发送请求。在主节点提供服务，子节点无法向其发送请求。
 	TunnelAPIPort   int    `env:"TUNNEL_API_PORT" env-default:"18080"`   // 【主节点公开】TUNNEL_ENTRY_PORT的frp端口，子节点通过这个端口配置每个worker的转发
 
-	InternalRPCPort int `env:"INTERNAL_RPC_PORT" env-default:"19080"` // 【内部】提供rpc服务
+	InternalRPCPort int `env:"INTERNAL_RPC_PORT" env-default:"19080"` // 【内部】提供worker之间的rpc服务，未实现
 
 	WorkerURLSuffix string `env:"WORKER_URL_SUFFIX" env-default:".vvorker.local"` // master required, e.g. .example.com. for worker show and route
 	Scheme          string `env:"SCHEME" env-default:"http"`                      // http, https. for public frontend show
@@ -38,13 +38,12 @@ type AppConfig struct {
 
 	APIWebBaseURL  string `env:"API_WEB_BASE_URL"`
 	ListenAddr     string `env:"LISTEN_ADDR" env-default:"0.0.0.0"`
-	CookieName     string `env:"COOKIE_NAME" env-default:"authorization"`
+	CookieName     string `env:"COOKIE_NAME" env-default:"vv-authorization"`
 	CookieAge      int    `env:"COOKIE_AGE" env-default:"86400"`            // second 86400 = 1 day
 	CookieDomain   string `env:"COOKIE_DOMAIN" env-default:"vvorker.local"` // required, e.g. example.com
 	EnableRegister bool   `env:"ENABLE_REGISTER" env-default:"false"`
 	RunMode        string `env:"RUN_MODE" env-default:"master"` // master, agent
 
-	DefaultWorkerHost string `env:"DEFAULT_WORKER_HOST" env-default:"localhost"`
 	LitefsPrimaryPort int    `env:"LITEFS_PRIMARY_PORT" env-default:"20202"`
 	LitefsBinPath     string `env:"LITEFS_BIN_PATH" env-default:"/usr/local/bin/litefs"`
 	LitefsDirPath     string `env:"LITEFS_DIR_PATH" env-default:"/app"`

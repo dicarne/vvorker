@@ -14,6 +14,9 @@ hero:
       text: CLI
       link: /cli/vvorker-cli
     - theme: alt
+      text: CONFIG
+      link: /config/env
+    - theme: alt
       text: DESIGN
       link: /design/must
 
