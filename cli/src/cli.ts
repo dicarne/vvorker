@@ -237,7 +237,7 @@ export default app;
       }
 
       const jsonFilePath = `vvorker.json`;
-      
+
       await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
       console.log(`项目 ${projectName} 初始化完成`);
       console.log(`运行 vvcli types 生成相关类型提示`);
@@ -331,6 +331,18 @@ program
     }
 
     let jsFilePath = "";
+
+    let up1 = await axios.post(`${getUrl()}/api/ext/assets/clear-assets`, {
+      worker_uid: uid,
+    }, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+
+    if (up1.data.delete_count > 0)
+      console.log(`已清除 ${up1.data.delete_count} 个Assets文件`)
+
     if (vvorkerJson.assets && vvorkerJson.assets.length > 0) {
 
 

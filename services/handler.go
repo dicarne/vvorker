@@ -230,6 +230,7 @@ func init() {
 				if conf.IsMaster() {
 					assetsAPI.POST("/create-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), assets.UploadAssetsEndpoint)
 					assetsAPI.GET("/get-assets", authz.AgentAuthz(), assets.GetAssetsEndpoint)
+					assetsAPI.POST("/clear-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), assets.ClearAssetsEndpoint)
 				}
 			}
 			taskAPI := extAPI.Group("/task")
