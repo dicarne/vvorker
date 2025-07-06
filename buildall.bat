@@ -1,9 +1,7 @@
 @echo on
-cd www
+cd admin
 call pnpm i
-call pnpm run prepareDev
 call pnpm run build
-call pnpm run export
 cd ..
 
 cd cli
