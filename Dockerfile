@@ -14,7 +14,7 @@ COPY . /app
 WORKDIR /app
 
 
-RUN cd /app/www && pnpm i && pnpm run prepareDev && pnpm run build && pnpm run export
+RUN cd /app/admin && pnpm i && pnpm run build
 RUN cd /app/ext/ai && pnpm i && pnpm run build
 RUN cd /app/ext/kv && pnpm i && pnpm run build
 RUN cd /app/ext/oss && pnpm i && pnpm run build
