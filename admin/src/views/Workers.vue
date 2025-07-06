@@ -199,7 +199,7 @@ onMounted(async () => {
             <div class="v-item">{{ item.Name }}</div>
             <div class="v-item">
               Node:
-              <NTag size="small" :style="{ color: CH.hex(item.NodeName) }">
+              <NTag size="small" :style="{ color: CH.hex(item.NodeName || '') }">
                 {{ item.NodeName }}
               </NTag>
             </div>
