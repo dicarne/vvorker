@@ -253,6 +253,9 @@ func init() {
 				extAPI.POST("/types", authz.AccessKeyMiddleware(), gentype.GenerateTypes)
 			}
 		}
+		api.GET("/ping", func(c *gin.Context) {
+			c.String(http.StatusOK, "pong")
+		})
 	}
 	registerApi(api)
 
@@ -355,7 +358,7 @@ func HandleStaticFile(f embed.FS) {
 	router.NoRoute(func(c *gin.Context) {
 		path := c.Request.URL.Path
 		adminPrefix := "/admin"
-		if conf.AppConfigInstance.WorkerHostMode == "path" && conf.AppConfigInstance.WorkerHostPath != "" {
+		if conf.AppConfigInstance.WorkerHostMode == "path" && conf.AppConfigInstance.WorkerHostPath != "" && strings.HasPrefix(path, "/"+conf.AppConfigInstance.WorkerHostPath) {
 			// path = strings.Replace(c.Request.URL.Path, "/"+conf.AppConfigInstance.WorkerHostPath, "", 1)
 			path = path[len(conf.AppConfigInstance.WorkerHostPath)+1:]
 		}

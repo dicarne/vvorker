@@ -59,9 +59,9 @@ func UserGetNodesEndpoint(c *gin.Context) {
 		wg.Go(func() {
 			var addr string
 			if nodeName == conf.AppConfigInstance.NodeName {
-				addr = fmt.Sprintf("http://%s:%d", conf.AppConfigInstance.TunnelHost, conf.AppConfigInstance.APIPort)
+				addr = fmt.Sprintf("http://%s:%d/api/ping", conf.AppConfigInstance.TunnelHost, conf.AppConfigInstance.APIPort)
 			} else {
-				addr = fmt.Sprintf("http://%s:%d", conf.AppConfigInstance.TunnelHost, conf.AppConfigInstance.TunnelEntryPort)
+				addr = fmt.Sprintf("http://%s:%d/api/ping", conf.AppConfigInstance.TunnelHost, conf.AppConfigInstance.TunnelEntryPort)
 			}
 
 			pingMap[nodeName], err = request.Ping(
