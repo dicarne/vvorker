@@ -119,9 +119,10 @@ func BuildCapfile(workers []*entities.Worker, workerQuery funcs.WorkerQuery) map
 					allowExtension := allowExtensionFn(ext.Binding)
 					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
 					bindingsText = bindingsText + allowExtension.BindingTemplate
-					if allowExtension.Type == "extension" {
+					switch allowExtension.Type {
+					case "extension":
 						extensionsText = extensionsText + ".e" + allowExtension.Name + ","
-					} else if allowExtension.Type == "worker" {
+					case "worker":
 						servicesText = servicesText + allowExtension.ServiceInjectTemplate
 					}
 

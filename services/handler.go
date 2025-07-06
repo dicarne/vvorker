@@ -37,6 +37,7 @@ import (
 	"vvorker/tunnel"
 	"vvorker/utils"
 	"vvorker/utils/database"
+	"vvorker/utils/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -62,7 +63,7 @@ func init() {
 		c.Next()
 	})
 
-	router.Use(utils.CORSMiddlewaire(
+	router.Use(middleware.CORSMiddlewaire(
 		fmt.Sprintf("%v://%v", conf.AppConfigInstance.Scheme, conf.AppConfigInstance.CookieDomain),
 	))
 	if !conf.IsMaster() {
@@ -70,7 +71,7 @@ func init() {
 	}
 
 	api := router.Group("/api")
-	econfig := utils.DefaultEncryptionConfig()
+	econfig := middleware.DefaultEncryptionConfig()
 	registerApi := func(api *gin.RouterGroup) {
 		if conf.IsMaster() {
 			workerApi := api.Group("/worker", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
@@ -80,7 +81,7 @@ func init() {
 				workerApi.GET("/run/:uid", workerd.RunWorkerEndpoint)
 				workerApi.POST("/create", workerd.CreateEndpoint)
 				workerApi.POST("/version/:workerId/:fileId", workerd.NewVersionEndpoint)
-				workerApi.POST("/:uid", utils.EncryptionMiddleware(econfig), workerd.UpdateEndpoint)
+				workerApi.POST("/:uid", middleware.EncryptionMiddleware(econfig), workerd.UpdateEndpoint)
 				workerApi.DELETE("/:uid", workerd.DeleteEndpoint)
 
 				workerApi.GET("/information/:id", workerd.GetWorkerInformationByIDEndpoint)
@@ -124,7 +125,7 @@ func init() {
 				workerV2 := workerApi.Group("/v2")
 				{
 					workerV2.POST("/get-worker", workerd.GetWorkerEndpointJSON)
-					workerV2.POST("/update-worker", utils.EncryptionMiddleware(econfig), workerd.UpdateEndpointJSON)
+					workerV2.POST("/update-worker", middleware.EncryptionMiddleware(econfig), workerd.UpdateEndpointJSON)
 
 					workerV2.POST("/export-workers", export.ExportResourcesConfigEndpoint)
 					workerV2.POST("/import-workers", export.ImportResourcesConfigEndpoint)
