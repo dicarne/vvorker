@@ -9,11 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//go:embed all:www/out/*
+//go:embed all:admin/dist/*
 var fs embed.FS
-
-// go:embed ext/ai/dist/index.js
-var ExtAiScript string
 
 func main() {
 	logrus.SetReportCaller(true)

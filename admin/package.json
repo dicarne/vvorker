@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",
+    "@types/color-hash": "^2.0.0",
     "@types/lodash": "^4.17.20",
     "@types/node": "^22.15.32",
     "@vicons/fluent": "^0.13.0",
