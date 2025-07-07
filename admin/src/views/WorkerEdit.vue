@@ -43,7 +43,14 @@ const { copyContent } = useCopyContent()
 const appConfig = inject<Ref<VorkerSettingsProperties>>('appConfig')!
 const worker = ref<WorkerItem>(DEFAULT_WORKER_ITEM)
 const workerURL = computed(() => {
-  return `${appConfig.value?.Scheme}://${worker.value.Name}${appConfig.value?.WorkerURLSuffix}`
+  if (appConfig.value?.UrlType === 'host') {
+    return `${appConfig.value?.Scheme}://${worker.value.Name}${appConfig.value?.WorkerURLSuffix}/`
+  } else if (appConfig.value?.UrlType === 'path') {
+    const suffix = appConfig.value?.WorkerURLSuffix?.slice(1)
+    return `${appConfig.value?.Scheme}://${suffix}/${worker.value.Name}/`
+  }
+  return ""
+  
 })
 // 保存 Worker
 const handleSaveWorkerClick = async () => {
