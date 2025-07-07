@@ -111,7 +111,7 @@ onMounted(async () => {
 </script>
 <template>
   <div>
-    <NCard :title="`${props.rType}列表`" :bordered="false">
+    <NCard :title="`${props.rType} 列表`" :bordered="false">
       <template #header-extra>
         <NButton type="primary" secondary @click="showCreateModal = true">创建</NButton>
       </template>
