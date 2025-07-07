@@ -23,6 +23,17 @@ func GetEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
 		return
 	}
+	urlPrefix := ""
+	if conf.AppConfigInstance.WorkerHostMode == "path" {
+		urlPrefix = conf.AppConfigInstance.WorkerHostPath
+	}
+	if conf.AppConfigInstance.SSOBaseURL != "" {
+		if conf.AppConfigInstance.WorkerHostPath == "" {
+			urlPrefix = conf.AppConfigInstance.SSOBaseURL
+		} else {
+			urlPrefix = conf.AppConfigInstance.SSOBaseURL + "/" + conf.AppConfigInstance.WorkerHostPath
+		}
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"code": 0,
 		"data": gin.H{
@@ -31,6 +42,7 @@ func GetEndpoint(c *gin.Context) {
 			"EnableRegister":  conf.AppConfigInstance.EnableRegister || num == 0,
 			"UrlType":         conf.AppConfigInstance.WorkerHostMode,
 			"ApiUrl":          conf.AppConfigInstance.APIWebBaseURL,
+			"UrlPrefix":       urlPrefix,
 		},
 	})
 }

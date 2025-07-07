@@ -97,7 +97,7 @@ type AppConfig struct {
 	SSOAuthURL     string `env:"SSO_AUTH_URL"` // sso认证地址
 	SSOCookieName  string `env:"SSO_COOKIE_NAME" env-default:"vv-sso"`
 	SSORedirectURL string `env:"SSO_REDIRECT_URL"` // 登录页
-	SSOBaseURL     string `env:"SSO_BASE_URL"`     // sso基础地址
+	SSOBaseURL     string `env:"SSO_BASE_URL"`     // sso基础地址，如 abc
 }
 
 type JwtConfig struct {
