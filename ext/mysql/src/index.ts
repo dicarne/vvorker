@@ -31,7 +31,7 @@ export default class MySQL extends WorkerEntrypoint {
 	}
 
 	connectionString() {
-		return `mysql://${cfg.user}:${cfg.password.replaceAll('@', '%40')}@${cfg.host}:${cfg.port}/${cfg.database}`;
+		return `mysql://${cfg.user}:${encodeURIComponent(cfg.password)}@${cfg.host}:${cfg.port}/${cfg.database}`;
 	}
 	connectionInfo() {
 		return {
