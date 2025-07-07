@@ -23,6 +23,7 @@ const (
 	RespCodeMethodNotAllowed
 	RespCodeServiceNotFound
 	RespCodeNotFound
+	RespCodeInvalidParams
 )
 
 const (
@@ -36,6 +37,7 @@ const (
 	RespMsgDBErr             = "DB Err"
 	RespMsgMethodNotAllowed  = "Method Not Allowed"
 	RespMsgServiceNotFound   = "Service Not Found"
+	RespMsgInvalidParams     = "Invalid Params"
 )
 
 const (

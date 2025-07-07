@@ -216,12 +216,15 @@ export const deployCommand = new Command('deploy')
     prev.ExternalPath = undefined;
     prev.TunnelID = undefined;
 
-    const userinfo = await apiClient.get(`/api/user/info`)
-    const vk = userinfo.data?.data?.vk ?? ""
-    resp = await apiClient.post(`/api/worker/v2/update-worker`, vk != "" ? await encryptData(prev, vk) : prev, {
+    // const userinfo = await apiClient.get(`/api/user/info`)
+    // const vk = userinfo.data?.data?.vk ?? ""
+    const formData = new FormData()
+    formData.append('file', new Blob([jsContent]), 'index.js')
+    formData.append('data', JSON.stringify(prev))
+    resp = await apiClient.post(`/api/worker/v2/update-worker-with-file`, formData, {
       headers: {
-        'Content-Type': 'application/json',
-        'x-encrypted-data': vk != "" ? 'true' : 'false'
+        'Content-Type': 'multipart/form-data',
+        // 'x-encrypted-data': vk != "" ? 'true' : 'false'
       }
     })
     if (resp.data.code === 0) {

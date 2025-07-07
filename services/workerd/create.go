@@ -3,6 +3,7 @@ package workerd
 import (
 	"runtime/debug"
 	"vvorker/common"
+	"vvorker/defs"
 	"vvorker/entities"
 	"vvorker/models"
 	"vvorker/utils/database"
@@ -24,6 +25,7 @@ func CreateEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
+	worker.Code = []byte(defs.DefaultCode)
 
 	if !isCreateParamValidate() {
 		common.RespErr(c, common.RespCodeInvalidRequest, common.RespMsgInvalidRequest, nil)

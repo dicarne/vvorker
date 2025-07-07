@@ -119,6 +119,7 @@ func init() {
 				{
 					workerV2.POST("/get-worker", workerd.GetWorkerEndpointJSON)
 					workerV2.POST("/update-worker", middleware.EncryptionMiddleware(econfig), workerd.UpdateEndpointJSON)
+					workerV2.POST("/update-worker-with-file", workerd.UpdateWorkerWithFile)
 
 					workerV2.POST("/export-workers", export.ExportResourcesConfigEndpoint)
 					workerV2.POST("/import-workers", export.ImportResourcesConfigEndpoint)
