@@ -64,7 +64,7 @@ const handleLogin = async () => {
       <template #header>
         <div class="v-card-header">登录</div>
       </template>
-      <NForm :model="form" :rules="rules" ref="formRef">
+      <NForm :model="form" :rules="rules" ref="formRef" @keyup.enter="handleLogin">
         <NFormItem label="用户名" path="userName">
           <NInput v-model:value="form.userName" placeholder="请输入用户名" />
         </NFormItem>
