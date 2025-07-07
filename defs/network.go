@@ -24,6 +24,7 @@ const n{{.Name}}Network :Workerd.ExternalServer = (
   http = (
 	injectRequestHeaders = [
 	  (name = "host", value = "{{.Host}}{{.Domain}}"),
+	  (name = "Server-Host", value = "{{.Host}}{{.Domain}}"),
 	  (name = "vvorker-internal-token", value = "{{.Token}}"),
 	  (name = "vvorker-worker-uid", value = "{{.WorkerUID}}"),
 	],

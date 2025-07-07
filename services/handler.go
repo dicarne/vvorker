@@ -420,7 +420,7 @@ func RegisterNodeToMaster() {
 }
 
 func modifyProxyRequestHeaders(c *gin.Context) {
-	if conf.AppConfigInstance.WorkerHostMode == "path" {
+	if conf.AppConfigInstance.WorkerHostMode == "path" && c.Request.Header.Get("Server-Host") == "" {
 		// 此时，URL的第一段会被提取出来作为host name，并在传下去的url中去掉这一段
 		// 按照 / 切分
 		url := c.Request.URL.Path
