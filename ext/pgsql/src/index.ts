@@ -62,6 +62,15 @@ export default class PGSQL extends WorkerEntrypoint {
 		return target
 	}
 	connectionString() {
-		return `postgres://${cfg.user}:${cfg.password}@${cfg.host}:${cfg.port}/${cfg.database}`;
+		return `postgres://${cfg.user}:${cfg.password.replaceAll('@', '%40')}@${cfg.host}:${cfg.port}/${cfg.database}`;
+	}
+	connectionInfo() {
+		return {
+			user: cfg.user,
+			host: cfg.host,
+			database: cfg.database,
+			password: cfg.password,
+			port: Number(cfg.port),
+		}
 	}
 }
