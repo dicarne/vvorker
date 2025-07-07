@@ -331,18 +331,18 @@ function service(key: string, binding: ServiceBinding) {
                         binding: key,
                         method: "fetch",
                         params: {
-                            path: "http://vvorker.local" + (path.startsWith("/") ? path : "/" + path),
+                            url: "http://vvorker.local" + (path.startsWith("/") ? path : "/" + path),
                             init: init
                         }
                     })
                 })
-                return (await r.json()).data
+                return r
             }
         }
     }
     return {
         fetch: async (path: string, init?: RequestInit) =>
-            (await binding.fetch("http://vvorker.local" + (path.startsWith("/") ? path : "/" + path), init)).json()
+            binding.fetch("http://vvorker.local" + (path.startsWith("/") ? path : "/" + path), init)
     }
 }
 

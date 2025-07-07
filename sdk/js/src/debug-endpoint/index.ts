@@ -80,7 +80,7 @@ export function useDebugEndpoint(app: any) {
                         case "del":
                             return c.json({ message: "kv", data: await client.del(req.params.key) });
                         case "keys":
-                            return c.json({ message: "kv", data: await client.keys(req.params.pattern) });
+                            return c.json({ message: "kv", data: await client.keys(req.params.pattern, req.params.offset, req.params.size) });
                         default:
                             return c.json({ error: "method not found", req }, 404)
                     }
@@ -102,7 +102,7 @@ export function useDebugEndpoint(app: any) {
                     }
                     switch (req.method) {
                         case "fetch":
-                            return c.json({ message: "service", data: await (await service.fetch(req.params.path, req.params.init)).json() });
+                            return service.fetch(req.params.url, req.params.init)
                         default:
                             return c.json({ error: "method not found", req }, 404)
                     }
