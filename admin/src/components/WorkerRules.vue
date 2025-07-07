@@ -24,6 +24,7 @@ import type {
 import {
   addAccessRule,
   deleteAccessRule,
+  getAccessControl,
   listAccessRules,
   updateEnableAccessControl,
 } from '@/api/workers'
@@ -66,6 +67,8 @@ const renderAccessControl = () =>
 const rules = ref<AccessRule[]>([])
 const fetchRules = async () => {
   try {
+    const response1 = await getAccessControl({ worker_uid: props.uid });
+    isAccessControlEnabled.value = response1.data.EnableAccessControl;
     const response = await listAccessRules({
       worker_uid: props.uid,
       page: 1,
@@ -211,7 +214,7 @@ onMounted(async () => {
           <tr v-for="item in rules" :key="item.rule_uid">
             <td>{{ item.path }}</td>
             <td>
-              {{ ruleTypeOptions.find((option) => option.value === item.rule_type)?.label }}
+              {{ruleTypeOptions.find((option) => option.value === item.rule_type)?.label}}
               ({{ item.rule_type }})
             </td>
             <td>{{ item.description }}</td>
@@ -224,17 +227,9 @@ onMounted(async () => {
         </tbody>
       </NTable>
     </NCard>
-    <NModal
-      v-model:show="showCreateRuleModal"
-      preset="dialog"
-      title="添加规则"
-      positive-text="确认"
-      negative-text="取消"
-      :loading="IsCreatingRule"
-      :mask-closable="false"
-      @positive-click="handleCreateRuleConfirm"
-      @negative-click="handleCreateRuleClose"
-    >
+    <NModal v-model:show="showCreateRuleModal" preset="dialog" title="添加规则" positive-text="确认" negative-text="取消"
+      :loading="IsCreatingRule" :mask-closable="false" @positive-click="handleCreateRuleConfirm"
+      @negative-click="handleCreateRuleClose">
       <NForm ref="createRuleFormRef" :rules="createRuleRules" :model="createRuleForm">
         <NFormItem label="路由前缀">
           <NInput v-model:value="createRuleForm.path" placeholder="请输入路由前缀" />
@@ -247,17 +242,9 @@ onMounted(async () => {
         </NFormItem>
       </NForm>
     </NModal>
-    <NModal
-      v-model:show="showDeleteRuleModal"
-      preset="dialog"
-      title="删除规则"
-      positive-text="确认"
-      negative-text="取消"
-      :loading="IsDeletingRule"
-      :mask-closable="false"
-      @positive-click="handleDeleteRuleConfirm"
-      @negative-click="handleDeleteRuleClose"
-    >
+    <NModal v-model:show="showDeleteRuleModal" preset="dialog" title="删除规则" positive-text="确认" negative-text="取消"
+      :loading="IsDeletingRule" :mask-closable="false" @positive-click="handleDeleteRuleConfirm"
+      @negative-click="handleDeleteRuleClose">
       <div>确认要删除此规则？</div>
     </NModal>
   </div>
