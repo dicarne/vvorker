@@ -1,7 +1,6 @@
 package workerd
 
 import (
-	"fmt"
 	"runtime/debug"
 	"vvorker/common"
 	"vvorker/conf"
@@ -9,6 +8,7 @@ import (
 	"vvorker/exec"
 	"vvorker/models"
 	"vvorker/utils/generate"
+	permissions "vvorker/utils/permissions"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -27,28 +27,22 @@ func UpdateEndpoint(c *gin.Context) {
 	}()
 
 	UID := c.Param("uid")
-	if len(UID) == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is empty", nil)
-		return
-	}
-
-	var worker *UpdateWorkerReq
-	if err := c.ShouldBindJSON(&worker); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
+	var newWorker *UpdateWorkerReq
+	if err := permissions.BindJSON(c, &newWorker); err != nil {
 		return
 	}
 
 	userID := c.GetUint(common.UIDKey)
-
-	if worker.Worker.Code == nil {
-		oldworker, err := models.GetWorkerByUID(userID, UID)
-		if err != nil {
-			common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
-			return
-		}
-		worker.Worker.Code = oldworker.Code
+	oldworker, err := permissions.CanWriteWorker(c, uint64(userID), UID)
+	if err != nil {
+		return
 	}
-	if err := UpdateWorker(userID, UID, worker.Worker); err != nil {
+
+	if newWorker.Worker.Code == nil {
+		// 如果没有更新代码，则从旧的代码中查找原本的代码进行覆盖
+		newWorker.Worker.Code = oldworker.Code
+	}
+	if err := UpdateWorker(userID, UID, newWorker.Worker); err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}
@@ -65,23 +59,18 @@ func UpdateEndpointJSON(c *gin.Context) {
 	}()
 
 	var worker *UpdateWorkerReq
-	if err := c.ShouldBindJSON(&worker); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
+	if err := permissions.BindJSON(c, &worker); err != nil {
 		return
 	}
+
 	UID := worker.UID
-	if len(UID) == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is empty", nil)
+	userID := c.GetUint(common.UIDKey)
+	oldworker, err := permissions.CanWriteWorker(c, uint64(userID), UID)
+	if err != nil {
 		return
 	}
-	userID := c.GetUint(common.UIDKey)
 
 	if worker.Worker.Code == nil {
-		oldworker, err := models.GetWorkerByUID(userID, UID)
-		if err != nil {
-			common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
-			return
-		}
 		worker.Worker.Code = oldworker.Code
 	}
 
@@ -100,9 +89,6 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker) error {
 	if err != nil {
 		return err
 	}
-	if worker == nil {
-		return fmt.Errorf("worker is nil")
-	}
 
 	curNodeName := conf.AppConfigInstance.NodeName
 
@@ -110,11 +96,13 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker) error {
 		exec.ExecManager.ExitCmd(workerRecord.GetUID())
 	}
 
+	// 删除旧的worker
 	err = workerRecord.Delete()
 	if err != nil {
 		return err
 	}
 
+	// 创建新的worker
 	newWorker := &models.Worker{Worker: worker, EnableAccessControl: workerRecord.EnableAccessControl}
 	err = newWorker.Create()
 	if err != nil {
