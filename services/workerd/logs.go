@@ -64,7 +64,7 @@ func GetWorkerLogsEndpoint(c *gin.Context) {
 	var logs []*exec.WorkerLog
 	var total int64
 	// 先查询日志总数
-	if err := db.Model(&exec.WorkerLog{}).Where("uid = ?", UID).Count(&total).Error; err != nil {
+	if err := db.Model(&exec.WorkerLog{}).Where("uid = ?", UID).Limit(10000).Count(&total).Error; err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}
