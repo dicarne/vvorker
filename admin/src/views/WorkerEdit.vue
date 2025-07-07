@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, onMounted, ref, type Ref } from 'vue'
+import { computed, inject, onMounted, ref, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   NButton,
@@ -41,9 +41,10 @@ const { navigate } = useNavigate()
 const message = useMessage()
 const { copyContent } = useCopyContent()
 const appConfig = inject<Ref<VorkerSettingsProperties>>('appConfig')!
-const workerURL = `${appConfig.value?.Scheme}://${appConfig.value?.WorkerURLSuffix}`
-
 const worker = ref<WorkerItem>(DEFAULT_WORKER_ITEM)
+const workerURL = computed(() => {
+  return `${appConfig.value?.Scheme}://${worker.value.Name}${appConfig.value?.WorkerURLSuffix}`
+})
 // 保存 Worker
 const handleSaveWorkerClick = async () => {
   if (!worker.value) {
@@ -115,7 +116,7 @@ onMounted(async () => {
           <NLayoutSider> 函数入口 </NLayoutSider>
           <NLayoutContent>
             <NInputGroup class="worker-property-input">
-              <NInputGroupLabel>{{ appConfig?.Scheme }}://<</NInputGroupLabel>
+              <NInputGroupLabel>{{ appConfig?.Scheme }}://</NInputGroupLabel>
               <NInput v-model:value="worker.Name" />
               <NInputGroupLabel>{{ appConfig?.WorkerURLSuffix }}</NInputGroupLabel>
             </NInputGroup>
