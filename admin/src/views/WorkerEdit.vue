@@ -30,15 +30,16 @@ import {
   type WorkerItem,
 } from '@/types/workers'
 import type { Node } from '@/types/nodes'
-import { copyContent } from '@/utils/utils'
 import { getWorker, updateWorker } from '@/api/workers'
 import { getNodes } from '@/api/nodes'
 import { useNavigate } from '@/composables/useNavigate'
+import { useCopyContent } from '@/composables/useUtils'
 const router = useRouter()
 const uid = router.currentRoute.value.query.uid as string
 const { navigate } = useNavigate()
 // 定义消息和通知实例
 const message = useMessage()
+const { copyContent } = useCopyContent()
 const appConfig = inject<Ref<VorkerSettingsProperties>>('appConfig')!
 const workerURL = `${appConfig.value?.Scheme}://${appConfig.value?.WorkerURLSuffix}`
 
