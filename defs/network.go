@@ -27,19 +27,11 @@ const n{{.Name}}Network :Workerd.ExternalServer = (
 	  (name = "vvorker-internal-token", value = "{{.Token}}"),
 	  (name = "vvorker-worker-uid", value = "{{.WorkerUID}}"),
 	],
-	{{.Capnp}}
   )
 );
 `)
 	if err != nil {
 		logrus.Errorf("Failed to parse template: %v", err)
-	}
-	port := 0
-	capnp := "capnpConnectHost = \"" + serviceName + conf.AppConfigInstance.WorkerURLSuffix + "\","
-	port, err = w.WorkerNameToPort(serviceName)
-	if err != nil {
-		port = conf.AppConfigInstance.WorkerPort
-		capnp = ""
 	}
 	writer := new(bytes.Buffer)
 	networkTemplateW.Execute(writer, struct {
@@ -49,15 +41,13 @@ const n{{.Name}}Network :Workerd.ExternalServer = (
 		Token     string
 		WorkerUID string
 		Port      int
-		Capnp     template.HTML
 	}{
 		Name:      name,
 		Host:      serviceName,
 		Domain:    conf.AppConfigInstance.WorkerURLSuffix,
 		Token:     thisWorkerUID + ":" + conf.RPCToken,
 		WorkerUID: thisWorkerUID,
-		Port:      port,
-		Capnp:     template.HTML(capnp),
+		Port:      conf.AppConfigInstance.WorkerPort,
 	})
 
 	// ----------

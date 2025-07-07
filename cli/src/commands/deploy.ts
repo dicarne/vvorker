@@ -4,8 +4,9 @@ import * as path from 'path';
 import { config, getToken, getUrl, setUrl } from '../utils/config';
 import { loadVVorkerConfig } from '../utils/vvorker-config';
 import { runCommand } from '../utils/system';
-import { apiClient, encryptData } from '../utils/api';
+import { apiClient } from '../utils/api';
 import pc from "picocolors"
+import { encryptData } from '../encrypt';
 
 export const deployCommand = new Command('deploy')
   .description('部署到VVorker')
