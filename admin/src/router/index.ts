@@ -40,9 +40,14 @@ const router = createRouter({
           component: () => import('@/views/Task.vue'),
         },
         {
-          path: '/sql',
-          name: 'SQL',
-          component: () => import('@/views/SQL.vue'),
+          path: '/pgsql',
+          name: 'PGSQL',
+          component: () => import('@/views/PGSQL.vue'),
+        },
+        {
+          path: '/mysql',
+          name: 'MySQL',
+          component: () => import('@/views/MYSQL.vue'),
         },
         {
           path: '/oss',
