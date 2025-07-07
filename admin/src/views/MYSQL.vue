@@ -3,6 +3,6 @@ import ResourceList from '@/components/ResourceList.vue'
 </script>
 <template>
   <div class="v-main">
-    <ResourceList rType="kv" />
+    <ResourceList rType="mysql" />
   </div>
 </template>

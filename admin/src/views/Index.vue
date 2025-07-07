@@ -34,8 +34,13 @@ const menuOptions: MenuOption[] = [
     icon: renderIcon(TaskIcon),
   },
   {
-    label: renderMenuRouterLink('SQL', 'SQL'),
-    key: 'sql',
+    label: renderMenuRouterLink('PGSQL', 'PGSQL'),
+    key: 'pgsql',
+    icon: renderIcon(SQLIcon),
+  },
+  {
+    label: renderMenuRouterLink('MySQL', 'MySQL'),
+    key: 'mysql',
     icon: renderIcon(SQLIcon),
   },
   {
