@@ -59,7 +59,7 @@ const handleSaveWorkerClick = async () => {
     return
   }
   try {
-    await updateWorker(uid, worker.value)
+    await updateWorker(worker.value)
     message.success('保存 Worker 成功')
   } catch (error) {
     console.error('updateWorker Error', error)

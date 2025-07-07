@@ -16,7 +16,7 @@ import type {
   AccessControlRequest,
   EnableAccessControlRequest
 } from '@/types/access'; // 假设存在对应的类型定义
- // 假设存在对应的类型定义
+// 假设存在对应的类型定义
 
 export const getWorker = (uid: string) => {
   return api
@@ -44,8 +44,14 @@ export const deleteWorker = (uid: string) => {
   return api.delete(`api/worker/${uid}`, {}).then((res) => res.data)
 }
 
-export const updateWorker = (uid: string, worker: WorkerItem) => {
-  return api.post(`api/worker/${uid}`, worker).then((res) => res.data)
+export const updateWorker = (worker: WorkerItem) => {
+  const formData = new FormData()
+  formData.append('data', JSON.stringify(worker))
+  return api.post(`api/worker/v2/update-worker-with-file`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }).then((res) => res.data)
 }
 
 export const flushWorker = (uid: string) => {
