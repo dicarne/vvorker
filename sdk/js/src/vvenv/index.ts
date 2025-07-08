@@ -203,8 +203,24 @@ function vvmysql(key: string, binding: MYSQLBinding): MYSQLBinding {
                         params: {}
                     })
                 })
-                return (await r.json()).data
+                return (await r.json()).data as string
             },
+            connectionInfo: async () => {
+                const r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "mysql",
+                        binding: key,
+                        method: "connectionInfo",
+                        params: {}
+                    })
+                })
+                return (await r.json()).data 
+            }
         }
     } else {
         return binding
