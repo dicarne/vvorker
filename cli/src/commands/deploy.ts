@@ -75,7 +75,7 @@ export const deployCommand = new Command('deploy')
           const filePath = path.join(dir, file);
           const stat = fs.statSync(filePath);
           if (stat.isDirectory()) {
-            walk(filePath);
+            await walk(filePath);
           } else {
             const fileContent = fs.readFileSync(filePath);
             const fileUrl = filePath.replace(wwwAssetsPath, '').replace(/\\/g, '/');
