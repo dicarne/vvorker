@@ -61,6 +61,8 @@ export function useDebugEndpoint(app: any) {
                     switch (req.method) {
                         case "connectionString":
                             return c.json({ message: "mysql", data: await mysql.connectionString() });
+                        case "connectionInfo":
+                            return c.json({ message: "mysql", data: await mysql.connectionInfo() });
                         default:
                             return c.json({ error: "method not found", req }, 404)
                     }
