@@ -143,9 +143,6 @@ func UpdateWorkerWithFile(c *gin.Context) {
 		common.RespErr(c, common.RespCodeAuthErr, "missing data field", nil)
 		return
 	}
-
-	logrus.Info("jsonData: ", jsonData)
-
 	var req UpdateWorkerReq
 	if err := json.Unmarshal([]byte(jsonData), &req); err != nil {
 		common.RespErr(c, common.RespCodeInvalidParams, "invalid json data", nil)

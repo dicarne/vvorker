@@ -135,7 +135,7 @@ func UploadAssetsEndpoint(c *gin.Context) {
 		},
 	}).First(&w).Error; err != nil {
 		logrus.Errorf("Worker not found: %v", err)
-		c.JSON(404, gin.H{"error": "Worker not found"})
+		c.JSON(404, gin.H{"error": "Worker not found", "worker_uid": req.WorkerUID})
 		return
 	}
 
