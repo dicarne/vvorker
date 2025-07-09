@@ -180,6 +180,22 @@ function vvpgsql(key: string, binding: PGSQLBinding): PGSQLBinding {
                 })
                 return (await r.json()).data
             },
+            connectionInfo: async () => {
+                const r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "pgsql",
+                        binding: key,
+                        method: "connectionInfo",
+                        params: {}
+                    })
+                })
+                return (await r.json()).data
+            },
         }
     } else {
         return binding
@@ -219,7 +235,7 @@ function vvmysql(key: string, binding: MYSQLBinding): MYSQLBinding {
                         params: {}
                     })
                 })
-                return (await r.json()).data 
+                return (await r.json()).data
             }
         }
     } else {
@@ -362,6 +378,33 @@ function service(key: string, binding: ServiceBinding) {
     }
 }
 
+function proxy(key: string, binding: ServiceBinding) {
+    if (isDev()) {
+        return {
+            fetch: async (path: string, init?: RequestInit) => {
+                let r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "proxy",
+                        binding: key,
+                        method: "fetch",
+                        params: {
+                            url: path,
+                            init: init
+                        }
+                    })
+                })
+                return r
+            }
+        }
+    }
+    return binding
+}
+
 /**
  * 用于转换环境变量和绑定，在开发时（env.vars.MODE="development"）将通过代理和节点进行交互，从而获取节点的绑定和变量。
  * 在生产时，将直接返回绑定和变量。
@@ -372,6 +415,7 @@ export function vvbind<T extends { env: { vars: any, [key: string]: any } }>(c: 
         pgsql: (key: string) => vvpgsql(key, c.env[key]),
         mysql: (key: string) => vvmysql(key, c.env[key]),
         kv: (key: string) => vvkv(key, c.env[key]),
+        proxy: (key: string) => proxy(key, c.env[key]),
         vars: () => vars<{ vars: T['env']['vars'] }>(c.env),
         service: (name: string) => service(name, c.env[name])
     }
