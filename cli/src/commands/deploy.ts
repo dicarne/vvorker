@@ -216,17 +216,15 @@ export const deployCommand = new Command('deploy')
     prev.ExternalPath = undefined;
     prev.TunnelID = undefined;
 
-    // const userinfo = await apiClient.get(`/api/user/info`)
-    // const vk = userinfo.data?.data?.vk ?? ""
-    const formData = new FormData()
-    formData.append('file', new Blob([jsContent]), 'index.js')
-    formData.append('data', JSON.stringify(prev))
-    resp = await apiClient.post(`/api/worker/v2/update-worker-with-file`, formData, {
+    const userinfo = await apiClient.get(`/api/user/info`)
+    const vk = userinfo.data?.data?.vk ?? ""
+    resp = await apiClient.post(`/api/worker/v2/update-worker`, vk != "" ? await encryptData(prev, vk) : prev, {
       headers: {
-        'Content-Type': 'multipart/form-data',
-        // 'x-encrypted-data': vk != "" ? 'true' : 'false'
+        'Content-Type': 'application/json',
+        'x-encrypted-data': vk != "" ? 'true' : 'false'
       }
     })
+
     if (resp.data.code === 0) {
       console.log(pc.green("✓ 部署成功！"));
     } else {
