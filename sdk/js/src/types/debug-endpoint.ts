@@ -1,5 +1,5 @@
 export interface DebugEndpointRequest {
-    service: "oss" | "pgsql" | "kv" | "vars" | "mysql" | "service";
+    service: "oss" | "pgsql" | "kv" | "vars" | "mysql" | "service" | "proxy";
     binding: string;
     method: string;
     params: any;

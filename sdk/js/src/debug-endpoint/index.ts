@@ -48,6 +48,8 @@ export function useDebugEndpoint(app: any) {
                             return c.json({ message: "pgsql", data: await client.query(req.params.sql) });
                         case "connectionString":
                             return c.json({ message: "pgsql", data: await pgsql.connectionString() });
+                        case "connectionInfo":
+                            return c.json({ message: "pgsql", data: await pgsql.connectionInfo() });
                         default:
                             return c.json({ error: "method not found", req }, 404)
                     }
@@ -105,6 +107,19 @@ export function useDebugEndpoint(app: any) {
                     switch (req.method) {
                         case "fetch":
                             return service.fetch(req.params.url, req.params.init)
+                        default:
+                            return c.json({ error: "method not found", req }, 404)
+                    }
+                }
+            case "proxy":
+                {
+                    let proxy = ((c.env as any)[req.binding] as ServiceBinding)
+                    if (!proxy) {
+                        return c.json({ error: "proxy binding not found", req }, 404)
+                    }
+                    switch (req.method) {
+                        case "fetch":
+                            return proxy.fetch(req.params.url, req.params.init)
                         default:
                             return c.json({ error: "method not found", req }, 404)
                     }
