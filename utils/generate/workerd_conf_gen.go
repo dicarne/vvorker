@@ -388,6 +388,23 @@ func BuildCapfile(workers []*entities.Worker, workerQuery funcs.WorkerQuery) map
 			}
 		}
 
+		if len(workerconfig.Proxy) > 0 {
+			for _, proxy := range workerconfig.Proxy {
+				switch proxy.Type {
+				case "http":
+					netw := defs.GenOutsideHTTPNetwork(proxy.Address, proxy.Binding)
+					workerTemplate = workerTemplate + netw.NetworkText
+					servicesText = servicesText + netw.ServiceText
+					bindingsText = bindingsText + netw.BindingsText
+				case "https":
+					netw := defs.GenOutsideHTTPSNetwork(proxy.Address, proxy.Binding)
+					workerTemplate = workerTemplate + netw.NetworkText
+					servicesText = servicesText + netw.ServiceText
+					bindingsText = bindingsText + netw.BindingsText
+				}
+			}
+		}
+
 		if len(workerconfig.CompatibilityFlags) > 0 {
 			for _, flag := range workerconfig.CompatibilityFlags {
 				flagsText = flagsText + "\"" + flag + "\","

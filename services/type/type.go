@@ -164,6 +164,14 @@ export interface EnvBinding {
 		}
 	}
 
+	if len(worker.WorkerConfig.Proxy) > 0 {
+		for _, v := range worker.WorkerConfig.Proxy {
+			typeStr += fmt.Sprintf(`
+	%s: Fetcher
+`, v.Binding)
+		}
+	}
+
 	if len(worker.Vars) > 0 {
 		var varsMap map[string]interface{}
 		if err := json.Unmarshal(worker.Vars, &varsMap); err == nil {

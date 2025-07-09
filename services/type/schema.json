@@ -223,6 +223,32 @@
             "required": [
                 "cron"
             ]
+        },
+        "ProxyConfig": {
+            "type": "object",
+            "title": "代理配置",
+            "properties": {
+                "binding": {
+                    "$ref": "#/definitions/binding"
+                },
+                "address": {
+                    "type": "string",
+                    "title": "代理地址"
+                },
+                "type": {
+                    "type": "string",
+                    "title": "代理类型",
+                    "enum": [
+                        "http",
+                        "https"
+                    ]
+                }
+            },
+            "required": [
+                "binding",
+                "address",
+                "type"
+            ]
         }
     },
     "properties": {
@@ -332,6 +358,13 @@
             "title": "定时任务配置列表",
             "items": {
                 "$ref": "#/definitions/SchedulersConfig"
+            }
+        },
+        "proxy": {
+            "type": "array",
+            "title": "代理配置列表",
+            "items": {
+                "$ref": "#/definitions/ProxyConfig"
             }
         }
     }

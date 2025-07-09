@@ -3,6 +3,7 @@ package defs
 import (
 	"bytes"
 	"html/template"
+	"strings"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/funcs"
@@ -49,6 +50,133 @@ const n{{.Name}}Network :Workerd.ExternalServer = (
 		Token:     thisWorkerUID + ":" + conf.RPCToken,
 		WorkerUID: thisWorkerUID,
 		Port:      conf.AppConfigInstance.WorkerPort,
+	})
+
+	// ----------
+
+	serviceTemplate := template.New("service")
+	serviceTemplateW, err := serviceTemplate.Parse(`
+(name = "{{.Name}}Network", external = .n{{.Name}}Network),
+	`)
+	if err != nil {
+		logrus.Errorf("Failed to parse template: %v", err)
+	}
+	writer2 := new(bytes.Buffer)
+	serviceTemplateW.Execute(writer2, NameStruct{
+		Name: name,
+	})
+
+	// ----------
+
+	bindingTemplate := template.New("binding")
+	bindingTemplateW, err := bindingTemplate.Parse(`
+	(name = "{{.Name}}", service="{{.Name}}Network"),
+	`)
+	if err != nil {
+		logrus.Errorf("Failed to parse template: %v", err)
+	}
+	writer3 := new(bytes.Buffer)
+	bindingTemplateW.Execute(writer3, NameStruct{
+		Name: name,
+	})
+
+	return ServiceNetworkTemplate{
+		NetworkText:  writer.String(),
+		ServiceText:  writer2.String(),
+		BindingsText: writer3.String(),
+	}
+}
+
+func GenOutsideHTTPNetwork(address string, domain string) ServiceNetworkTemplate {
+	// 修改为转换为驼峰命名
+	name := strings.ReplaceAll(domain, ".", "")
+
+	networkTemplate := template.New("network")
+	networkTemplateW, err := networkTemplate.Parse(`
+const n{{.Name}}Network :Workerd.ExternalServer = (
+  address = "{{.Address}}",
+  http = (
+	style = proxy,
+  )
+);
+`)
+	if err != nil {
+		logrus.Errorf("Failed to parse template: %v", err)
+	}
+	writer := new(bytes.Buffer)
+	networkTemplateW.Execute(writer, struct {
+		Name    string
+		Domain  string
+		Address string
+	}{
+		Name:    name,
+		Domain:  domain,
+		Address: address,
+	})
+
+	// ----------
+
+	serviceTemplate := template.New("service")
+	serviceTemplateW, err := serviceTemplate.Parse(`
+(name = "{{.Name}}Network", external = .n{{.Name}}Network),
+	`)
+	if err != nil {
+		logrus.Errorf("Failed to parse template: %v", err)
+	}
+	writer2 := new(bytes.Buffer)
+	serviceTemplateW.Execute(writer2, NameStruct{
+		Name: name,
+	})
+
+	// ----------
+
+	bindingTemplate := template.New("binding")
+	bindingTemplateW, err := bindingTemplate.Parse(`
+	(name = "{{.Name}}", service="{{.Name}}Network"),
+	`)
+	if err != nil {
+		logrus.Errorf("Failed to parse template: %v", err)
+	}
+	writer3 := new(bytes.Buffer)
+	bindingTemplateW.Execute(writer3, NameStruct{
+		Name: name,
+	})
+
+	return ServiceNetworkTemplate{
+		NetworkText:  writer.String(),
+		ServiceText:  writer2.String(),
+		BindingsText: writer3.String(),
+	}
+}
+
+func GenOutsideHTTPSNetwork(address string, domain string) ServiceNetworkTemplate {
+	// 修改为转换为驼峰命名
+	name := strings.ReplaceAll(domain, ".", "")
+
+	networkTemplate := template.New("network")
+	networkTemplateW, err := networkTemplate.Parse(`
+const n{{.Name}}Network :Workerd.ExternalServer = (
+  address = "{{.Address}}",
+  https = (
+	options = (
+		style = proxy,
+	),
+	tlsOptions = (trustBrowserCas = true)
+  )
+);
+`)
+	if err != nil {
+		logrus.Errorf("Failed to parse template: %v", err)
+	}
+	writer := new(bytes.Buffer)
+	networkTemplateW.Execute(writer, struct {
+		Name    string
+		Domain  string
+		Address string
+	}{
+		Name:    name,
+		Domain:  domain,
+		Address: address,
 	})
 
 	// ----------
