@@ -63,6 +63,12 @@ type Scheduler struct {
 	Cron string `json:"cron"`
 }
 
+type Proxy struct {
+	Binding string `json:"binding"`
+	Address string `json:"address"`
+	Type    string `json:"type"` // "http" or "https"
+}
+
 type WorkerConfig struct {
 	ProjectName        string            `json:"name"`
 	Version            string            `json:"version"`
@@ -78,6 +84,7 @@ type WorkerConfig struct {
 	Assets             []Assets          `json:"assets"`
 	Task               []Task            `json:"task"`
 	Schedulers         []Scheduler       `json:"schedulers"`
+	Proxy              []Proxy           `json:"proxy"`
 }
 
 func ParseWorkerConfig(s string) (*WorkerConfig, error) {
