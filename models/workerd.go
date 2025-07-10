@@ -297,6 +297,7 @@ func (w *Worker) Update() error {
 func (w *Worker) Delete() error {
 	if w.NodeName == conf.AppConfigInstance.NodeName {
 		tunnel.GetClient().Delete(w.GetUID())
+		tunnel.GetClient().Delete(w.GetUID() + "-control")
 	} else {
 		n, err := GetNodeByNodeName(w.NodeName)
 		if err != nil {
