@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { CH } from '@/lib/color'
-import { NAvatar, NButton, useMessage } from 'naive-ui'
+import { NAvatar, NButton, NIcon, useMessage } from 'naive-ui'
 import FuncIcon from '@/components/icons/FuncIcon.vue'
 import type { UserInfo } from '@/types/auth'
 import { getUserInfo, logout } from '@/api/auth'
@@ -15,7 +15,7 @@ const handleLogout = async () => {
     message.success('已退出登录')
     navigate('/login')
   } catch (error) {
-    console.error("logout Error", error)
+    console.error('logout Error', error)
     message.error('退出登录失败')
   }
 }
@@ -23,7 +23,7 @@ onMounted(async () => {
   try {
     userInfo.value = await getUserInfo()
   } catch (error) {
-    console.error("getUserInfo Error", error)
+    console.error('getUserInfo Error', error)
     message.error('获取用户信息失败')
   }
 })
@@ -32,7 +32,7 @@ onMounted(async () => {
 <template>
   <div class="header v-flex-between-center">
     <div class="v-flex-center">
-      <FuncIcon class="v-item" />
+      <img class="v-item" style="height: 30px" src="@/assets/logo.png" alt="" />
       <span class="v-item" style="font-size: 24px">VVorker</span>
     </div>
     <div class="v-flex-center">
