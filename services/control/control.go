@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"runtime/debug"
 	"time"
 
 	"net/http"
@@ -52,6 +53,13 @@ type ScheduledController struct {
 }
 
 func SendSchedulerEvent(workerUID string, cron string) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Error("SendSchedulerEvent error: ", r)
+			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
+		}
+	}()
+
 	e := ScheduledController{
 		ScheduledTime: time.Now().Unix(),
 		Cron:          cron,
