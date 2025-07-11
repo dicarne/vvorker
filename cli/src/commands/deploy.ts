@@ -169,6 +169,8 @@ export const deployCommand = new Command('deploy')
         }
       }
     }
+    const userinfo = await apiClient.get(`/api/user/info`)
+    const vk = userinfo.data?.data?.vk ?? ""
 
     if (distVvorkerJson.mysql && distVvorkerJson.mysql.length > 0) {
       console.log("开始迁移MYSQL数据库...")
@@ -200,6 +202,11 @@ export const deployCommand = new Command('deploy')
             custom_db_host: mysql.host,
             custom_db_port: mysql.port,
             custom_db_password: mysql.password,
+          }, {
+            headers: {
+              'Content-Type': 'application/json',
+              'x-encrypted-data': vk != "" ? 'true' : 'false'
+            }
           })
           if (resp.data.code !== 0) {
             console.log(`迁移失败：${mysql.migrate}`);
@@ -216,8 +223,7 @@ export const deployCommand = new Command('deploy')
     prev.ExternalPath = undefined;
     prev.TunnelID = undefined;
 
-    const userinfo = await apiClient.get(`/api/user/info`)
-    const vk = userinfo.data?.data?.vk ?? ""
+
     resp = await apiClient.post(`/api/worker/v2/update-worker`, vk != "" ? await encryptData(prev, vk) : prev, {
       headers: {
         'Content-Type': 'application/json',
