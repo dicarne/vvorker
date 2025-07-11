@@ -201,7 +201,7 @@ func init() {
 				if conf.IsMaster() {
 					pgsqlAPI.POST("/create-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.CreateNewPostgreSQLResourcesEndpoint)
 					pgsqlAPI.POST("/delete-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.DeletePostgreSQLResourcesEndpoint)
-					pgsqlAPI.POST("/migrate", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.UpdateMigrate)
+					pgsqlAPI.POST("/migrate", middleware.EncryptionMiddleware(econfig), authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.UpdateMigrate)
 				}
 			}
 			mysqlAPI := extAPI.Group("/mysql")
@@ -209,7 +209,7 @@ func init() {
 				if conf.IsMaster() {
 					mysqlAPI.POST("/create-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), extmysql.CreateNewMySQLResourcesEndpoint)
 					mysqlAPI.POST("/delete-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), extmysql.DeleteMySQLResourcesEndpoint)
-					mysqlAPI.POST("/migrate", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), extmysql.UpdateMigrate)
+					mysqlAPI.POST("/migrate", middleware.EncryptionMiddleware(econfig), authz.AccessKeyMiddleware(), authz.JWTMiddleware(), extmysql.UpdateMigrate)
 				}
 			}
 			kvAPI := extAPI.Group("/kv")
