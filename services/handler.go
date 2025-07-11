@@ -62,9 +62,9 @@ func init() {
 	if !conf.IsMaster() {
 		router.GET("/", func(c *gin.Context) { common.RespOK(c, "ok", nil) })
 	}
-
-	api := router.Group("/api")
 	econfig := middleware.DefaultEncryptionConfig()
+	api := router.Group("/api", middleware.EncryptionMiddleware(econfig))
+
 	registerApi := func(api *gin.RouterGroup) {
 		if conf.IsMaster() {
 			workerApi := api.Group("/worker", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
@@ -74,7 +74,7 @@ func init() {
 				workerApi.GET("/run/:uid", workerd.RunWorkerEndpoint)
 				workerApi.POST("/create", workerd.CreateEndpoint)
 				workerApi.POST("/version/:workerId/:fileId", workerd.NewVersionEndpoint)
-				workerApi.POST("/:uid", middleware.EncryptionMiddleware(econfig), workerd.UpdateEndpoint)
+				workerApi.POST("/:uid", workerd.UpdateEndpoint)
 				workerApi.DELETE("/:uid", workerd.DeleteEndpoint)
 
 				workerApi.GET("/information/:id", workerd.GetWorkerInformationByIDEndpoint)
@@ -118,7 +118,7 @@ func init() {
 				workerV2 := workerApi.Group("/v2")
 				{
 					workerV2.POST("/get-worker", workerd.GetWorkerEndpointJSON)
-					workerV2.POST("/update-worker", middleware.EncryptionMiddleware(econfig), workerd.UpdateEndpointJSON)
+					workerV2.POST("/update-worker", workerd.UpdateEndpointJSON)
 					workerV2.POST("/update-worker-with-file", workerd.UpdateWorkerWithFile)
 
 					workerV2.POST("/export-workers", export.ExportResourcesConfigEndpoint)
@@ -201,7 +201,7 @@ func init() {
 				if conf.IsMaster() {
 					pgsqlAPI.POST("/create-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.CreateNewPostgreSQLResourcesEndpoint)
 					pgsqlAPI.POST("/delete-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.DeletePostgreSQLResourcesEndpoint)
-					pgsqlAPI.POST("/migrate", middleware.EncryptionMiddleware(econfig), authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.UpdateMigrate)
+					pgsqlAPI.POST("/migrate", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), pgsql.UpdateMigrate)
 				}
 			}
 			mysqlAPI := extAPI.Group("/mysql")
@@ -209,7 +209,7 @@ func init() {
 				if conf.IsMaster() {
 					mysqlAPI.POST("/create-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), extmysql.CreateNewMySQLResourcesEndpoint)
 					mysqlAPI.POST("/delete-resource", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), extmysql.DeleteMySQLResourcesEndpoint)
-					mysqlAPI.POST("/migrate", middleware.EncryptionMiddleware(econfig), authz.AccessKeyMiddleware(), authz.JWTMiddleware(), extmysql.UpdateMigrate)
+					mysqlAPI.POST("/migrate", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), extmysql.UpdateMigrate)
 				}
 			}
 			kvAPI := extAPI.Group("/kv")
@@ -254,14 +254,14 @@ func init() {
 	registerApi(api)
 
 	if conf.AppConfigInstance.WorkerHostMode == "path" && conf.AppConfigInstance.WorkerHostPath != "" {
-		api2 := router.Group("/" + conf.AppConfigInstance.WorkerHostPath + "/api")
+		api2 := router.Group("/"+conf.AppConfigInstance.WorkerHostPath+"/api", middleware.EncryptionMiddleware(econfig))
 		registerApi(api2)
 
-		api3 := router.Group("/" + conf.AppConfigInstance.WorkerHostPath + "/admin/api")
+		api3 := router.Group("/"+conf.AppConfigInstance.WorkerHostPath+"/admin/api", middleware.EncryptionMiddleware(econfig))
 		registerApi(api3)
 	}
 
-	api4 := router.Group("/admin/api")
+	api4 := router.Group("/admin/api", middleware.EncryptionMiddleware(econfig))
 	registerApi(api4)
 
 	// rpctunnel.Any("/*proxyPath", proxyService.Endpoint)
