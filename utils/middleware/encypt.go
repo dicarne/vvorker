@@ -38,14 +38,6 @@ func EncryptionMiddleware(config EncryptionConfig) gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		// Skip if not a POST, PUT, or PATCH request
-		if c.Request.Method != http.MethodPost &&
-			c.Request.Method != http.MethodPut &&
-			c.Request.Method != http.MethodGet &&
-			c.Request.Method != http.MethodPatch {
-			c.Next()
-			return
-		}
 
 		// Check if request is encrypted
 		if c.GetHeader(config.HeaderName) == "true" {
@@ -68,8 +60,6 @@ func EncryptionMiddleware(config EncryptionConfig) gin.HandlerFunc {
 			// Process the request
 			c.Next()
 			return
-		} else if conf.AppConfigInstance.EncryptionKey != "" {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "request is not right"})
 		}
 
 		c.Next()
