@@ -228,15 +228,19 @@ func Trans2Entities(workers []*Worker) []*entities.Worker {
 	return entities
 }
 
+func (w *Worker) GetWorkerClientID() string {
+	return w.UID + "-worker"
+}
+
 func (w *Worker) Create() error {
 	c := context.Background()
 	if w.NodeName == conf.AppConfigInstance.NodeName {
-		w.Port = tunnel.GetPortManager().ClaimWorkerPort(c, w.GetUID())
-		tunnel.GetClient().Add(w.GetUID(), utils.WorkerHostPrefix(w.GetName()), int(w.GetPort()))
+		w.Port = tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID())
+		tunnel.GetClient().AddWorker(w.GetWorkerClientID(), utils.WorkerHostPrefix(w.GetName()), int(w.GetPort()))
 
-		controlPort := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetUID()+"-control")
+		controlPort := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID()+"-control")
 		w.ControlPort = controlPort
-		tunnel.GetClient().Add(w.GetUID()+"-control", w.GetUID()+"-control", int(controlPort))
+		tunnel.GetClient().AddWorker(w.GetWorkerClientID()+"-control", w.GetUID()+"-control", int(controlPort))
 
 		if err := w.UpdateFile(); err != nil {
 			return err
@@ -270,16 +274,16 @@ func (w *Worker) Update() error {
 	// }
 
 	if w.NodeName == conf.AppConfigInstance.NodeName {
-		port := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetUID())
+		port := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID())
 		w.Port = port
-		tunnel.GetClient().Delete(w.GetUID())
-		tunnel.GetClient().Add(w.GetUID(),
+		tunnel.GetClient().Delete(w.GetWorkerClientID())
+		tunnel.GetClient().AddWorker(w.GetWorkerClientID(),
 			utils.WorkerHostPrefix(w.GetName()), int(port))
 
-		controlPort := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetUID()+"-control")
+		controlPort := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID()+"-control")
 		w.ControlPort = controlPort
-		tunnel.GetClient().Delete(w.GetUID() + "-control")
-		tunnel.GetClient().Add(w.GetUID()+"-control", w.GetUID()+"-control", int(controlPort))
+		tunnel.GetClient().Delete(w.GetWorkerClientID() + "-control")
+		tunnel.GetClient().AddWorker(w.GetWorkerClientID()+"-control", w.GetUID()+"-control", int(controlPort))
 
 		if err := w.UpdateFile(); err != nil {
 			return err
@@ -296,8 +300,8 @@ func (w *Worker) Update() error {
 
 func (w *Worker) Delete() error {
 	if w.NodeName == conf.AppConfigInstance.NodeName {
-		tunnel.GetClient().Delete(w.GetUID())
-		tunnel.GetClient().Delete(w.GetUID() + "-control")
+		tunnel.GetClient().Delete(w.GetWorkerClientID())
+		tunnel.GetClient().Delete(w.GetWorkerClientID() + "-control")
 	} else {
 		n, err := GetNodeByNodeName(w.NodeName)
 		if err != nil {
@@ -424,7 +428,7 @@ func (w *Worker) Run() ([]byte, error) {
 
 func (w *Worker) GetPort() int {
 	c := context.Background()
-	workerPort, ok := tunnel.GetPortManager().GetWorkerPort(c, w.GetUID())
+	workerPort, ok := tunnel.GetPortManager().GetWorkerPort(c, w.GetWorkerClientID())
 	if !ok {
 		return 0
 	}
