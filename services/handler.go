@@ -125,8 +125,8 @@ func init() {
 					workerV2.POST("/export-workers", export.ExportResourcesConfigEndpoint)
 					workerV2.POST("/import-workers", export.ImportResourcesConfigEndpoint)
 
-					workerV2.POST("/get-worker-count", workerd.GetWorkerCountEndpoint)
-					workerV2.POST("/update-worker-count", workerd.UpdateWorkerCountEndpoint)
+					// workerV2.POST("/get-worker-count", workerd.GetWorkerCountEndpoint)
+					// workerV2.POST("/update-worker-count", workerd.UpdateWorkerCountEndpoint)
 				}
 			}
 

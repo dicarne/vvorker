@@ -8,6 +8,7 @@ export interface WorkerItem {
   Code: string
   Name: string
   Template: string
+  MaxCount: number
 }
 
 export interface WorkerItemProperties {
