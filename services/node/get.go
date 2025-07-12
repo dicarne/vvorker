@@ -7,7 +7,6 @@ import (
 	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/models"
-	"vvorker/rpc"
 	"vvorker/utils"
 	"vvorker/utils/request"
 
@@ -32,7 +31,7 @@ func GetNodeInfoEndpoint(c *gin.Context) {
 		return
 	}
 
-	go rpc.EventNotify(node.Node, defs.EventSyncWorkers, nil)
+	// go rpc.EventNotify(node.Node, defs.EventSyncWorkers, nil)
 	common.RespOK(c, common.RespMsgOK, node)
 }
 
