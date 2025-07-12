@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"vvorker/common"
+	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/entities"
 	"vvorker/models"
@@ -25,7 +26,7 @@ var SystemBucket = "system"
 func init() {
 	db2, err := nutsdb.Open(
 		nutsdb.DefaultOptions,
-		nutsdb.WithDir("tmp"), // 数据库会自动创建这个目录文件
+		nutsdb.WithDir(conf.AppConfigInstance.LocalKVDir), // 数据库会自动创建这个目录文件
 	)
 	db = db2
 	if err != nil {

@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"vvorker/utils/secret"
@@ -10,6 +11,8 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 )
+
+var EnvPath = flag.String("e", ".env", "env file path")
 
 type AppConfig struct {
 	MasterEndpoint string `env:"MASTER_ENDPOINT" env-default:"http://127.0.0.1:8888"` // needed for agent，agent需要通过该url来注册节点
@@ -55,6 +58,7 @@ type AppConfig struct {
 	NodeID            string
 
 	KVProvider string `env:"KV_PROVIDER" env-default:"redis"` // redis nutsdb
+	LocalKVDir string `env:"LOCAL_KV_DIR" env-default:"tmp"`
 
 	WorkerHostMode string `env:"WORKER_HOST_MODE" env-default:"host"` // host path  // host 模式需要使用域名进行访问，path则url的第一段为服务名（不包含域名后缀
 	WorkerHostPath string `env:"WORKER_HOST_PATH" env-default:""`     // host 模式需要使用域名进行访问，path则url的第一段为服务名（不包含域名后缀，如example.com/xxxx/admin
@@ -117,10 +121,13 @@ var (
 )
 
 func init() {
+	flag.Parse()
+	logrus.Info("env path: ", *EnvPath)
+
 	var err error
 	AppConfigInstance = &AppConfig{}
 	JwtConf = &JwtConfig{}
-	godotenv.Load()
+	godotenv.Load(*EnvPath)
 
 	logrus.Info("env loaded")
 	// print all env
