@@ -36,3 +36,15 @@ export const formatDate = (date: Date) => {
   const seconds = String(date.getSeconds()).padStart(2, '0')
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
+
+export const genWorkerUrl = (appConfig: any, workerName: string) => {
+  if (appConfig.value?.UrlType === 'host') {
+    return `${appConfig.Scheme}://${workerName}${appConfig.WorkerURLSuffix}/`
+  } else {
+    if (appConfig.UrlPrefix) {
+      return `${appConfig.Scheme}://${appConfig.WorkerURLSuffix.slice(1)}/${appConfig.UrlPrefix}/${workerName}/`
+    }
+    return `${appConfig.Scheme}://${appConfig.WorkerURLSuffix.slice(1)}/${workerName}/`
+  }
+  return ''
+}

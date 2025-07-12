@@ -34,6 +34,7 @@ import {
   getAllWorkers,
 } from '@/api/workers'
 import { useNavigate } from '@/composables/useNavigate'
+import { genWorkerUrl } from '@/utils/utils'
 
 const message = useMessage()
 const { navigate } = useNavigate()
@@ -80,13 +81,11 @@ const handleCreateWorkerClick = async () => {
 
 // 打开 Worker
 const handleOpenWorkerClick = async (worker: WorkerItem) => {
-  if (appConfig.value?.UrlType === 'host') {
-    window.open(
-      `${appConfig.value?.Scheme}://${worker.Name}${appConfig.value?.WorkerURLSuffix}/`,
-      '_blank',
-    )
+  const workerUrl = genWorkerUrl(appConfig.value, worker.Name)
+  if(workerUrl) {
+    window.open(workerUrl, '_blank')
   } else {
-    window.open(`${appConfig.value?.ApiUrl}/${worker.Name}/`, '_blank')
+    message.error('Worker URL 无效')
   }
 }
 
