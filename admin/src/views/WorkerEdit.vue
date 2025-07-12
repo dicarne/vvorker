@@ -34,6 +34,7 @@ import { getWorker, updateWorker } from '@/api/workers'
 import { getNodes } from '@/api/nodes'
 import { useNavigate } from '@/composables/useNavigate'
 import { useCopyContent } from '@/composables/useUtils'
+import { genWorkerUrl } from '@/utils/utils'
 const router = useRouter()
 const uid = router.currentRoute.value.query.uid as string
 const { navigate } = useNavigate()
@@ -43,14 +44,7 @@ const { copyContent } = useCopyContent()
 const appConfig = inject<Ref<VorkerSettingsProperties>>('appConfig')!
 const worker = ref<WorkerItem>(DEFAULT_WORKER_ITEM)
 const workerURL = computed(() => {
-  if (appConfig.value?.UrlType === 'host') {
-    return `${appConfig.value?.Scheme}://${worker.value.Name}${appConfig.value?.WorkerURLSuffix}/`
-  } else if (appConfig.value?.UrlType === 'path') {
-    const suffix = appConfig.value?.WorkerURLSuffix?.slice(1)
-    return `${appConfig.value?.Scheme}://${suffix}/${worker.value.Name}/`
-  }
-  return ""
-  
+  return genWorkerUrl(appConfig.value, worker.value.Name)
 })
 // 保存 Worker
 const handleSaveWorkerClick = async () => {
@@ -122,18 +116,14 @@ onMounted(async () => {
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 函数入口 </NLayoutSider>
           <NLayoutContent>
-            <NInputGroup class="worker-property-input">
-              <NInputGroupLabel>{{ appConfig?.Scheme }}://</NInputGroupLabel>
-              <NInput v-model:value="worker.Name" />
-              <NInputGroupLabel>{{ appConfig?.WorkerURLSuffix }}</NInputGroupLabel>
-            </NInputGroup>
+            <NInput style="min-width: 200px; max-width: 400px;" v-model:value="worker.Name" />
           </NLayoutContent>
         </NLayout>
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 节点 </NLayoutSider>
           <NLayoutContent>
             <NSelect
-              style="width: 200px"
+              style="min-width: 200px; max-width: 400px;"
               v-model:value="worker.NodeName"
               :options="
                 nodes.map((node) => ({
@@ -163,8 +153,3 @@ onMounted(async () => {
     </NTabs>
   </div>
 </template>
-<style scoped>
-.worker-property-input {
-  width: 400px;
-}
-</style>
