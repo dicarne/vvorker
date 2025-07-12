@@ -48,5 +48,4 @@ export const genWorkerUrl = (appConfig: VorkerSettingsProperties, workerName: st
     }
     return `${appConfig.Scheme}://${appConfig.WorkerURLSuffix.slice(1)}/${workerName}/`
   }
-  return ''
 }
