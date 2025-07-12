@@ -2,18 +2,22 @@ package exec
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"syscall"
 	"time"
+	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/entities"
+	"vvorker/rpc"
 	"vvorker/services/control"
 	"vvorker/utils"
 	"vvorker/utils/database"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -101,10 +105,50 @@ func processWorkerLogs() {
 	}
 }
 
+type AgentWorkerLogsReq struct {
+	Logs []WorkerLog `json:"logs"`
+}
+
 // 批量插入合并后日志到数据库的函数
 func dbCreateWorkerLogs(logs []WorkerLog) error {
-	db := database.GetDB()
-	return db.CreateInBatches(logs, len(logs)).Error
+	if conf.IsMaster() {
+		db := database.GetDB()
+		return db.CreateInBatches(logs, len(logs)).Error
+	}
+	url := conf.AppConfigInstance.MasterEndpoint + "/api/agent/logs"
+	rtype := struct {
+		Code int    `json:"code"`
+		Msg  string `json:"msg"`
+	}{}
+
+	reqResp, err := rpc.RPCWrapper().
+		SetBody(&AgentWorkerLogsReq{Logs: logs}).
+		SetSuccessResult(&rtype).
+		Post(url)
+
+	if err != nil || reqResp.StatusCode >= 299 {
+		return errors.New("error")
+	}
+	return nil
+}
+
+func HandleAgentWorkerLogs(c *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorf("handleAgentWorkerLogs panic: %v", r)
+		}
+	}()
+
+	var req AgentWorkerLogsReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+		return
+	}
+	if err := dbCreateWorkerLogs(req.Logs); err != nil {
+		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+		return
+	}
+	common.RespOK(c, common.RespMsgOK, nil)
 }
 
 func (m *execManager) RunCmd(uid string, argv []string) {
