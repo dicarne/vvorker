@@ -109,6 +109,10 @@ func (c *Client) AddWorker(clientID, routeHostname string, forwardPort int) erro
 				LocalIP:   "127.0.0.1",
 				LocalPort: forwardPort,
 			},
+			LoadBalancer: v1.LoadBalancerConfig{
+				Group:    routeHostname,
+				GroupKey: routeHostname,
+			},
 		},
 		DomainConfig: v1.DomainConfig{
 			SubDomain: routeHostname,

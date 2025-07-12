@@ -4,6 +4,7 @@ import (
 	"time"
 	"vvorker/conf"
 	"vvorker/exec"
+	workercopy "vvorker/models/worker_copy"
 	"vvorker/utils"
 	"vvorker/utils/database"
 
@@ -15,7 +16,7 @@ func MigrateNormalModel() {
 		&User{}, &Worker{}, &WorkerVersion{}, &File{}, &KV{}, &OSS{}, &PostgreSQL{}, &AccessKey{},
 		&WorkerInformation{}, &exec.WorkerLog{}, &ResponseLog{}, &Assets{}, &Task{}, &TaskLog{},
 		&InternalServerWhiteList{}, &ExternalServerAKSK{}, &ExternalServerToken{}, &AccessRule{},
-		&PostgreSQLMigration{}, &MySQL{}, &MySQLMigration{},
+		&PostgreSQLMigration{}, &MySQL{}, &MySQLMigration{}, &workercopy.WorkerCopy{},
 	}
 	if conf.AppConfigInstance.LitefsEnabled {
 		if !conf.IsMaster() {

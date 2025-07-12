@@ -6,12 +6,14 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"syscall"
 	"time"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/entities"
+	workercopy "vvorker/models/worker_copy"
 	"vvorker/rpc"
 	"vvorker/services/control"
 	"vvorker/utils"
@@ -34,6 +36,8 @@ type execManager struct {
 	runningMap *defs.SyncMap[string, bool]
 	// 用于存储调度器实例
 	scheduler gocron.Scheduler
+
+	schedulerJobs *defs.SyncMap[string, []gocron.Job]
 }
 
 var ExecManager *execManager
@@ -68,11 +72,12 @@ func init() {
 	}
 
 	ExecManager = &execManager{
-		signMap:    new(defs.SyncMap[string, bool]),
-		chanMap:    new(defs.SyncMap[string, chan struct{}]),
-		pidMap:     new(defs.SyncMap[string, int]),
-		runningMap: new(defs.SyncMap[string, bool]), // 初始化运行状态映射
-		scheduler:  scheduler,                       // 初始化调度器
+		signMap:       new(defs.SyncMap[string, bool]),
+		chanMap:       new(defs.SyncMap[string, chan struct{}]),
+		pidMap:        new(defs.SyncMap[string, int]),
+		runningMap:    new(defs.SyncMap[string, bool]), // 初始化运行状态映射
+		scheduler:     scheduler,                       // 初始化调度器
+		schedulerJobs: new(defs.SyncMap[string, []gocron.Job]),
 	}
 
 	ExecManager.scheduler.Start()
@@ -163,11 +168,15 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 		logrus.Warnf("workerconfig error: %v", err)
 		return
 	}
+	var copies []workercopy.WorkerCopy
+	db.Model(&workercopy.WorkerCopy{}).Where(&workercopy.WorkerCopy{WorkerUID: uid}).Find(&copies)
+
 	workerconfig, werr := conf.ParseWorkerConfig(worker.Template)
 	if werr != nil {
 		logrus.Warnf("workerconfig error: %v", werr)
 		workerconfig = conf.DefaultWorkerConfig()
 	}
+
 	schedluers := workerconfig.Schedulers
 	allJobs := make([]gocron.Job, 0)
 	for _, scheduler := range schedluers {
@@ -189,12 +198,21 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 		}
 		logrus.Infof("workerd %s scheduler job created! id: %s", uid, j.ID())
 		allJobs = append(allJobs, j)
+		m.schedulerJobs.Set(uid, allJobs)
 	}
+
+	for _, copy := range copies {
+		m.RunWorker(argv, &copy)
+	}
+}
+
+func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
+	uid := copy.WorkerUID + "-" + strconv.Itoa(int(copy.LocalID))
 
 	c := make(chan struct{})
 	m.chanMap.Set(uid, c)
-	ctx, cancel := context.WithCancel(context.Background())
 
+	ctx, cancel := context.WithCancel(context.Background())
 	go func(ctx context.Context, uid string, argv []string, m *execManager) {
 		defer func(uid string, m *execManager) {
 			m.signMap.Delete(uid)
@@ -204,7 +222,7 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 		workerdDir := filepath.Join(
 			conf.AppConfigInstance.WorkerdDir,
 			defs.WorkerInfoPath,
-			uid,
+			copy.WorkerUID,
 		)
 
 		for {
@@ -212,15 +230,12 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 			select {
 			case <-ctx.Done():
 				logrus.Infof("workerd %s context cancelled, exiting loop", uid)
-				for _, job := range allJobs {
-					ExecManager.scheduler.RemoveJob(job.ID())
-				}
 				return
 			default:
 			}
 
 			args := []string{"serve",
-				filepath.Join(workerdDir, defs.CapFileName),
+				filepath.Join(workerdDir, defs.CapFileName+"-"+strconv.Itoa(int(copy.LocalID))),
 			}
 			args = append(args, "--verbose")
 			args = append(args, argv...)
@@ -263,7 +278,7 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 						if n > 0 {
 							workerLogChan <- WorkerLog{
 								WorkerLogData: &WorkerLogData{
-									UID:    uid,
+									UID:    copy.WorkerUID,
 									Output: string(buf[:n]),
 									Time:   time.Now(),
 									Type:   "stdout",
@@ -291,14 +306,14 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 						if n > 0 {
 							workerLogChan <- WorkerLog{
 								WorkerLogData: &WorkerLogData{
-									UID:    uid,
+									UID:    copy.WorkerUID,
 									Output: string(buf[:n]),
 									Time:   time.Now(),
 									Type:   "error",
 									LogUID: utils.GenerateUID(),
 								},
 							}
-							logrus.Errorf("workerd %s error: %s", uid, string(buf[:n]))
+							logrus.Errorf("workerd %s : %d error: %s", uid, copy.LocalID, string(buf[:n]))
 						}
 						if err != nil {
 							return
@@ -309,7 +324,7 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 			m.runningMap.Set(uid, true)
 
 			if err := cmd.Wait(); err != nil {
-				logrus.Errorf("Workerd %s exited with error: %v", uid, err)
+				logrus.Errorf("Workerd %s : %d exited with error: %v", uid, copy.LocalID, err)
 				m.runningMap.Set(uid, false)
 			}
 
@@ -340,36 +355,51 @@ func (m *execManager) ExitCmd(uid string) {
 		m.runningMap.Set(uid, false) // 标记 worker 为停止状态
 	}(uid, m)
 
-	if channel, ok := m.chanMap.Get(uid); ok {
-		channel <- struct{}{}
-		logrus.Infof("workerd %s is being stopped!", uid)
-	} else {
-		logrus.Warnf("workerd %s is not running, cannot stop it!", uid)
+	allJobs, ok := m.schedulerJobs.Get(uid)
+	if ok {
+		for _, job := range allJobs {
+			ExecManager.scheduler.RemoveJob(job.ID())
+		}
 	}
 
-	// 尝试获取进程 ID
-	pid, ok := m.pidMap.Get(uid)
-	if !ok {
-		logrus.Warnf("No process ID found for workerd %s", uid)
-		return
-	} else {
-		logrus.Infof("workerd %s pid is %d", uid, pid)
+	db := database.GetDB()
+	copies := []workercopy.WorkerCopy{}
+	db.Where(&workercopy.WorkerCopy{WorkerUID: uid}).Find(&copies)
+
+	for _, copy := range copies {
+		uid_localid := copy.WorkerUID + "-" + strconv.Itoa(int(copy.LocalID))
+		if channel, ok := m.chanMap.Get(uid_localid); ok {
+			channel <- struct{}{}
+			logrus.Infof("workerd %s is being stopped!", uid_localid)
+		} else {
+			logrus.Warnf("workerd %s is not running, cannot stop it!", uid_localid)
+		}
+
+		// 尝试获取进程 ID
+		pid, ok := m.pidMap.Get(uid_localid)
+		if !ok {
+			logrus.Warnf("No process ID found for workerd %s", uid_localid)
+			return
+		} else {
+			logrus.Infof("workerd %s pid is %d", uid_localid, pid)
+		}
+
+		// 获取进程句柄
+		process, err := os.FindProcess(pid)
+		if err != nil {
+			logrus.Errorf("Failed to find process for workerd %s: %v", uid_localid, err)
+			return
+		}
+
+		// 等待进程退出
+		_, err = process.Wait()
+		if err != nil {
+			logrus.Errorf("Error waiting for workerd %s to exit: %v", uid_localid, err)
+		} else {
+			logrus.Infof("workerd %s has stopped", uid_localid)
+		}
 	}
 
-	// 获取进程句柄
-	process, err := os.FindProcess(pid)
-	if err != nil {
-		logrus.Errorf("Failed to find process for workerd %s: %v", uid, err)
-		return
-	}
-
-	// 等待进程退出
-	_, err = process.Wait()
-	if err != nil {
-		logrus.Errorf("Error waiting for workerd %s to exit: %v", uid, err)
-	} else {
-		logrus.Infof("workerd %s has stopped", uid)
-	}
 }
 
 func (m *execManager) ExitAllCmd() {

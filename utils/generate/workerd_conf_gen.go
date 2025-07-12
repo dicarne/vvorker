@@ -15,7 +15,9 @@ import (
 	"vvorker/entities"
 	"vvorker/ext"
 	"vvorker/funcs"
+	workercopy "vvorker/models/worker_copy"
 	"vvorker/utils"
+	"vvorker/utils/database"
 
 	"github.com/imroc/req/v3"
 	"github.com/sirupsen/logrus"
@@ -458,20 +460,46 @@ func GenWorkerConfig(worker *entities.Worker, workerQuery funcs.WorkerQuery) err
 	if worker == nil || worker.GetUID() == "" {
 		return errors.New("error worker")
 	}
-	fileMap := BuildCapfile([]*entities.Worker{
-		worker,
-	}, workerQuery)
+	db := database.GetDB()
+	copies := []workercopy.WorkerCopy{}
+	db.Where(&workercopy.WorkerCopy{WorkerUID: worker.GetUID()}).Find(&copies)
+	for _, copy := range copies {
+		newworker := &entities.Worker{
+			UID:             worker.GetUID(),
+			LocalID:         int32(copy.LocalID),
+			Name:            worker.Name,
+			Template:        worker.Template,
+			ControlPort:     worker.ControlPort,
+			Version:         worker.Version,
+			ActiveVersionID: worker.ActiveVersionID,
+			MaxCount:        worker.MaxCount,
+			UserID:          worker.UserID,
+			ExternalPath:    worker.ExternalPath,
+			HostName:        worker.HostName,
+			NodeName:        worker.NodeName,
+			Port:            worker.Port,
+			Entry:           worker.Entry,
+			Code:            worker.Code,
+			TunnelID:        worker.TunnelID,
+		}
+		fileMap := BuildCapfile([]*entities.Worker{
+			newworker,
+		}, workerQuery)
 
-	fileContent, ok := fileMap[worker.GetUID()]
-	if !ok {
-		return errors.New("BuildCapfile error")
+		fileContent, ok := fileMap[newworker.GetUID()]
+		if !ok {
+			return errors.New("BuildCapfile error")
+		}
+
+		if err := utils.WriteFile(
+			filepath.Join(
+				conf.AppConfigInstance.WorkerdDir,
+				defs.WorkerInfoPath,
+				worker.GetUID(),
+				defs.CapFileName+"-"+strconv.Itoa(int(newworker.GetLocalID())),
+			), fileContent); err != nil {
+			return err
+		}
 	}
-
-	return utils.WriteFile(
-		filepath.Join(
-			conf.AppConfigInstance.WorkerdDir,
-			defs.WorkerInfoPath,
-			worker.GetUID(),
-			defs.CapFileName,
-		), fileContent)
+	return nil
 }

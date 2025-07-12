@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"time"
 	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/entities"
 	"vvorker/exec"
+	workercopy "vvorker/models/worker_copy"
 	"vvorker/rpc"
 	"vvorker/tunnel"
 	"vvorker/utils"
@@ -229,18 +231,42 @@ func Trans2Entities(workers []*Worker) []*entities.Worker {
 }
 
 func (w *Worker) GetWorkerClientID() string {
-	return w.UID + "-worker"
+	return w.UID + "-worker-" + strconv.Itoa(int(w.LocalID))
 }
 
 func (w *Worker) Create() error {
 	c := context.Background()
+	if w.MaxCount == 0 {
+		w.MaxCount = 1
+	}
+	db := database.GetDB()
 	if w.NodeName == conf.AppConfigInstance.NodeName {
-		w.Port = tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID())
-		tunnel.GetClient().AddWorker(w.GetWorkerClientID(), utils.WorkerHostPrefix(w.GetName()), int(w.GetPort()))
+		db.Model(&workercopy.WorkerCopy{}).Unscoped().Where(&workercopy.WorkerCopy{WorkerUID: w.UID}).Delete(&workercopy.WorkerCopy{})
 
-		controlPort := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID()+"-control")
-		w.ControlPort = controlPort
-		tunnel.GetClient().AddWorker(w.GetWorkerClientID()+"-control", w.GetUID()+"-control", int(controlPort))
+		for i := 0; i < int(w.MaxCount); i++ {
+			w.LocalID = int32(i)
+
+			logrus.Infof("create worker copy %v", i)
+
+			port := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID())
+			w.Port = port
+			tunnel.GetClient().AddWorker(w.GetWorkerClientID(), utils.WorkerHostPrefix(w.GetName()), int(w.GetPort()))
+
+			controlPort := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID()+"-control")
+			w.ControlPort = controlPort
+			tunnel.GetClient().AddWorker(w.GetWorkerClientID()+"-control", w.GetUID()+"-control", int(controlPort))
+
+			wCopy := &workercopy.WorkerCopy{
+				WorkerUID:   w.UID,
+				LocalID:     uint(i),
+				Port:        uint(port),
+				ControlPort: uint(controlPort),
+			}
+			if err := db.Create(wCopy).Error; err != nil {
+				logrus.WithError(err).Errorf("create worker copy error: %v", wCopy)
+				return err
+			}
+		}
 
 		if err := w.UpdateFile(); err != nil {
 			return err
@@ -262,8 +288,6 @@ func (w *Worker) Create() error {
 		})
 	}
 
-	db := database.GetDB()
-
 	return db.Create(w).Error
 }
 
@@ -272,18 +296,43 @@ func (w *Worker) Update() error {
 	// if w.ID == 0 {
 	// 	return errors.New("worker has no id")
 	// }
-
+	db := database.GetDB()
+	if w.MaxCount == 0 {
+		w.MaxCount = 1
+	}
 	if w.NodeName == conf.AppConfigInstance.NodeName {
-		port := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID())
-		w.Port = port
-		tunnel.GetClient().Delete(w.GetWorkerClientID())
-		tunnel.GetClient().AddWorker(w.GetWorkerClientID(),
-			utils.WorkerHostPrefix(w.GetName()), int(port))
+		workercopies := &[]workercopy.WorkerCopy{}
+		db.Model(&workercopy.WorkerCopy{}).Where(&workercopy.WorkerCopy{WorkerUID: w.UID}).Find(workercopies)
+		for i := range *workercopies {
+			w.LocalID = int32(i)
+			tunnel.GetClient().Delete(w.GetWorkerClientID())
+			tunnel.GetClient().Delete(w.GetWorkerClientID() + "-control")
+		}
+		db.Model(&workercopy.WorkerCopy{}).Unscoped().Where(&workercopy.WorkerCopy{WorkerUID: w.UID}).Delete(&workercopy.WorkerCopy{})
 
-		controlPort := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID()+"-control")
-		w.ControlPort = controlPort
-		tunnel.GetClient().Delete(w.GetWorkerClientID() + "-control")
-		tunnel.GetClient().AddWorker(w.GetWorkerClientID()+"-control", w.GetUID()+"-control", int(controlPort))
+		for i := 0; i < int(w.MaxCount); i++ {
+			w.LocalID = int32(i)
+			logrus.Infof("update worker copy %v", i)
+			port := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID())
+			w.Port = port
+			tunnel.GetClient().AddWorker(w.GetWorkerClientID(), utils.WorkerHostPrefix(w.GetName()), int(port))
+
+			controlPort := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID()+"-control")
+			w.ControlPort = controlPort
+
+			tunnel.GetClient().AddWorker(w.GetWorkerClientID()+"-control", w.GetUID()+"-control", int(controlPort))
+
+			wCopy := &workercopy.WorkerCopy{
+				WorkerUID:   w.UID,
+				LocalID:     uint(i),
+				Port:        uint(port),
+				ControlPort: uint(controlPort),
+			}
+			if err := db.Create(wCopy).Error; err != nil {
+				logrus.WithError(err).Errorf("create worker copy error: %v", wCopy)
+				return err
+			}
+		}
 
 		if err := w.UpdateFile(); err != nil {
 			return err
@@ -293,15 +342,21 @@ func (w *Worker) Update() error {
 	if !conf.IsMaster() && conf.AppConfigInstance.LitefsEnabled {
 		return nil
 	}
-	db := database.GetDB()
 
 	return db.Save(w).Error
 }
 
 func (w *Worker) Delete() error {
 	if w.NodeName == conf.AppConfigInstance.NodeName {
-		tunnel.GetClient().Delete(w.GetWorkerClientID())
-		tunnel.GetClient().Delete(w.GetWorkerClientID() + "-control")
+		db := database.GetDB()
+		workercopies := &[]workercopy.WorkerCopy{}
+		db.Model(&workercopy.WorkerCopy{}).Where(&workercopy.WorkerCopy{WorkerUID: w.UID}).Find(workercopies)
+		for i := range *workercopies {
+			w.LocalID = int32(i)
+			tunnel.GetClient().Delete(w.GetWorkerClientID())
+			tunnel.GetClient().Delete(w.GetWorkerClientID() + "-control")
+		}
+		db.Model(&workercopy.WorkerCopy{}).Unscoped().Where(&workercopy.WorkerCopy{WorkerUID: w.UID}).Delete(&workercopy.WorkerCopy{})
 	} else {
 		n, err := GetNodeByNodeName(w.NodeName)
 		if err != nil {

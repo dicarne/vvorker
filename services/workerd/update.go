@@ -21,7 +21,7 @@ type UpdateWorkerReq struct {
 	*entities.Worker
 }
 
-// 更新worker，请采用 UpdateWorkerWithFile
+// 【弃用】更新worker，请采用 UpdateWorkerWithFile
 func UpdateEndpoint(c *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -54,7 +54,7 @@ func UpdateEndpoint(c *gin.Context) {
 	common.RespOK(c, "update worker success", nil)
 }
 
-// 【弃用】更新worker，请采用 UpdateWorkerWithFile
+// 更新worker
 func UpdateEndpointJSON(c *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -78,6 +78,7 @@ func UpdateEndpointJSON(c *gin.Context) {
 	if worker.Worker.Code == nil {
 		worker.Worker.Code = oldworker.Code
 	}
+	worker.Worker.MaxCount = oldworker.MaxCount
 
 	if err := UpdateWorker(userID, UID, worker.Worker); err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
@@ -172,6 +173,7 @@ func UpdateWorkerWithFile(c *gin.Context) {
 		// 5. Use the file content as the worker code
 		req.Worker.Code = fileBytes
 	}
+	req.Worker.MaxCount = oldWorker.MaxCount
 
 	if err := UpdateWorker(userID, req.UID, req.Worker); err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
