@@ -14,6 +14,7 @@ import (
 )
 
 func EventNotify(n *entities.Node, eventName string, extra map[string][]byte) error {
+	logrus.Infof("event notify, eventName: %s, requestExtraKeys: %+v", eventName, lo.Keys(extra))
 	reqResp, err := RPCWrapper().
 		SetHeader(defs.HeaderHost, utils.NodeHost(n.Name, n.UID)).
 		SetBody(&entities.NotifyEventRequest{EventName: eventName, Extra: extra}).
