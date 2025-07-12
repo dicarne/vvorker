@@ -37,12 +37,15 @@ func Endpoint(c *gin.Context) {
 	}()
 	host := c.Request.Host
 	c.Request.Host = host
+
+	if !strings.HasSuffix(host, conf.AppConfigInstance.WorkerURLSuffix) {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
 	suffix := conf.AppConfigInstance.WorkerURLSuffix
 	workerName := host[:len(host)-len(suffix)]
 	worker, err := models.AdminGetWorkerByName(workerName)
 	if err != nil {
-		// logrus.Errorf("failed to get worker by name, err: %v", err)
-		// common.RespErr(c, common.RespCodeServiceNotFound, common.RespMsgServiceNotFound, nil)
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
@@ -88,7 +91,7 @@ func Endpoint(c *gin.Context) {
 		}).Order(clause.OrderByColumn{Column: clause.Column{Name: "length"}, Desc: true}).Find(&rules)
 
 		requestPath := c.Request.URL.Path
-		// TODO 如果有prefix，或许需要裁切url
+
 		for _, rule := range rules {
 			if strings.HasPrefix(requestPath, rule.Path) {
 				if rule.RuleType == "open" {
