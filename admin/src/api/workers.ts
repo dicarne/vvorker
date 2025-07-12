@@ -45,13 +45,7 @@ export const deleteWorker = (uid: string) => {
 }
 
 export const updateWorker = (worker: WorkerItem) => {
-  const formData = new FormData()
-  formData.append('data', JSON.stringify(worker))
-  return api.post(`api/worker/v2/update-worker-with-file`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  }).then((res) => res.data)
+  return api.post(`api/worker/v2/update-worker`, worker).then((res) => res.data)
 }
 
 export const flushWorker = (uid: string) => {
@@ -173,10 +167,10 @@ export const getWorkerLogs = (uid: string, page: number, page_size: number) => {
 }
 
 
-export const getWorkerCount = (uid: string) => {
-  return api.post<{ data: number }>(`api/worker/v2/get-worker-count`, { uid })
-}
+// export const getWorkerCount = (uid: string) => {
+//   return api.post<{ data: number }>(`api/worker/v2/get-worker-count`, { uid })
+// }
 
-export const updateWorkerCount = (uid: string, max_count: number) => {
-  return api.post(`api/worker/v2/update-worker-count`, { uid, max_count })
-}
+// export const updateWorkerCount = (uid: string, max_count: number) => {
+//   return api.post(`api/worker/v2/update-worker-count`, { uid, max_count })
+// }
