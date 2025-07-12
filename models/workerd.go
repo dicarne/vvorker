@@ -121,6 +121,32 @@ func AdminGetWorkerByName(name string) (*Worker, error) {
 	return &worker, nil
 }
 
+type WorkerSimple struct {
+	UID                 string `json:"UID"`
+	EnableAccessControl bool   `json:"EnableAccessControl"`
+	NodeName            string `json:"NodeName"`
+}
+
+func AdminGetWorkerByNameSimple(name string) (*WorkerSimple, error) {
+	var worker WorkerSimple
+	db := database.GetDB()
+
+	if err := db.Model(&Worker{}).Select(
+		"UID",
+		"EnableAccessControl",
+		"NodeName",
+	).Where(
+		&Worker{
+			Worker: &entities.Worker{
+				Name: name,
+			},
+		},
+	).First(&worker).Error; err != nil {
+		return nil, err
+	}
+	return &worker, nil
+}
+
 func GetWorkersByNames(userID uint, names []string) ([]*Worker, error) {
 	var workers []*Worker
 	db := database.GetDB()
@@ -466,12 +492,7 @@ func (w *Worker) UpdateFile() error {
 
 func (w *Worker) Run() ([]byte, error) {
 	var addr string
-	if w.GetNodeName() == conf.AppConfigInstance.NodeName {
-		addr = fmt.Sprintf("http://%s:%d", w.GetHostName(), w.GetPort())
-	} else {
-		addr = fmt.Sprintf("http://%s:%d", conf.AppConfigInstance.TunnelHost,
-			conf.AppConfigInstance.TunnelEntryPort)
-	}
+	addr = fmt.Sprintf("http://%s:%d", conf.AppConfigInstance.TunnelHost, conf.AppConfigInstance.TunnelEntryPort)
 	resp, err := req.C().R().SetHeader(
 		defs.HeaderHost, fmt.Sprintf("%s%s", w.Name, conf.AppConfigInstance.WorkerURLSuffix),
 	).Get(addr)
