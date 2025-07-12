@@ -49,7 +49,6 @@ onMounted(async () => {
 
 <style scoped>
 .header {
-  width: 100vw;
   height: 60px;
   border-bottom: 1px solid #e5e5e5;
 }

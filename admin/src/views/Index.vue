@@ -7,7 +7,8 @@ import {
   CalendarWorkWeek24Regular as WorkersIcon,
   Status24Regular as StatusIcon,
   TaskListSquareLtr24Regular as TaskIcon,
-  Database24Regular as SQLIcon,
+  DatabaseLink24Regular as PGSQLIcon,
+  Database24Regular as MYSQLIcon,
   Cloud24Regular as OSSIcon,
   Braces24Filled as KVIcon,
   Person24Regular as UserIcon,
@@ -36,12 +37,12 @@ const menuOptions: MenuOption[] = [
   {
     label: renderMenuRouterLink('PGSQL', 'PGSQL'),
     key: 'pgsql',
-    icon: renderIcon(SQLIcon),
+    icon: renderIcon(PGSQLIcon),
   },
   {
     label: renderMenuRouterLink('MySQL', 'MySQL'),
     key: 'mysql',
-    icon: renderIcon(SQLIcon),
+    icon: renderIcon(MYSQLIcon),
   },
   {
     label: renderMenuRouterLink('OSS', 'OSS'),
