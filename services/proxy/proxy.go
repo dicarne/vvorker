@@ -12,7 +12,6 @@ import (
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/models"
-	"vvorker/tunnel"
 	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
@@ -44,7 +43,7 @@ func Endpoint(c *gin.Context) {
 	}
 	suffix := conf.AppConfigInstance.WorkerURLSuffix
 	workerName := host[:len(host)-len(suffix)]
-	worker, err := models.AdminGetWorkerByName(workerName)
+	worker, err := models.AdminGetWorkerByNameSimple(workerName)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
@@ -64,22 +63,10 @@ func Endpoint(c *gin.Context) {
 	}
 
 	var remote *url.URL
-	if worker.GetNodeName() == conf.AppConfigInstance.NodeName {
-		workerPort, ok := tunnel.GetPortManager().GetWorkerPort(c, worker.GetUID())
-		if !ok {
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-			return
-		}
-		remote, err = url.Parse(fmt.Sprintf("http://%s:%d", worker.GetHostName(), workerPort))
-		if err != nil {
-			logrus.Panic(err)
-		}
-	} else {
-		remote, err = url.Parse(fmt.Sprintf("http://%s:%d",
-			conf.AppConfigInstance.TunnelHost, conf.AppConfigInstance.TunnelEntryPort))
-		if err != nil {
-			logrus.Panic(err)
-		}
+	remote, err = url.Parse(fmt.Sprintf("http://%s:%d",
+		conf.AppConfigInstance.TunnelHost, conf.AppConfigInstance.TunnelEntryPort))
+	if err != nil {
+		logrus.Panic(err)
 	}
 
 	if worker.EnableAccessControl {
