@@ -12,8 +12,7 @@ import {
   NTabPane,
   NLayoutSider,
   NInput,
-  NInputGroup,
-  NInputGroupLabel,
+  NInputNumber,
   NSelect,
   NLayout,
   NLayoutContent,
@@ -128,7 +127,7 @@ const handleOpenWorkerClick = async () => {
     <NTabs type="line" animated>
       <NTabPane name="property" tab="属性">
         <NLayout has-sider class="v-item-column">
-          <NLayoutSider> 函数入口 </NLayoutSider>
+          <NLayoutSider> 名称 </NLayoutSider>
           <NLayoutContent>
             <NInput style="min-width: 200px; max-width: 400px;" v-model:value="worker.Name" />
           </NLayoutContent>
@@ -141,6 +140,13 @@ const handleOpenWorkerClick = async () => {
               value: node.Name,
             }))
               " />
+          </NLayoutContent>
+        </NLayout>
+        <NLayout has-sider class="v-item-column">
+          <NLayoutSider> 实例 </NLayoutSider>
+          <NLayoutContent>
+            <NInputNumber min="1" max="20" style="min-width: 200px; max-width: 400px;"
+              v-model:value="worker.MaxCount" />
           </NLayoutContent>
         </NLayout>
       </NTabPane>
