@@ -80,6 +80,15 @@ onMounted(async () => {
     message.error('获取节点列表失败')
   }
 })
+
+const handleOpenWorkerClick = async () => {
+  const workerUrl = genWorkerUrl(appConfig.value, worker.value.Name)
+  if (workerUrl) {
+    window.open(workerUrl, '_blank')
+  } else {
+    message.error('Worker URL 无效')
+  }
+}
 </script>
 <template>
   <div class="v-main">
@@ -94,20 +103,25 @@ onMounted(async () => {
         <NButton class="v-item" type="primary" secondary @click="navigate('/workers')">
           返回
         </NButton>
-        <NButton type="primary" secondary @click="handleSaveWorkerClick"> 保存 </NButton>
+        <NButton class="v-item" type="primary" secondary @click="handleSaveWorkerClick"> 保存 </NButton>
+        <NButton type="primary" secondary @click="handleOpenWorkerClick"> 打开 </NButton>
       </div>
     </div>
     <div class="v-flex-start-center v-item-column">
       <div>
-        ID: <NTag class="v-item">{{ worker.UID }}</NTag>
+        UID: <NTag class="v-item">{{ worker.UID }}</NTag>
         <NButton quaternary type="primary" @click="copyContent(worker.UID)">
-          <NIcon><CopyIcon /></NIcon>
+          <NIcon>
+            <CopyIcon />
+          </NIcon>
         </NButton>
       </div>
       <div class="v-item">
         URL: <NTag class="v-item">{{ workerURL }}</NTag>
         <NButton quaternary type="primary" @click="copyContent(workerURL)">
-          <NIcon><CopyIcon /></NIcon>
+          <NIcon>
+            <CopyIcon />
+          </NIcon>
         </NButton>
       </div>
     </div>
@@ -122,16 +136,11 @@ onMounted(async () => {
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 节点 </NLayoutSider>
           <NLayoutContent>
-            <NSelect
-              style="min-width: 200px; max-width: 400px;"
-              v-model:value="worker.NodeName"
-              :options="
-                nodes.map((node) => ({
-                  label: node.Name,
-                  value: node.Name,
-                }))
-              "
-            />
+            <NSelect style="min-width: 200px; max-width: 400px;" v-model:value="worker.NodeName" :options="nodes.map((node) => ({
+              label: node.Name,
+              value: node.Name,
+            }))
+              " />
           </NLayoutContent>
         </NLayout>
       </NTabPane>
