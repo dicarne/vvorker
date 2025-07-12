@@ -48,7 +48,7 @@ type AppConfig struct {
 	LitefsBinPath     string `env:"LITEFS_BIN_PATH" env-default:"/usr/local/bin/litefs"`
 	LitefsDirPath     string `env:"LITEFS_DIR_PATH" env-default:"/app"`
 	LitefsEnabled     bool   `env:"LITEFS_ENABLED" env-default:"false"`
-	EnableAutoSync    bool   `env:"ENABLE_AUTO_SYNC" env-default:"false"`
+	EnableAutoSync    bool   `env:"ENABLE_AUTO_SYNC" env-default:"true"` // 自动同步子节点
 	TunnelUsername    string
 	TunnelPassword    string
 	TunnelToken       string

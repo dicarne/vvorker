@@ -9,6 +9,7 @@ import (
 	"vvorker/entities"
 	"vvorker/exec"
 	"vvorker/models"
+	"vvorker/utils"
 	"vvorker/utils/generate"
 	permissions "vvorker/utils/permissions"
 
@@ -108,6 +109,7 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker) error {
 
 	// 创建新的worker
 	newWorker := &models.Worker{Worker: worker, EnableAccessControl: workerRecord.EnableAccessControl}
+	newWorker.Version = utils.GenerateUID()
 	err = newWorker.Create()
 	if err != nil {
 		return err

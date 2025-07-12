@@ -10,9 +10,11 @@ RUN npm config set registry https://registry.npmmirror.com/
 RUN npm install -g pnpm
 RUN npm i workerd@v1.20250619.0 -g
 
-COPY . /app
+
 WORKDIR /app
 
+COPY admin /app/admin
+COPY ext /app/ext
 
 RUN cd /app/admin && pnpm i && pnpm run build
 RUN cd /app/ext/ai && pnpm i && pnpm run build
@@ -42,7 +44,17 @@ RUN go install github.com/cweill/gotests/gotests@latest 		&& \
 	go install honnef.co/go/tools/cmd/staticcheck@latest    	&& \
 	go install golang.org/x/tools/gopls@latest
 
-COPY --from=node-builder /app /app
+COPY . /app
+
+COPY --from=node-builder /app/admin/dist /app/admin/dist
+COPY --from=node-builder /app/ext/ai/dist /app/ext/ai/dist
+COPY --from=node-builder /app/ext/kv/dist /app/ext/kv/dist
+COPY --from=node-builder /app/ext/oss/dist /app/ext/oss/dist
+COPY --from=node-builder /app/ext/pgsql/dist /app/ext/pgsql/dist
+COPY --from=node-builder /app/ext/assets/dist /app/ext/assets/dist
+COPY --from=node-builder /app/ext/task/dist /app/ext/task/dist
+COPY --from=node-builder /app/ext/control/dist /app/ext/control/dist
+COPY --from=node-builder /app/ext/mysql/dist /app/ext/mysql/dist
 # 执行 go build 命令，-o 指定输出的二进制文件名称
 RUN go mod tidy
 RUN go build -o vvorker .
@@ -71,14 +83,14 @@ RUN DEBIAN_FRONTEND="noninteractive" apt-get install -y \
 COPY litefs.yml /etc/litefs.yml
 COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
 
+RUN apt-get update && \
+	DEBIAN_FRONTEND=noninteractive apt-get install -qy libc++1 ca-certificates
+
 # 从 builder 阶段拷贝 workerd 到最终镜像的 /bin 目录
 COPY --from=node-builder /usr/local/lib/node_modules/workerd/bin/workerd /bin/workerd
 
 # 从 builder 阶段拷贝 go build 产物到最终镜像的 /bin 目录
 COPY --from=go-builder /app/vvorker /app/vvorker
-
-RUN apt-get update && \
-	DEBIAN_FRONTEND=noninteractive apt-get install -qy libc++1 ca-certificates
 
 RUN chmod +x /bin/*
 

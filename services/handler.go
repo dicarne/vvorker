@@ -174,6 +174,7 @@ func init() {
 				agentAPI.GET("/nodeinfo", authz.AgentAuthz(), node.GetNodeInfoEndpoint)
 				agentAPI.POST("/fill-worker-config", authz.AgentAuthz(), workerd.FillWorkerConfig)
 				agentAPI.POST("/logs", authz.AgentAuthz(), exec.HandleAgentWorkerLogs)
+				agentAPI.POST("/get-worker", authz.AgentAuthz(), workerd.GetWorkerEndpointAgent)
 			} else {
 				agentAPI.POST("/notify", authz.AgentAuthz(), agent.NotifyEndpoint)
 			}
