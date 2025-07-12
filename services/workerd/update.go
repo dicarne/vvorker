@@ -182,3 +182,56 @@ func UpdateWorkerWithFile(c *gin.Context) {
 
 	common.RespOK(c, "update worker with file success", nil)
 }
+
+type GetWorkerCountReq struct {
+	UID string `json:"uid"`
+}
+
+func GetWorkerCountEndpoint(c *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorf("Recovered in GetWorkerCount: %+v, stack: %+v", r, string(debug.Stack()))
+			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+		}
+	}()
+
+	var req GetWorkerCountReq
+	if err := permissions.BindJSON(c, &req); err != nil {
+		return
+	}
+	workerRecord, err := permissions.CanWriteWorker(c, uint64(c.GetUint(common.UIDKey)), req.UID)
+	if err != nil {
+		return
+	}
+	common.RespOK(c, "get worker count success", workerRecord.MaxCount)
+}
+
+type UpdateWorkerCountReq struct {
+	UID      string `json:"uid"`
+	MaxCount int32  `json:"max_count"`
+}
+
+func UpdateWorkerCountEndpoint(c *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorf("Recovered in UpdateWorkerCount: %+v, stack: %+v", r, string(debug.Stack()))
+			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+		}
+	}()
+
+	var req UpdateWorkerCountReq
+	if err := permissions.BindJSON(c, &req); err != nil {
+		return
+	}
+
+	workerRecord, err := permissions.CanWriteWorker(c, uint64(c.GetUint(common.UIDKey)), req.UID)
+	if err != nil {
+		return
+	}
+	workerRecord.MaxCount = req.MaxCount
+	if err := workerRecord.Update(); err != nil {
+		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
+		return
+	}
+	common.RespOK(c, "update worker count success", nil)
+}
