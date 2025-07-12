@@ -494,6 +494,8 @@ func SyncWorkers(workerList []entities.WorkerUIDVersion) error {
 			UID: worker.GetUID(), Name: worker.GetName(), NodeName: worker.GetNodeName(),
 		})
 
+		exec.ExecManager.ExitCmd(worker.UID)
+
 		if err := modelWorker.Delete(); err != nil && err != gorm.ErrRecordNotFound {
 			logrus.WithError(err).Errorf("sync workers db delete error, worker is: %+v", worker)
 			partialFail = true
@@ -522,6 +524,8 @@ func SyncWorkers(workerList []entities.WorkerUIDVersion) error {
 			partialFail = true
 			continue
 		}
+
+		exec.ExecManager.RunCmd(worker.UID, []string{})
 	}
 
 	if partialFail {
