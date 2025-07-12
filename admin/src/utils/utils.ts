@@ -43,9 +43,10 @@ export const genWorkerUrl = (appConfig: VorkerSettingsProperties, workerName: st
   if (appConfig.UrlType === 'host') {
     return `${appConfig.Scheme}://${workerName}${appConfig.WorkerURLSuffix}/`
   } else {
+    const domain = window.location.host
     if (appConfig.UrlPrefix) {
-      return `${appConfig.Scheme}://${appConfig.WorkerURLSuffix.slice(1)}/${appConfig.UrlPrefix}/${workerName}/`
+      return `${appConfig.Scheme}://${domain}/${appConfig.UrlPrefix}/${workerName}/`
     }
-    return `${appConfig.Scheme}://${appConfig.WorkerURLSuffix.slice(1)}/${workerName}/`
+    return `${appConfig.Scheme}://${domain}/${workerName}/`
   }
 }
