@@ -1,3 +1,5 @@
+import type { VorkerSettingsProperties } from "@/types/workers"
+
 export const decodeBase64 = (base64String: string | undefined) => {
   if (!base64String) {
     return ''
@@ -37,8 +39,8 @@ export const formatDate = (date: Date) => {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
-export const genWorkerUrl = (appConfig: any, workerName: string) => {
-  if (appConfig.value?.UrlType === 'host') {
+export const genWorkerUrl = (appConfig: VorkerSettingsProperties, workerName: string) => {
+  if (appConfig.UrlType === 'host') {
     return `${appConfig.Scheme}://${workerName}${appConfig.WorkerURLSuffix}/`
   } else {
     if (appConfig.UrlPrefix) {

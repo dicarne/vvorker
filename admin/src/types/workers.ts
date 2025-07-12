@@ -44,6 +44,7 @@ export interface VorkerSettingsProperties {
   EnableRegister: boolean
   UrlType: string
   ApiUrl: string
+  UrlPrefix: string
 }
 
 export interface Task {
