@@ -173,3 +173,10 @@ export const getWorkerLogs = (uid: string, page: number, page_size: number) => {
 }
 
 
+export const getWorkerCount = (uid: string) => {
+  return api.post<{ data: number }>(`api/worker/v2/get-worker-count`, { uid })
+}
+
+export const updateWorkerCount = (uid: string, max_count: number) => {
+  return api.post(`api/worker/v2/update-worker-count`, { uid, max_count })
+}
