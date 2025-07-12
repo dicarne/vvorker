@@ -131,6 +131,34 @@ func GetWorkerEndpointJSON(c *gin.Context) {
 	common.RespOK(c, "get workers success", models.Trans2Entities([]*models.Worker{worker}))
 }
 
+func GetWorkerEndpointAgent(c *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
+			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+		}
+	}()
+
+	req := &entities.AgentGetWorkerByUIDReq{}
+	if err := json.NewDecoder(c.Request.Body).Decode(req); err != nil {
+		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
+		return
+	}
+	uid := req.UID
+
+	db := database.GetDB()
+	worker := &models.Worker{}
+	if err := db.Model(&models.Worker{}).Where(&models.Worker{
+		Worker: &entities.Worker{
+			UID: uid,
+		},
+	}).First(&worker).Error; err != nil {
+		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
+		return
+	}
+	common.RespOK(c, "get workers success", models.Trans2Entities([]*models.Worker{worker}))
+}
+
 func AgentSyncWorkers(c *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -146,19 +174,34 @@ func AgentSyncWorkers(c *gin.Context) {
 
 	nodeName := c.GetString(defs.KeyNodeName)
 	// get node's workerlist
-	workers, err := models.AdminGetWorkersByNodeName(nodeName)
-	if err != nil {
+	// workers, err := models.AdminGetWorkersByNodeName(nodeName)
+	// if err != nil {
+	// 	common.RespErr(c, defs.CodeInternalError, err.Error(), nil)
+	// 	return
+	// }
+	logrus.Infof("sync workers, node name: %s", nodeName)
+
+	var workers []*models.Worker
+	db := database.GetDB()
+
+	if err := db.Model(&models.Worker{}).Where(&models.Worker{
+		Worker: &entities.Worker{
+			NodeName: nodeName,
+		},
+	}).Select("uid", "version").Find(&workers).Error; err != nil {
 		common.RespErr(c, defs.CodeInternalError, err.Error(), nil)
 		return
 	}
+	var workerUIDVersions []entities.WorkerUIDVersion
+	for _, worker := range workers {
+		workerUIDVersions = append(workerUIDVersions, entities.WorkerUIDVersion{
+			UID:     worker.UID,
+			Version: worker.Version,
+		})
+	}
 
-	// build response
-	// TODO: chunk loading
-	resp := &entities.AgentSyncWorkersResp{
-		WorkerList: &entities.WorkerList{
-			NodeName: nodeName,
-			Workers:  models.Trans2Entities(workers),
-		},
+	resp := &entities.AgentDiffSyncWorkersResp{
+		WorkerUIDVersions: workerUIDVersions,
 	}
 	common.RespOK(c, "sync workers success", resp)
 }

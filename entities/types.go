@@ -71,8 +71,21 @@ func (d *DeleteWorkerRequest) Validate() bool {
 	return true
 }
 
+type WorkerUIDVersion struct {
+	UID     string `json:"uid"`
+	Version string `json:"version"`
+}
+
+type AgentDiffSyncWorkersResp struct {
+	WorkerUIDVersions []WorkerUIDVersion `json:"worker_uid_versions"`
+}
+
 type AgentSyncWorkersReq struct {
 	WorkerNames []string `json:"worker_names"`
+}
+
+type AgentGetWorkerByUIDReq struct {
+	UID string `json:"uid"`
 }
 
 type AgentSyncWorkersResp struct {

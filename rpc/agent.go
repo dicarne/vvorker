@@ -30,13 +30,13 @@ func EventNotify(n *entities.Node, eventName string, extra map[string][]byte) er
 	return nil
 }
 
-func SyncAgent(endpoint string) (*entities.WorkerList, error) {
+func SyncAgent(endpoint string) ([]entities.WorkerUIDVersion, error) {
 	url := endpoint + "/api/agent/sync"
-	resp := &entities.AgentSyncWorkersResp{}
+	resp := &entities.AgentDiffSyncWorkersResp{}
 	rtype := struct {
-		Code int                           `json:"code"`
-		Msg  string                        `json:"msg"`
-		Data entities.AgentSyncWorkersResp `json:"data"`
+		Code int                               `json:"code"`
+		Msg  string                            `json:"msg"`
+		Data entities.AgentDiffSyncWorkersResp `json:"data"`
 	}{}
 
 	reqResp, err := RPCWrapper().
@@ -44,12 +44,12 @@ func SyncAgent(endpoint string) (*entities.WorkerList, error) {
 		SetSuccessResult(&rtype).
 		Post(url)
 	resp = &rtype.Data
-	logrus.Infof("sync agent length: %d", len(resp.WorkerList.Workers))
+	logrus.Infof("sync agent length: %d", len(resp.WorkerUIDVersions))
 
 	if err != nil || reqResp.StatusCode >= 299 {
 		return nil, errors.New("error")
 	}
-	return resp.WorkerList, nil
+	return resp.WorkerUIDVersions, nil
 }
 
 func AddNode(endpoint string) error {
@@ -94,6 +94,32 @@ func RPCWrapper() *req.Request {
 			defs.HeaderNodeName:   conf.AppConfigInstance.NodeName,
 			defs.HeaderNodeSecret: conf.RPCToken,
 		})
+}
+
+func GetWorkerByUID(endpoint string, UID string) (*entities.Worker, error) {
+	url := endpoint + "/api/agent/get-worker"
+	rtype := struct {
+		Code int                `json:"code"`
+		Msg  string             `json:"msg"`
+		Data []*entities.Worker `json:"data"`
+	}{}
+
+	reqResp, err := RPCWrapper().
+		SetBody(&entities.AgentGetWorkerByUIDReq{
+			UID: UID,
+		}).
+		SetSuccessResult(&rtype).
+		Post(url)
+	if err != nil {
+		return nil, errors.New("error: " + err.Error())
+	}
+	if reqResp.StatusCode >= 299 {
+		return nil, errors.New("error: " + rtype.Msg)
+	}
+	if len(rtype.Data) == 0 {
+		return nil, errors.New("error: worker not found")
+	}
+	return rtype.Data[0], nil
 }
 
 // func FillWorkerConfig(endpoint string, UID string) (string, error) {

@@ -34,7 +34,14 @@ func SyncCall() error {
 	if err != nil {
 		return err
 	}
-	if err := models.SyncWorkers(workerList); err != nil {
+	diffWorkers, err := models.DiffWorkers(workerList)
+	if err != nil {
+		return err
+	}
+	if len(diffWorkers) == 0 {
+		return nil
+	}
+	if err := models.SyncWorkers(diffWorkers); err != nil {
 		return err
 	}
 	return nil

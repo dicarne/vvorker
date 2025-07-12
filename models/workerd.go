@@ -431,22 +431,65 @@ func (w *Worker) GetPort() int {
 	return int(workerPort)
 }
 
-func SyncWorkers(workerList *entities.WorkerList) error {
-	partialFail := false
-	UIDs := []string{}
-	oldWorkers, err := AdminGetWorkersByNodeName(conf.AppConfigInstance.NodeName)
-	if err != nil {
-		return err
+func DiffWorkers(newWorkerList []entities.WorkerUIDVersion) ([]entities.WorkerUIDVersion, error) {
+	db := database.GetDB()
+	var workers []Worker
+	if err := db.Model(&Worker{}).Select("uid", "version").Find(&workers).Error; err != nil {
+		return nil, err
+	}
+	newWorkerMap := lo.SliceToMap(newWorkerList, func(w entities.WorkerUIDVersion) (string, string) { return w.UID, w.Version })
+	oldWorkerMap := lo.SliceToMap(workers, func(w Worker) (string, string) { return w.UID, w.Version })
+	var differentWorkers []entities.WorkerUIDVersion
+	for _, newWorker := range newWorkerList {
+		if _, ok := oldWorkerMap[newWorker.UID]; ok {
+			if newWorker.Version != oldWorkerMap[newWorker.UID] {
+				differentWorkers = append(differentWorkers, entities.WorkerUIDVersion{
+					UID:     newWorker.UID,
+					Version: newWorker.Version,
+				})
+				logrus.Infof("sync workers update worker, worker is: %+v, oldversion %s; newversion %s", newWorker, oldWorkerMap[newWorker.UID], newWorker.Version)
+			}
+		} else {
+			differentWorkers = append(differentWorkers, entities.WorkerUIDVersion{
+				UID:     newWorker.UID,
+				Version: newWorker.Version,
+			})
+			logrus.Infof("sync workers add worker, worker is: %+v", newWorker)
+		}
 	}
 
-	oldWorkerUIDMap := lo.SliceToMap(oldWorkers, func(w *Worker) (string, bool) { return w.UID, true })
+	// delete workers that not in workerList
+	for _, worker := range workers {
+		if _, ok := newWorkerMap[worker.UID]; !ok {
+			ow := Worker{Worker: &entities.Worker{UID: worker.UID}}
+			ww := db.Where(&ow).First(&Worker{})
+			if ww.Error != nil {
+				continue
+			}
+			if err := ow.Delete(); err != nil {
+				logrus.WithError(err).Errorf("sync workers delete worker error, worker is: %+v", worker)
+				continue
+			}
+			logrus.Infof("sync workers delete worker, worker is: %+v", worker)
+		}
+	}
 
-	for _, worker := range workerList.Workers {
-		modelWorker := &Worker{Worker: worker}
-		UIDs = append(UIDs, worker.UID)
-		if _, ok := oldWorkerUIDMap[worker.UID]; ok {
+	return differentWorkers, nil
+}
+
+func SyncWorkers(workerList []entities.WorkerUIDVersion) error {
+	partialFail := false
+	UIDs := []string{}
+
+	for _, workerUIDVersion := range workerList {
+		worker, err := rpc.GetWorkerByUID(conf.AppConfigInstance.MasterEndpoint, workerUIDVersion.UID)
+		if err != nil {
+			logrus.WithError(err).Errorf("sync workers get worker error, uid is: %s, err: %v", workerUIDVersion.UID, err)
 			continue
 		}
+		modelWorker := &Worker{Worker: worker}
+		UIDs = append(UIDs, worker.UID)
+
 		logrus.Infof("sync workers db create, new worker is: %+v", entities.Worker{
 			UID: worker.GetUID(), Name: worker.GetName(), NodeName: worker.GetNodeName(),
 		})
@@ -478,23 +521,6 @@ func SyncWorkers(workerList *entities.WorkerList) error {
 			logrus.WithError(err).Errorf("sync workers gen config error, worker is: %+v", worker)
 			partialFail = true
 			continue
-		}
-	}
-
-	// delete workers that not in workerList
-	for _, worker := range oldWorkers {
-		if !utils.ContainsString(UIDs, worker.UID) {
-			if err := worker.Delete(); err != nil {
-				logrus.WithError(err).Errorf("sync workers delete worker error, worker is: %+v", worker)
-				partialFail = true
-				continue
-			}
-			if err := worker.DeleteFile(); err != nil {
-				logrus.WithError(err).Errorf("sync workers delete file error, worker is: %+v", worker)
-				partialFail = true
-				continue
-			}
-			logrus.Infof("sync workers delete worker, worker is: %+v", worker)
 		}
 	}
 

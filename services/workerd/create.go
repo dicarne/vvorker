@@ -6,6 +6,7 @@ import (
 	"vvorker/defs"
 	"vvorker/entities"
 	"vvorker/models"
+	"vvorker/utils"
 	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
@@ -48,7 +49,7 @@ func CreateEndpoint(c *gin.Context) {
 // Create creates a new worker in the database and update the workerd capnp config file
 func Create(userID uint, worker *entities.Worker) (string, error) {
 	FillWorkerValue(worker, false, "", userID)
-
+	worker.Version = utils.GenerateUID()
 	if err := (&models.Worker{Worker: worker}).Create(); err != nil {
 		logrus.Errorf("failed to create worker, err: %v", err)
 		return "", err
