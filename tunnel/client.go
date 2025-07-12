@@ -16,6 +16,7 @@ import (
 type ClientHandler interface {
 	Run(ctx context.Context)
 	Add(clientID, routeHostname string, forwardPort int) error
+	AddWorker(workerID, routeHostname string, forwardPort int) error
 	AddService(serviceName string, servicePort int) error
 	AddVisitor(servicename string, lcoalPort int) error
 	Delete(clientID string) error
@@ -69,6 +70,37 @@ func GetClient() ClientHandler {
 
 // Add implements ClientHandler.
 func (c *Client) Add(clientID, routeHostname string, forwardPort int) error {
+	var newCfg v1.ProxyConfigurer = &v1.HTTPProxyConfig{
+		ProxyBaseConfig: v1.ProxyBaseConfig{
+			Name: clientID,
+			Type: "http",
+			ProxyBackend: v1.ProxyBackend{
+				LocalIP:   "127.0.0.1",
+				LocalPort: forwardPort,
+			},
+		},
+		DomainConfig: v1.DomainConfig{
+			SubDomain: routeHostname,
+		},
+	}
+	newCfg.Complete("")
+	if _, ok := c.proxyConf.LoadOrStore(clientID, newCfg); ok {
+		logger(context.Background(), "Client.Add").Errorf("client %s already exists", clientID)
+		return nil
+	}
+
+	err := c.cli.UpdateAllConfigurer(lo.Values(c.proxyConf.ToMap()), lo.Values(c.visitorConf.ToMap()))
+	if err != nil {
+		logger(context.Background(), "Client.Add").WithError(err).
+			Errorf("reload conf failed, config is: %+v", c.proxyConf.ToMap())
+		return err
+	}
+	logger(context.Background(), "Client.Add").Infof("client %s added successfully", clientID)
+	return nil
+}
+
+// Add implements ClientHandler.
+func (c *Client) AddWorker(clientID, routeHostname string, forwardPort int) error {
 	var newCfg v1.ProxyConfigurer = &v1.HTTPProxyConfig{
 		ProxyBaseConfig: v1.ProxyBaseConfig{
 			Name: clientID,
