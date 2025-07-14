@@ -56,6 +56,9 @@ export const deployCommand = new Command('deploy')
 
     console.log(pc.gray("--------------"))
 
+    const userinfo = await apiClient.get(`/api/user/info`)
+    const vk = userinfo.data?.data?.vk ?? ""
+
     let up1 = await apiClient.post(`/api/ext/assets/clear-assets`, {
       worker_uid: uid,
     })
@@ -160,17 +163,20 @@ export const deployCommand = new Command('deploy')
             custom_db_host: pgsql.host,
             custom_db_port: pgsql.port,
             custom_db_password: pgsql.password,
+          }, {
+            headers: {
+              'Content-Type': 'application/json',
+              'x-encrypted-data': vk != "" ? vk : undefined
+            }
           })
           if (resp.data.code !== 0) {
-            console.log(`迁移失败：${pgsql.migrate}`);
-            throw new Error(`迁移失败：${pgsql.migrate}`);
+            console.log(`迁移失败：${resp.data}`);
+            throw new Error(`迁移失败：${resp.data}`);
           }
           console.log(`迁移成功：${pgsql.migrate}`);
         }
       }
     }
-    const userinfo = await apiClient.get(`/api/user/info`)
-    const vk = userinfo.data?.data?.vk ?? ""
 
     if (distVvorkerJson.mysql && distVvorkerJson.mysql.length > 0) {
       console.log("开始迁移MYSQL数据库...")
@@ -205,12 +211,12 @@ export const deployCommand = new Command('deploy')
           }, {
             headers: {
               'Content-Type': 'application/json',
-              'x-encrypted-data': vk != "" ? 'true' : 'false'
+              'x-encrypted-data': vk != "" ? vk : undefined
             }
           })
           if (resp.data.code !== 0) {
-            console.log(`迁移失败：${mysql.migrate}`);
-            throw new Error(`迁移失败：${mysql.migrate}`);
+            console.log(`迁移失败：${resp.data}`);
+            throw new Error(`迁移失败：${resp.data}`);
           }
           console.log(`迁移成功：${mysql.migrate}`);
         }
@@ -224,10 +230,10 @@ export const deployCommand = new Command('deploy')
     prev.TunnelID = undefined;
 
 
-    resp = await apiClient.post(`/api/worker/v2/update-worker`, vk != "" ? await encryptData(prev, vk) : prev, {
+    resp = await apiClient.post(`/api/worker/v2/update-worker`, prev, {
       headers: {
         'Content-Type': 'application/json',
-        'x-encrypted-data': vk != "" ? 'true' : 'false'
+        'x-encrypted-data': vk != "" ? vk : undefined
       }
     })
 
