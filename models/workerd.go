@@ -101,7 +101,6 @@ func HasWorker(userID uint, uid string) bool {
 	).Select("UID").First(&worker).Error; err != nil {
 		return false
 	}
-	fmt.Printf("worker: %v", worker)
 	return true
 }
 
