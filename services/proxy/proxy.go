@@ -58,7 +58,15 @@ func Endpoint(c *gin.Context) {
 			path = "/" + strings.Join(segments[2:], "/")
 		}
 		c.Request.URL = &url.URL{
-			Path: path,
+			Path:        path,
+			Scheme:      c.Request.URL.Scheme,
+			Host:        c.Request.URL.Host,
+			RawQuery:    c.Request.URL.RawQuery,
+			Fragment:    c.Request.URL.Fragment,
+			User:        c.Request.URL.User,
+			Opaque:      c.Request.URL.Opaque,
+			ForceQuery:  c.Request.URL.ForceQuery,
+			RawFragment: c.Request.URL.RawFragment,
 		}
 	}
 
