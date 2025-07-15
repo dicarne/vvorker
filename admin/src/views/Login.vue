@@ -3,10 +3,12 @@ import { inject, ref, type Ref } from 'vue'
 import { useMessage, NCard, NForm, NFormItem, NInput, NButton } from 'naive-ui'
 import type { FormInst, FormRules } from 'naive-ui' // 导入 FormInst 类型
 import type { LoginRequest, UserInfo } from '@/types/auth'
+import type { VorkerSettingsProperties } from '@/types/workers'
 import { passwordRules, usernameRules } from '@/constant/formrules'
 import { getUserInfo, login } from '@/api/auth'
 import { useNavigate } from '@/composables/useNavigate'
 
+const appConfig = inject<Ref<VorkerSettingsProperties>>('appConfig')!
 // 初始化表单数据
 const form = ref<LoginRequest>({
   userName: '',
@@ -75,6 +77,10 @@ const handleLogin = async () => {
           <NButton type="primary" native-type="submit" block @click="handleLogin"> 登录 </NButton>
         </NFormItem>
       </NForm>
+      <div v-if="appConfig.EnableRegister" class="v-flex-center">
+        <span>没有账号？</span>
+        <NButton quaternary type="info" @click="navigate('/register')">去注册</NButton>
+      </div>
     </NCard>
   </div>
 </template>
