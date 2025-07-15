@@ -244,7 +244,6 @@ function vvmysql(key: string, binding: MYSQLBinding): MYSQLBinding {
 }
 
 function vvkv(binding_key: string, binding: KVBinding): KVBinding {
-    console.log(`${config().url}/__vvorker__debug`)
     if (isDev()) {
         return {
             client: () => Promise.resolve({
