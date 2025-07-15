@@ -13,10 +13,16 @@
     "resolveJsonModule": true
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "worker-configuration.d.ts"
   ],
   "exclude": [
     "node_modules",
     "**/*.test.ts"
-  ]
+  ],
+  "compilerOptions": {
+    "types": [
+      "./worker-configuration.d.ts"
+    ]
+  }
 }

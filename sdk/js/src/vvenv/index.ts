@@ -23,7 +23,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                         params: {}
                     })
                 })
-                return (await r.json()).data
+                return (await r.json() as any).data
             },
             listObjects: async (bucket: string) => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -41,7 +41,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                         }
                     })
                 })
-                return (await r.json()).data
+                return (await r.json() as any).data
             },
             downloadFile: async (fileName: string) => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -59,7 +59,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                         }
                     })
                 })
-                return (await r.json()).data
+                return (await r.json() as any).data
             },
             uploadFile: async (data: Uint8Array, fileName: string) => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -78,7 +78,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                         }
                     })
                 })
-                return (await r.json()).data
+                return (await r.json() as any).data
             },
             uploadStreamFile: async (stream: ReadableStream<Uint8Array>, fileName: string) => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -97,7 +97,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                         }
                     })
                 })
-                return (await r.json()).data
+                return (await r.json() as any).data
             },
             downloadStreamFile: async (fileName: string) => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -115,7 +115,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                         }
                     })
                 })
-                return (await r.json()).data
+                return (await r.json() as any).data
             },
             deleteObject: async (fileName: string) => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -133,7 +133,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                         }
                     })
                 })
-                return (await r.json()).data
+                return (await r.json() as any).data
             },
         }
     } else {
@@ -161,7 +161,7 @@ function vvpgsql(key: string, binding: PGSQLBinding): PGSQLBinding {
                             }
                         })
                     })
-                    return (await r.json()).data
+                    return (await r.json() as any).data
                 },
             }),
             connectionString: async () => {
@@ -178,7 +178,7 @@ function vvpgsql(key: string, binding: PGSQLBinding): PGSQLBinding {
                         params: {}
                     })
                 })
-                return (await r.json()).data
+                return (await r.json() as any).data
             },
             connectionInfo: async () => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -194,7 +194,7 @@ function vvpgsql(key: string, binding: PGSQLBinding): PGSQLBinding {
                         params: {}
                     })
                 })
-                return (await r.json()).data
+                return (await r.json() as any).data
             },
         }
     } else {
@@ -204,6 +204,7 @@ function vvpgsql(key: string, binding: PGSQLBinding): PGSQLBinding {
 
 function vvmysql(key: string, binding: MYSQLBinding): MYSQLBinding {
     if (isDev()) {
+
         return {
             connectionString: async () => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -219,7 +220,7 @@ function vvmysql(key: string, binding: MYSQLBinding): MYSQLBinding {
                         params: {}
                     })
                 })
-                return (await r.json()).data as string
+                return (await r.json() as any).data as string
             },
             connectionInfo: async () => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -235,7 +236,8 @@ function vvmysql(key: string, binding: MYSQLBinding): MYSQLBinding {
                         params: {}
                     })
                 })
-                return (await r.json()).data
+                let data = (await r.json() as any).data
+                return data
             }
         }
     } else {
@@ -263,7 +265,7 @@ function vvkv(binding_key: string, binding: KVBinding): KVBinding {
                             }
                         })
                     })
-                    return (await r.json()).data
+                    return (await r.json() as any).data
                 },
                 set: async (key: string, value: string) => {
                     const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -282,7 +284,7 @@ function vvkv(binding_key: string, binding: KVBinding): KVBinding {
                             }
                         })
                     })
-                    return (await r.json()).data
+                    return (await r.json() as any).data
                 },
                 del: async (key: string) => {
                     const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -300,7 +302,7 @@ function vvkv(binding_key: string, binding: KVBinding): KVBinding {
                             }
                         })
                     })
-                    return (await r.json()).data
+                    return (await r.json() as any).data
                 },
                 keys: async (pattern: string) => {
                     const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -318,7 +320,7 @@ function vvkv(binding_key: string, binding: KVBinding): KVBinding {
                             }
                         })
                     })
-                    return (await r.json()).data
+                    return (await r.json() as any).data
                 },
             })
         }
@@ -342,7 +344,7 @@ async function vars<T extends { vars: any }>(binding: any): Promise<T['vars']> {
                 params: {}
             })
         })
-        return (await r.json()).data
+        return (await r.json() as any).data
     }
     return binding.vars
 }
@@ -380,27 +382,29 @@ function service(key: string, binding: ServiceBinding) {
 function proxy(key: string, binding: ServiceBinding) {
     if (isDev()) {
         return {
-            fetch: async (path: string, init?: RequestInit) => {
-                let r = await fetch(`${config().url}/__vvorker__debug`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${config().token}`
-                    },
-                    body: JSON.stringify({
-                        service: "proxy",
-                        binding: key,
-                        method: "fetch",
-                        params: {
-                            url: path,
-                            init: init
-                        }
-                    })
-                })
-                return r
-            }
+            fetch: fetch
         }
+        // fetch: async (path: string, init?: RequestInit) => {
+        //     let r = await fetch(`${config().url}/__vvorker__debug`, {
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //             "Authorization": `Bearer ${config().token}`
+        //         },
+        //         body: JSON.stringify({
+        //             service: "proxy",
+        //             binding: key,
+        //             method: "fetch",
+        //             params: {
+        //                 url: path,
+        //                 init: init
+        //             }
+        //         })
+        //     })
+        //     return r
+        // }
     }
+
     return binding
 }
 

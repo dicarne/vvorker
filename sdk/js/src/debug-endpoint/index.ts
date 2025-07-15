@@ -6,9 +6,10 @@ import { OSSBinding } from "@dicarne/vvorker-oss";
 import { isDev } from "../common/common";
 import { MYSQLBinding } from "@dicarne/vvorker-mysql";
 
-export function useDebugEndpoint(app: any) {
+export function useDebugEndpoint(app0: any) {
     if (!isDev()) return
-    app.post("/__vvorker__debug", async (c: Context) => {
+    let app = new Hono()
+    app.post("/", async (c: Context) => {
         const req = await c.req.json<DebugEndpointRequest>();
         switch (req.service) {
             case "oss":
