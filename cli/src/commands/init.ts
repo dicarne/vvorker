@@ -81,7 +81,7 @@ import { EnvBinding } from "./binding";
 
 const app = new Hono<{ Bindings: EnvBinding }>();
 
-app.get("*", async (c) => {
+app.notFound(async (c) => {
 	try {
 		const r = await c.env.ASSETS.fetch(c.req.url, c.req)
 		const url = new URL(c.req.url);
@@ -90,7 +90,7 @@ app.get("*", async (c) => {
 		}
 		return r
 	} catch (error) {
-		c.status(404);
+		return c.text("404 Not Found", 404)
 	}
 
 });
