@@ -1,3 +1,5 @@
+import type { VorkerSettingsProperties } from '@/types/workers'
+import { inject, type Ref } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 const router = createRouter({
@@ -11,7 +13,15 @@ const router = createRouter({
     {
       path: '/register',
       name: 'Register',
-      component: () => import('@/views/Register.vue')
+      component: () => import('@/views/Register.vue'),
+      beforeEnter: (to, from, next) => {
+        const appConfig = inject<Ref<VorkerSettingsProperties>>('appConfig')!
+        if (!appConfig.value.EnableRegister) {
+          next('/login')
+        } else {
+          next()
+        }
+      },
     },
     {
       path: '/',
