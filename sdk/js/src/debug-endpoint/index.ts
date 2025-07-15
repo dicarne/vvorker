@@ -127,4 +127,6 @@ export function useDebugEndpoint(app0: any) {
                 }
         }
     })
+
+    app0.route("/__vvorker__debug", app)
 }
