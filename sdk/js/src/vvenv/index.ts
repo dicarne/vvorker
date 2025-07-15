@@ -382,7 +382,7 @@ function service(key: string, binding: ServiceBinding) {
 function proxy(key: string, binding: ServiceBinding) {
     if (isDev()) {
         return {
-            fetch: fetch
+            fetch: (url: string, init?: RequestInit) => fetch(url, init)
         }
         // fetch: async (path: string, init?: RequestInit) => {
         //     let r = await fetch(`${config().url}/__vvorker__debug`, {
