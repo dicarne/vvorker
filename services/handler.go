@@ -447,7 +447,7 @@ func modifyProxyRequestHeaders(c *gin.Context) {
 				c.Request.Host = host
 				// 去掉第二段后的路径
 				if len(parts) > 2 {
-					c.Request.URL.Path = "/" + parts[1] + "/" + parts[2]
+					c.Request.URL.Path = "/" + parts[2]
 				} else {
 					c.Request.URL.Path = "/"
 				}

@@ -50,26 +50,6 @@ func Endpoint(c *gin.Context) {
 	}
 	c.Request.Header.Del("vvorker-worker-uid")
 
-	if conf.AppConfigInstance.WorkerHostPath != "" {
-		path := c.Request.URL.Path
-		// Remove the first segment of the path
-		segments := strings.Split(path, "/")
-		if len(segments) > 1 {
-			path = "/" + strings.Join(segments[2:], "/")
-		}
-		c.Request.URL = &url.URL{
-			Path:        path,
-			Scheme:      c.Request.URL.Scheme,
-			Host:        c.Request.URL.Host,
-			RawQuery:    c.Request.URL.RawQuery,
-			Fragment:    c.Request.URL.Fragment,
-			User:        c.Request.URL.User,
-			Opaque:      c.Request.URL.Opaque,
-			ForceQuery:  c.Request.URL.ForceQuery,
-			RawFragment: c.Request.URL.RawFragment,
-		}
-	}
-
 	var remote *url.URL
 	remote, err = url.Parse(fmt.Sprintf("http://%s:%d",
 		conf.AppConfigInstance.TunnelHost, conf.AppConfigInstance.TunnelEntryPort))
