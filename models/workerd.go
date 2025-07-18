@@ -56,6 +56,15 @@ func init() {
 		if conf.AppConfigInstance.LitefsEnabled {
 			utils.WaitForPort("localhost", conf.AppConfigInstance.LitefsPrimaryPort)
 		}
+		for {
+			if len(conf.AppConfigInstance.NodeID) == 0 {
+				logrus.Error("[workerd init()] node is not initialized, retrying after 1 seconds")
+				time.Sleep(1 * time.Second)
+				continue
+			}
+			break
+		}
+		utils.WaitForPort("localhost", conf.AppConfigInstance.TunnelAPIPort)
 		NodeWorkersInit()
 	}()
 }

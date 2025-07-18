@@ -95,7 +95,7 @@ func (c *Client) Add(clientID, routeHostname string, forwardPort int) error {
 			Errorf("reload conf failed, config is: %+v", c.proxyConf.ToMap())
 		return err
 	}
-	logger(context.Background(), "Client.Add").Infof("client %s added successfully", clientID)
+	logger(context.Background(), "Client.Add").Infof("client %s added successfully, router: %s, port: %d", clientID, routeHostname, forwardPort)
 	return nil
 }
 
@@ -130,7 +130,7 @@ func (c *Client) AddWorker(clientID, routeHostname string, forwardPort int) erro
 			Errorf("reload conf failed, config is: %+v", c.proxyConf.ToMap())
 		return err
 	}
-	logger(context.Background(), "Client.Add").Infof("client %s added successfully", clientID)
+	logger(context.Background(), "Client.Add").Infof("client %s added successfully, router: %s, port: %d", clientID, routeHostname, forwardPort)
 	return nil
 }
 
