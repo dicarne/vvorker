@@ -41,8 +41,8 @@ func InitSelfCliet() {
 	}
 	for {
 		if len(conf.AppConfigInstance.NodeID) == 0 {
-			logger(context.Background(), "InitSelfCliet").Error("node is not initialized, retrying after 5 seconds")
-			time.Sleep(5 * time.Second)
+			logger(context.Background(), "InitSelfCliet").Error("node is not initialized, retrying after 1 seconds")
+			time.Sleep(1 * time.Second)
 			continue
 		}
 		if err := GetClient().Add(conf.AppConfigInstance.NodeID, utils.NodeHostPrefix(
