@@ -149,15 +149,18 @@ func Endpoint(c *gin.Context) {
 
 							if conf.AppConfigInstance.WorkerHostMode == "path" {
 								rpath = "/" + workerName + rpath
+
+								if conf.AppConfigInstance.SSOBaseURL != "" {
+									rpath = conf.AppConfigInstance.SSOBaseURL + rpath
+								}
+
+								if conf.AppConfigInstance.WorkerHostPath != "" {
+									rpath = "/" + conf.AppConfigInstance.WorkerHostPath + rpath
+								}
+							} else {
+								rpath = fmt.Sprintf("%s://%s%s%s", conf.AppConfigInstance.Scheme, workerName, conf.AppConfigInstance.WorkerURLSuffix, rpath)
 							}
 
-							if conf.AppConfigInstance.SSOBaseURL != "" {
-								rpath = conf.AppConfigInstance.SSOBaseURL + rpath
-							}
-
-							if conf.AppConfigInstance.WorkerHostPath != "" {
-								rpath = "/" + conf.AppConfigInstance.WorkerHostPath + rpath
-							}
 							newUrl := fmt.Sprintf("%s?name=%s", conf.AppConfigInstance.SSORedirectURL, url.QueryEscape(rpath))
 							c.Redirect(http.StatusFound, newUrl)
 							return
