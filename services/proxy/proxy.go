@@ -23,8 +23,6 @@ type SSOAuthInfo struct {
 	UserID   string `json:"user_id"`
 	Token    string `json:"token"`
 	RealName string `json:"real_name"`
-	Gender   string `json:"gender"`
-	ZzdUid   string `json:"zzd_uid"`
 }
 
 func Endpoint(c *gin.Context) {
@@ -179,8 +177,6 @@ func Endpoint(c *gin.Context) {
 					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName+"-user-id", authInfo.UserID)
 					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName+"-token", authInfo.Token)
 					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName+"-real-name", authInfo.RealName)
-					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName+"-gender", authInfo.Gender)
-					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName+"-zzd-uid", authInfo.ZzdUid)
 					authed = true
 					break
 				}
