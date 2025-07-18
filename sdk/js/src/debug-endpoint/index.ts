@@ -6,6 +6,11 @@ import { OSSBinding } from "@dicarne/vvorker-oss";
 import { isDev } from "../common/common";
 import { MYSQLBinding } from "@dicarne/vvorker-mysql";
 
+/**
+ * VITE_VVORKER_BASE_URL 设置为到服务的url
+ * @param app0 
+ * @returns 
+ */
 export function useDebugEndpoint(app0: any) {
     if (!isDev()) return
     let app = new Hono()
