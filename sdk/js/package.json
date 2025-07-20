@@ -11,7 +11,7 @@
     "build": "tsc",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
-    "publish": "npm publish --access=public"
+    "tonpm": "npm publish --access=public"
   },
   "keywords": [
     "vvorker",
@@ -21,14 +21,14 @@
   "author": "dicarne",
   "license": "ISC",
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.8.3"
   },
   "packageManager": "pnpm@10.11.0",
   "dependencies": {
-    "@dicarne/vvorker-kv": "link:..\\..\\ext\\kv",
-    "@dicarne/vvorker-oss": "link:..\\..\\ext\\oss",
-    "@dicarne/vvorker-pgsql": "link:..\\..\\ext\\pgsql",
-    "@dicarne/vvorker-mysql": "link:..\\..\\ext\\mysql",
-    "hono": "^4.8.3"
+    "@dicarne/vvorker-kv": "^0.1.3",
+    "@dicarne/vvorker-mysql": "^0.1.3",
+    "@dicarne/vvorker-oss": "^0.1.3",
+    "@dicarne/vvorker-pgsql": "^0.1.3",
+    "hono": "^4.8.5"
   }
 }

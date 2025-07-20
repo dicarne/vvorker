@@ -54,13 +54,19 @@ class NutsDBTarget extends RpcTarget implements KV {
 		}) ?? ""
 	}
 
-	async set(key: string, value: string, ttl?: number): Promise<void> {
-		await this.invoke({
+	async set(key: string, value: string, options?: {
+		EX?: number,
+		NX?: boolean,
+		XX?: boolean
+	} | number): Promise<number> {
+		return await this.invoke<number>({
 			method: "set",
 			key: key,
 			value: value,
-			ttl: ttl
-		})
+			options: typeof options === "number" ? {
+				EX: options
+			} : options
+		}) ?? -1
 	}
 
 	async del(key: string): Promise<void> {
@@ -94,9 +100,25 @@ class RedisTarget extends RpcTarget implements KV {
 		return await this.redis!.get(prefix + key)
 	}
 
-	async set(key: string, value: string, ttl?: number): Promise<void> {
-		if(!ttl) return await this.redis!.set(prefix + key, value)
-		return await this.redis!.setEx(prefix + key, ttl, value)
+	async set(key: string, value: string, options?: {
+		EX?: number,
+		NX?: boolean,
+		XX?: boolean
+	} | number): Promise<number> {
+		if (!options) return await this.redis!.set(prefix + key, value)
+		if (typeof options === "number") return await this.redis!.set(prefix + key, value, {
+			expiration: {
+				type: "EX",
+				value: options
+			}
+		})
+		return await this.redis!.set(prefix + key, value, {
+			expiration: options.EX ? {
+				type: "EX",
+				value: options.EX
+			} : undefined,
+			condition: options.NX ? "NX" : (options.XX ? "XX" : undefined)
+		})
 	}
 
 	async del(key: string): Promise<void> {

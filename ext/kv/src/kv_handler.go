@@ -130,14 +130,20 @@ func DeleteKVResourcesEndpoint(c *gin.Context) {
 	})
 }
 
+type InvokeKVOptions struct {
+	EX int  `json:"EX"`
+	NX bool `json:"NX"`
+	XX bool `json:"XX"`
+}
+
 type InvokeKVRequest struct {
-	RID    string `json:"rid"`
-	Key    string `json:"key"`
-	Value  string `json:"value"`
-	Method string `json:"method"`
-	TTL    int    `json:"ttl"`
-	Offset int    `json:"offset"`
-	Size   int    `json:"size"`
+	RID     string          `json:"rid"`
+	Key     string          `json:"key"`
+	Value   string          `json:"value"`
+	Method  string          `json:"method"`
+	Options InvokeKVOptions `json:"options"`
+	Offset  int             `json:"offset"`
+	Size    int             `json:"size"`
 }
 
 func InvokeKVEndpoint(c *gin.Context) {
@@ -164,9 +170,39 @@ func InvokeKVEndpoint(c *gin.Context) {
 		}
 	case "set":
 		{
-			if err := Put(req.RID, req.Key, []byte(req.Value), req.TTL); err != nil {
-				common.RespErr(c, http.StatusInternalServerError, "Failed to set KV resource", gin.H{"error": err.Error()})
-				return
+			if req.Options.NX {
+				code, err := PutNX(req.RID, req.Key, []byte(req.Value), req.Options.EX)
+				if code != 0 {
+					common.RespOK(c, "success", code)
+					return
+				}
+				if err != nil {
+					common.RespErr(c, http.StatusInternalServerError, "Failed to setNX KV resource", gin.H{"error": err.Error()})
+					return
+				}
+
+			} else if req.Options.XX {
+				code, err := PutXX(req.RID, req.Key, []byte(req.Value), req.Options.EX)
+				if code != 0 {
+					common.RespOK(c, "success", code)
+					return
+				}
+				if err != nil {
+					common.RespErr(c, http.StatusInternalServerError, "Failed to setXX KV resource", gin.H{"error": err.Error()})
+					return
+				}
+
+			} else {
+				code, err := Put(req.RID, req.Key, []byte(req.Value), req.Options.EX)
+				if code != 0 {
+					common.RespOK(c, "success", code)
+					return
+				}
+				if err != nil {
+					common.RespErr(c, http.StatusInternalServerError, "Failed to setEX KV resource", gin.H{"error": err.Error()})
+					return
+				}
+
 			}
 			common.RespOK(c, "success", nil)
 		}
@@ -204,10 +240,42 @@ func ExistBucket(bucket string) error {
 	})
 }
 
-func Put(bucket string, key string, value []byte, ttl int) error {
+func Put(bucket string, key string, value []byte, ttl int) (int, error) {
 	ExistBucket(bucket)
-	return db.Update(func(tx *nutsdb.Tx) error {
-		return tx.Put(bucket, []byte(key), value, uint32(ttl))
+	code := 0
+	return code, db.Update(func(tx *nutsdb.Tx) error {
+		err := tx.Put(bucket, []byte(key), value, uint32(ttl))
+		if err != nil {
+			code = 1
+			logrus.Error(err)
+		}
+		return err
+	})
+}
+
+func PutNX(bucket string, key string, value []byte, ttl int) (int, error) {
+	ExistBucket(bucket)
+	code := 0
+	return code, db.Update(func(tx *nutsdb.Tx) error {
+		err := tx.PutIfNotExists(bucket, []byte(key), value, uint32(ttl))
+		if err != nil {
+			code = 1
+			logrus.Error(err)
+		}
+		return err
+	})
+}
+
+func PutXX(bucket string, key string, value []byte, ttl int) (int, error) {
+	ExistBucket(bucket)
+	code := 0
+	return code, db.Update(func(tx *nutsdb.Tx) error {
+		err := tx.PutIfExists(bucket, []byte(key), value, uint32(ttl))
+		if err != nil {
+			code = 1
+			logrus.Error(err)
+		}
+		return err
 	})
 }
 
