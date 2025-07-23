@@ -61,6 +61,7 @@ type Task struct {
 
 type Scheduler struct {
 	Cron string `json:"cron"`
+	Name string `json:"name"`
 }
 
 type Proxy struct {

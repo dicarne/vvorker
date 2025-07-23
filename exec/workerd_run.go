@@ -190,6 +190,7 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 				control.SendSchedulerEvent,
 				uid,
 				scheduler.Cron,
+				scheduler.Name,
 			),
 		)
 		if err != nil {
