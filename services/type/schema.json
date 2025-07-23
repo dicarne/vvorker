@@ -89,13 +89,7 @@
                 }
             },
             "required": [
-                "host",
-                "port",
-                "user",
-                "password",
-                "database",
-                "binding",
-                "resource_id"
+                "binding"
             ]
         },
         "OSSConfig": {
@@ -143,16 +137,7 @@
                 }
             },
             "required": [
-                "host",
-                "port",
-                "access_key_id",
-                "access_key_secret",
-                "binding",
-                "bucket",
-                "use_ssl",
-                "region",
-                "resource_id",
-                "session_token"
+                "binding"
             ]
         },
         "KV": {
@@ -176,10 +161,7 @@
                 }
             },
             "required": [
-                "host",
-                "port",
-                "binding",
-                "resource_id"
+                "binding"
             ]
         },
         "Assets": {
@@ -218,6 +200,10 @@
                 "cron": {
                     "type": "string",
                     "title": "定时任务表达式"
+                },
+                "name": {
+                    "type": "string",
+                    "title": "定时任务名称"
                 }
             },
             "required": [
