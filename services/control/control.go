@@ -50,9 +50,10 @@ type ScheduledController struct {
 	ScheduledTime int64  `json:"scheduledTime"`
 	Cron          string `json:"cron"`
 	Type          string `json:"type"`
+	Name          string `json:"name"`
 }
 
-func SendSchedulerEvent(workerUID string, cron string) {
+func SendSchedulerEvent(workerUID string, cron string, name string) {
 	defer func() {
 		if r := recover(); r != nil {
 			logrus.Error("SendSchedulerEvent error: ", r)
@@ -64,6 +65,7 @@ func SendSchedulerEvent(workerUID string, cron string) {
 		ScheduledTime: time.Now().Unix(),
 		Cron:          cron,
 		Type:          "scheduled",
+		Name:          name,
 	}
 	bbody, err := json.Marshal(e)
 	if err != nil {
