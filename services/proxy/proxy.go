@@ -46,7 +46,7 @@ func Endpoint(c *gin.Context) {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
-	c.Request.Header.Del("vvorker-worker-uid")
+	c.Request.Header.Del("server-host")
 
 	var remote *url.URL
 	remote, err = url.Parse(fmt.Sprintf("http://%s:%d",
