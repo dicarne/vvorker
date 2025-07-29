@@ -18,3 +18,5 @@
 ## 缓存
 - redis
 
+## AI
+- https://vercel.com/docs/ai-sdk
