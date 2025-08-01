@@ -349,10 +349,26 @@ async function vars<T extends { vars: any }>(binding: any): Promise<T['vars']> {
     return binding.vars
 }
 
+/**
+ * env: VITE_APP_UID 用于指定模仿单点登录的uid
+ * @param key 
+ * @param binding 
+ * @returns 
+ */
 function service(key: string, binding: ServiceBinding) {
     if (isDev()) {
         return {
             fetch: async (path: string, init?: RequestInit) => {
+                if (!init) {
+                    init = {}
+                }
+                if (!init.headers) {
+                    init.headers = {}
+                }
+                init.headers = {
+                    ...init.headers,
+                    "vvorker-worker-uid": ((import.meta as any).env.VITE_APP_UID ?? "") as string
+                }
                 let r = await fetch(`${config().url}/__vvorker__debug`, {
                     method: "POST",
                     headers: {
