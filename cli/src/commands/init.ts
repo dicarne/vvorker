@@ -76,26 +76,30 @@ export default {
 
 async function createVueProject(projectName: string, jsonData: object) {
   const vueJSCode = `
-import { Hono } from "hono";
-import { EnvBinding } from "./binding";
-
-const app = new Hono<{ Bindings: EnvBinding }>();
-
-app.notFound(async (c) => {
-	try {
-		const r = await c.env.ASSETS.fetch(c.req.url, c.req)
-		const url = new URL(c.req.url);
-		if (r.status === 404) {
-			return c.env.ASSETS.fetch("https://" + url.host + "/index.html", c.req)
-		}
-		return r
-	} catch (error) {
-		return c.text("404 Not Found", 404)
-	}
-
-});
-
-export default app;
+  import { Hono } from "hono";
+  import { EnvBinding } from "./binding";
+  import { init, useDebugEndpoint } from "@dicarne/vvorker-sdk";
+  import { env } from "cloudflare:workers";
+  init(env)
+  
+  const app = new Hono<{ Bindings: EnvBinding }>();
+  useDebugEndpoint(app)
+  
+  app.notFound(async (c) => {
+    try {
+      const r = await c.env.ASSETS.fetch(c.req.url, c.req)
+      const url = new URL(c.req.url);
+      if (r.status === 404) {
+        return c.env.ASSETS.fetch("https://" + url.host + "/index.html", c.req)
+      }
+      return r
+    } catch (error) {
+      return c.text("404 Not Found", 404)
+    }
+  
+  });
+  
+  export default app;  
     `;
 
   await runCommand('pnpm', ['create', "cloudflare@latest", projectName, "--framework=vue"]);
