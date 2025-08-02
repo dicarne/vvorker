@@ -48,15 +48,15 @@ export default class MySQL extends WorkerEntrypoint {
 			port: Number(cfg.port),
 		}
 	}
-	query(sql: string, params: any, method: string) {
-		return rpc(sql, params, method)
+	async query(sql: string, params: any, method: string) {
+		return (await rpc(sql, params, method, this.connectionString())).json()
 	}
 }
 
 
 
 
-async function rpc(sql: string, params: any, method: string) {
+async function rpc(sql: string, params: any, method: string, connection_string: string) {
 	return fetch(`${eenv.MASTER_ENDPOINT}/api/ext/mysql/query`, {
 		method: "POST",
 		headers: {
@@ -66,6 +66,7 @@ async function rpc(sql: string, params: any, method: string) {
 			sql,
 			params,
 			method,
+			connection_string,
 		})
 	})
 }

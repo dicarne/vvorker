@@ -424,39 +424,77 @@ func ExecuteSQLPgSQLEndpoint(c *gin.Context) {
 	}
 	dbConn, ok := dbConns.Get(req.ConnectionString)
 	if !ok {
-		dbConn, err := sql.Open("postgres", req.ConnectionString)
+		dbConn2, err := sql.Open("postgres", req.ConnectionString+"?sslmode=disable")
 		if err != nil {
 			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
 				gin.H{"error": err.Error()})
 			return
 		}
-		defer dbConn.Close()
-		dbConns.Set(req.ConnectionString, dbConn)
+		dbConns.Set(req.ConnectionString, dbConn2)
+		dbConn = dbConn2
 	}
+	logrus.Info(req) // ------------------------------------------------------------------------
 	rows, err := dbConn.Query(req.Sql, req.Params...)
 	if err != nil {
+
+		logrus.Info(err)
 		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
 			gin.H{"error": err.Error()})
 		return
 	}
 	defer rows.Close()
 	if req.Method == "get" {
-		var rowsAll []string
+		var rowsAll []string = []string{}
 		for rows.Next() {
 			var row string
 			rows.Scan(&row)
 			rowsAll = append(rowsAll, row)
 		}
-		common.RespOK(c, common.RespMsgOK, entities.ExecuteSQLResp{Rows: rowsAll})
+		c.JSON(200, entities.ExecuteSQLResp{Rows: rowsAll})
 		return
 	} else {
-		var rowsAll [][]string
+		var rowsAll [][]string = [][]string{}
+		// First, get the column names
+		columns, err := rows.Columns()
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+
+		// types, err := rows.ColumnTypes()
+		// if err != nil {
+		// 	c.JSON(500, gin.H{"error": err.Error()})
+		// 	return
+		// }
+		// logrus.Info(columns)
+		// for _, t := range types {
+		// 	logrus.Info(t.DatabaseTypeName())
+		// }
+
+		// Create a slice of interface{} to hold the scanned values
+		values := make([]interface{}, len(columns))
+		for i := range values {
+			values[i] = new(sql.RawBytes)
+		}
+
 		for rows.Next() {
-			var row []string
-			rows.Scan(&row)
+			// Scan the row into the values slice
+			if err := rows.Scan(values...); err != nil {
+				c.JSON(500, gin.H{"error": err.Error()})
+				return
+			}
+
+			// Convert each value to string
+			row := make([]string, len(columns))
+			for i, val := range values {
+				if rb, ok := val.(*sql.RawBytes); ok {
+					row[i] = string(*rb)
+				}
+			}
 			rowsAll = append(rowsAll, row)
 		}
-		common.RespOK(c, common.RespMsgOK, entities.ExecuteSQLRespAll{Rows: rowsAll})
+		logrus.Info(rowsAll)
+		c.JSON(200, entities.ExecuteSQLRespAll{Rows: rowsAll})
 		return
 	}
 }

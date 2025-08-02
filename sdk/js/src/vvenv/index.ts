@@ -197,7 +197,24 @@ function vvpgsql(key: string, binding: PGSQLBinding): PGSQLBinding {
                 return (await r.json() as any).data
             },
             query: async (sql: string, params: any, method: string) => {
-                return rpc(sql, params, method)
+                const r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "pgsql",
+                        binding: key,
+                        method: "querysql",
+                        params: {
+                            sql,
+                            params,
+                            method
+                        }
+                    })
+                })
+                return (await r.json() as any).data
             },
         }
     } else {
@@ -241,6 +258,26 @@ function vvmysql(key: string, binding: MYSQLBinding): MYSQLBinding {
                 })
                 let data = (await r.json() as any).data
                 return data
+            },
+            query: async (sql: string, params: any, method: string) => {
+                const r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "mysql",
+                        binding: key,
+                        method: "query",
+                        params: {
+                            sql,
+                            params,
+                            method
+                        }
+                    })
+                })
+                return (await r.json() as any).data
             }
         }
     } else {
