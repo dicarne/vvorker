@@ -34,6 +34,7 @@ import (
 	"vvorker/services/task"
 	gentype "vvorker/services/type"
 	"vvorker/services/users"
+	"vvorker/services/vvotp"
 	"vvorker/services/workerd"
 	"vvorker/tunnel"
 	"vvorker/utils"
@@ -119,8 +120,8 @@ func init() {
 				workerV2 := workerApi.Group("/v2")
 				{
 					workerV2.POST("/get-worker", workerd.GetWorkerEndpointJSON)
-					workerV2.POST("/update-worker", workerd.UpdateEndpointJSON)
-					workerV2.POST("/update-worker-with-file", workerd.UpdateWorkerWithFile)
+					workerV2.POST("/update-worker", vvotp.OTPMiddleware(), workerd.UpdateEndpointJSON)
+					workerV2.POST("/update-worker-with-file", vvotp.OTPMiddleware(), workerd.UpdateWorkerWithFile)
 
 					workerV2.POST("/export-workers", export.ExportResourcesConfigEndpoint)
 					workerV2.POST("/import-workers", export.ImportResourcesConfigEndpoint)
@@ -182,6 +183,14 @@ func init() {
 				agentAPI.POST("/notify", authz.AgentAuthz(), agent.NotifyEndpoint)
 			}
 		}
+		otpAPI := api.Group("/otp")
+		{
+			otpAPI.POST("/valid", authz.AccessKeyMiddleware(), authz.AccessKeyMiddleware(), vvotp.ValidOtpEndpoint)
+			otpAPI.POST("/enable", authz.JWTMiddleware(), vvotp.EnableOTPEndpoint)
+			otpAPI.POST("/disable", authz.JWTMiddleware(), vvotp.DisableOTPEndpoint)
+			otpAPI.POST("/valid-add", authz.JWTMiddleware(), vvotp.ValidAddOTPEndpoint)
+			otpAPI.POST("/is-enable", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), vvotp.IsEnableOTPEndpoint)
+		}
 		extAPI := api.Group("/ext")
 		{
 			ossAPI := extAPI.Group("/oss")
@@ -231,9 +240,9 @@ func init() {
 			assetsAPI := extAPI.Group("/assets")
 			{
 				if conf.IsMaster() {
-					assetsAPI.POST("/create-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), assets.UploadAssetsEndpoint)
+					assetsAPI.POST("/create-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), vvotp.OTPMiddleware(), assets.UploadAssetsEndpoint)
 					assetsAPI.GET("/get-assets", authz.AgentAuthz(), assets.GetAssetsEndpoint)
-					assetsAPI.POST("/clear-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), assets.ClearAssetsEndpoint)
+					assetsAPI.POST("/clear-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), vvotp.OTPMiddleware(), assets.ClearAssetsEndpoint)
 				}
 			}
 			taskAPI := extAPI.Group("/task")

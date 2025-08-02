@@ -42,3 +42,20 @@ export const deleteAccessKey = (access_key: string) => {
     key: access_key
   })
 }
+
+
+export const enableOtp = () => {
+  return api.post('api/otp/enable')
+}
+
+export const disableOtp = () => {
+  return api.post('api/otp/disable')
+}
+
+export const validOtp = (code: string) => {
+  return api.post('api/otp/valid-add?code=' + code)
+}
+
+export const isEnableOtp = () => {
+  return api.post('api/otp/is-enable')
+}

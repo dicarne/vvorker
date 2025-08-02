@@ -4,9 +4,8 @@ import * as path from 'path';
 import { config, getToken, getUrl, setUrl } from '../utils/config';
 import { loadVVorkerConfig } from '../utils/vvorker-config';
 import { runCommand } from '../utils/system';
-import { apiClient } from '../utils/api';
+import { apiClient, requireOTP } from '../utils/api';
 import pc from "picocolors"
-import { encryptData } from '../encrypt';
 
 export const deployCommand = new Command('deploy')
   .description('部署到VVorker')
@@ -20,6 +19,7 @@ export const deployCommand = new Command('deploy')
       return;
     }
     console.log(`环境：${pc.yellow(config.current_env)}`)
+    await requireOTP()
     // 读取当前目录下的 vvorker.json 文件
     const vvorkerJson = loadVVorkerConfig();
     const packageJson = await fs.readJson('package.json');
