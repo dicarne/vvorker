@@ -183,7 +183,10 @@ func BuildCapfile(workers []*entities.Worker, workerQuery funcs.WorkerQuery) map
 	( name = "PORT", text = "`+strconv.Itoa(ext.Port)+`" ), 
 	( name = "USER", text = "`+ext.User+`" ),
 	( name = "PASSWORD", text = "`+ext.Password+`" ),
-	( name = "DATABASE", text = "`+ext.Database+`" ),`))
+	( name = "DATABASE", text = "`+ext.Database+`" ),
+	( name = "X_SECRET" , text = "`+conf.RPCToken+`" ),
+	( name = "X_NODENAME", text = "`+conf.AppConfigInstance.NodeName+`" ),
+	( name = "MASTER_ENDPOINT", text = "`+conf.AppConfigInstance.MasterEndpoint+`" ),`))
 					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
 					bindingsText = bindingsText + allowExtension.BindingTemplate
 
@@ -219,7 +222,10 @@ func BuildCapfile(workers []*entities.Worker, workerQuery funcs.WorkerQuery) map
 	( name = "PORT", text = "`+strconv.Itoa(ext.Port)+`" ), 
 	( name = "USER", text = "`+ext.User+`" ),
 	( name = "PASSWORD", text = "`+ext.Password+`" ),
-	( name = "DATABASE", text = "`+ext.Database+`" ),`))
+	( name = "DATABASE", text = "`+ext.Database+`" ),
+	( name = "X_SECRET" , text = "`+conf.RPCToken+`" ),
+	( name = "X_NODENAME", text = "`+conf.AppConfigInstance.NodeName+`" ),
+	( name = "MASTER_ENDPOINT", text = "`+conf.AppConfigInstance.MasterEndpoint+`" ),`))
 					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
 					bindingsText = bindingsText + allowExtension.BindingTemplate
 

@@ -4,6 +4,12 @@ export * from "./binding"
 import { RpcTarget, WorkerEntrypoint, env } from 'cloudflare:workers'
 
 const eenv = env as unknown as any
+
+let commonConfig = {
+	"x-secret": eenv.X_SECRET,
+	"x-node-name": eenv.X_NODENAME,
+}
+
 function config() {
 	// 从环境变量中获取配置信息
 	let cfg = {
@@ -73,4 +79,23 @@ export default class PGSQL extends WorkerEntrypoint {
 			port: Number(cfg.port),
 		}
 	}
+	query(sql: string, params: any, method: string) {
+		return rpc(sql, params, method)
+	}
+}
+
+
+
+async function rpc(sql: string, params: any, method: string) {
+	return fetch(`${eenv.MASTER_ENDPOINT}/api/ext/pgsql/query`, {
+		method: "POST",
+		headers: {
+			...commonConfig,
+		},
+		body: JSON.stringify({
+			sql,
+			params,
+			method,
+		})
+	})
 }

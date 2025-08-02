@@ -196,6 +196,9 @@ function vvpgsql(key: string, binding: PGSQLBinding): PGSQLBinding {
                 })
                 return (await r.json() as any).data
             },
+            query: async (sql: string, params: any, method: string) => {
+                return rpc(sql, params, method)
+            },
         }
     } else {
         return binding
