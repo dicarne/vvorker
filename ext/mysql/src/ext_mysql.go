@@ -9,6 +9,7 @@ import (
 	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/entities"
+	pgsql "vvorker/ext/pgsql/src"
 	"vvorker/funcs"
 	"vvorker/models"
 	"vvorker/utils"
@@ -428,71 +429,5 @@ func init() {
 var dbConns *defs.SyncMap[string, *sql.DB]
 
 func ExecuteSQLMysqlEndpoint(c *gin.Context) {
-	var req = entities.ExecuteSQLReq{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
-			gin.H{"error": err.Error()})
-		return
-	}
-	dbConn, ok := dbConns.Get(req.ConnectionString)
-	if !ok {
-		dbConn, err := sql.Open("mysql", req.ConnectionString)
-		if err != nil {
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
-				gin.H{"error": err.Error()})
-			return
-		}
-		defer dbConn.Close()
-		dbConns.Set(req.ConnectionString, dbConn)
-	}
-	rows, err := dbConn.Query(req.Sql, req.Params...)
-	if err != nil {
-		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
-			gin.H{"error": err.Error()})
-		return
-	}
-	defer rows.Close()
-	if req.Method == "get" {
-		var rowsAll []string = []string{}
-		for rows.Next() {
-			var row string
-			rows.Scan(&row)
-			rowsAll = append(rowsAll, row)
-		}
-		c.JSON(200, entities.ExecuteSQLResp{Rows: rowsAll})
-		return
-	} else {
-		var rowsAll [][]string = [][]string{}
-		// First, get the column names
-		columns, err := rows.Columns()
-		if err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
-			return
-		}
-
-		// Create a slice of interface{} to hold the scanned values
-		values := make([]interface{}, len(columns))
-		for i := range values {
-			values[i] = new(sql.RawBytes)
-		}
-
-		for rows.Next() {
-			// Scan the row into the values slice
-			if err := rows.Scan(values...); err != nil {
-				c.JSON(500, gin.H{"error": err.Error()})
-				return
-			}
-
-			// Convert each value to string
-			row := make([]string, len(columns))
-			for i, val := range values {
-				if rb, ok := val.(*sql.RawBytes); ok {
-					row[i] = string(*rb)
-				}
-			}
-			rowsAll = append(rowsAll, row)
-		}
-		c.JSON(200, entities.ExecuteSQLRespAll{Rows: rowsAll})
-		return
-	}
+	pgsql.CommonDBQuery(dbConns, c, "mysql")
 }

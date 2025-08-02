@@ -187,5 +187,6 @@ type ExecuteSQLResp struct {
 }
 
 type ExecuteSQLRespAll struct {
-	Rows [][]string `json:"rows"`
+	Rows  [][]string `json:"rows"`
+	Types []string   `json:"types"`
 }
