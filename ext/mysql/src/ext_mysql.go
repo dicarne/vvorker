@@ -7,6 +7,7 @@ import (
 	"strings"
 	"vvorker/common"
 	"vvorker/conf"
+	"vvorker/defs"
 	"vvorker/entities"
 	"vvorker/funcs"
 	"vvorker/models"
@@ -421,4 +422,53 @@ func MigrateMySQLDatabase(userID uint64, pgid string) error {
 
 func init() {
 	funcs.SetMigrateMySQLDatabase(MigrateMySQLDatabase)
+	dbConns = defs.NewSyncMap[string, *sql.DB](map[string]*sql.DB{})
+}
+
+var dbConns *defs.SyncMap[string, *sql.DB]
+
+func ExecuteSQLMysqlEndpoint(c *gin.Context) {
+	var req = entities.ExecuteSQLReq{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
+			gin.H{"error": err.Error()})
+		return
+	}
+	dbConn, ok := dbConns.Get(req.ConnectionString)
+	if !ok {
+		dbConn, err := sql.Open("mysql", req.ConnectionString)
+		if err != nil {
+			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
+				gin.H{"error": err.Error()})
+			return
+		}
+		defer dbConn.Close()
+		dbConns.Set(req.ConnectionString, dbConn)
+	}
+	rows, err := dbConn.Query(req.Sql, req.Params...)
+	if err != nil {
+		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
+			gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+	if req.Method == "get" {
+		var rowsAll []string
+		for rows.Next() {
+			var row string
+			rows.Scan(&row)
+			rowsAll = append(rowsAll, row)
+		}
+		common.RespOK(c, common.RespMsgOK, entities.ExecuteSQLResp{Rows: rowsAll})
+		return
+	} else {
+		var rowsAll [][]string
+		for rows.Next() {
+			var row []string
+			rows.Scan(&row)
+			rowsAll = append(rowsAll, row)
+		}
+		common.RespOK(c, common.RespMsgOK, entities.ExecuteSQLRespAll{Rows: rowsAll})
+		return
+	}
 }

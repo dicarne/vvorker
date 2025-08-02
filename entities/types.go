@@ -174,3 +174,18 @@ type CreateNewResourcesResponse struct {
 	Name   string `json:"name"`
 	Type   string `json:"type"`
 }
+
+type ExecuteSQLReq struct {
+	Sql              string `json:"sql"`
+	Params           []any  `json:"params"`
+	Method           string `json:"method"`
+	ConnectionString string `json:"connection_string"`
+}
+
+type ExecuteSQLResp struct {
+	Rows []string `json:"rows"`
+}
+
+type ExecuteSQLRespAll struct {
+	Rows [][]string `json:"rows"`
+}
