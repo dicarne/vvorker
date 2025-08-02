@@ -80,7 +80,7 @@ export default class PGSQL extends WorkerEntrypoint {
 		}
 	}
 	async query(sql: string, params: any, method: string) {
-		return (await rpc(sql, params, method, this.connectionString())).json()
+		return (await rpc(sql, params, method, this.connectionString() + "?sslmode=disable")).json()
 	}
 }
 
