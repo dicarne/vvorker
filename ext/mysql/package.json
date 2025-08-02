@@ -1,6 +1,6 @@
 {
 	"name": "@dicarne/vvorker-mysql",
-	"version": "0.1.6",
+	"version": "0.1.7",
 	"scripts": {
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
