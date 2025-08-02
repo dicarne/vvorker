@@ -182,11 +182,16 @@ type ExecuteSQLReq struct {
 	ConnectionString string `json:"connection_string"`
 }
 
-type ExecuteSQLResp struct {
-	Rows []string `json:"rows"`
+type ExecuteSQLAffect struct {
+	InsertId     int64 `json:"insertId"`
+	AffectedRows int64 `json:"affectedRows"`
 }
 
-type ExecuteSQLRespAll struct {
+type ExecuteSQLResp struct {
+	Rows []ExecuteSQLAffect `json:"rows"`
+}
+
+type QuerySQLRespAll struct {
 	Rows  [][]string `json:"rows"`
 	Types []string   `json:"types"`
 }
