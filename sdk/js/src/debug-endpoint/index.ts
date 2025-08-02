@@ -56,6 +56,8 @@ export function useDebugEndpoint(app0: any) {
                             return c.json({ message: "pgsql", data: await pgsql.connectionString() });
                         case "connectionInfo":
                             return c.json({ message: "pgsql", data: await pgsql.connectionInfo() });
+                        case "querysql":
+                            return c.json({ message: "pgsql", data: await pgsql.query(req.params.sql, req.params.params, req.params.method) });
                         default:
                             return c.json({ error: "method not found", req }, 404)
                     }
@@ -71,6 +73,8 @@ export function useDebugEndpoint(app0: any) {
                             return c.json({ message: "mysql", data: await mysql.connectionString() });
                         case "connectionInfo":
                             return c.json({ message: "mysql", data: await mysql.connectionInfo() });
+                        case "query":
+                            return c.json({ message: "mysql", data: await mysql.query(req.params.sql, req.params.params, req.params.method) });
                         default:
                             return c.json({ error: "method not found", req }, 404)
                     }

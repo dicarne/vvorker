@@ -453,22 +453,46 @@ func ExecuteSQLMysqlEndpoint(c *gin.Context) {
 	}
 	defer rows.Close()
 	if req.Method == "get" {
-		var rowsAll []string
+		var rowsAll []string = []string{}
 		for rows.Next() {
 			var row string
 			rows.Scan(&row)
 			rowsAll = append(rowsAll, row)
 		}
-		common.RespOK(c, common.RespMsgOK, entities.ExecuteSQLResp{Rows: rowsAll})
+		c.JSON(200, entities.ExecuteSQLResp{Rows: rowsAll})
 		return
 	} else {
-		var rowsAll [][]string
+		var rowsAll [][]string = [][]string{}
+		// First, get the column names
+		columns, err := rows.Columns()
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Create a slice of interface{} to hold the scanned values
+		values := make([]interface{}, len(columns))
+		for i := range values {
+			values[i] = new(sql.RawBytes)
+		}
+
 		for rows.Next() {
-			var row []string
-			rows.Scan(&row)
+			// Scan the row into the values slice
+			if err := rows.Scan(values...); err != nil {
+				c.JSON(500, gin.H{"error": err.Error()})
+				return
+			}
+
+			// Convert each value to string
+			row := make([]string, len(columns))
+			for i, val := range values {
+				if rb, ok := val.(*sql.RawBytes); ok {
+					row[i] = string(*rb)
+				}
+			}
 			rowsAll = append(rowsAll, row)
 		}
-		common.RespOK(c, common.RespMsgOK, entities.ExecuteSQLRespAll{Rows: rowsAll})
+		c.JSON(200, entities.ExecuteSQLRespAll{Rows: rowsAll})
 		return
 	}
 }
