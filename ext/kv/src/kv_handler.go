@@ -7,6 +7,7 @@ import (
 	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/entities"
+	"vvorker/ext/kv/src/sys_cache"
 	"vvorker/models"
 	"vvorker/utils"
 	"vvorker/utils/database"
@@ -33,6 +34,8 @@ func init() {
 		logrus.Panic(err)
 	}
 	buckets = defs.NewSyncMap(map[string]bool{})
+	ExistBucket("sys_cache")
+	sys_cache.InitCache(db)
 }
 
 func Close() {

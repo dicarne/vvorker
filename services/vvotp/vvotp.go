@@ -83,7 +83,7 @@ func ValidAddOTPEndpoint(c *gin.Context) {
 	}
 
 	key, err := kv.Get("otp", "tmpkey:"+user.UserName)
-	if err != nil {
+	if err != nil || len(key) == 0 {
 		common.RespErr(c, 400, "error", gin.H{"error": "Timeout"})
 		return
 	}

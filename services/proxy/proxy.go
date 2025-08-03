@@ -192,21 +192,21 @@ func Endpoint(c *gin.Context) {
 		}
 	}
 
-	var startTime = time.Now()
+	// var startTime = time.Now()
 	proxy := httputil.NewSingleHostReverseProxy(remote)
 	proxy.ServeHTTP(c.Writer, c.Request)
-	var endTime = time.Now()
-	go func(uid string, status int, method string, path string) {
-		db := database.GetDB()
-		db.Create(&models.ResponseLog{
-			WorkerUID:  uid,
-			Status:     c.Writer.Status(),
-			Method:     method,
-			Path:       path,
-			Time:       time.Now(),
-			DurationMS: endTime.Sub(startTime).Milliseconds(),
-		})
-	}(worker.UID, c.Writer.Status(), c.Request.Method, c.Request.URL.Path)
+	// var endTime = time.Now()
+	// go func(uid string, status int, method string, path string) {
+	// 	db := database.GetDB()
+	// 	db.Create(&models.ResponseLog{
+	// 		WorkerUID:  uid,
+	// 		Status:     c.Writer.Status(),
+	// 		Method:     method,
+	// 		Path:       path,
+	// 		Time:       time.Now(),
+	// 		DurationMS: endTime.Sub(startTime).Milliseconds(),
+	// 	})
+	// }(worker.UID, c.Writer.Status(), c.Request.Method, c.Request.URL.Path)
 }
 
 type WorkerRequestStatsReq struct {

@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"vvorker/defs"
 	"vvorker/entities"
 	"vvorker/exec"
+	"vvorker/ext/kv/src/sys_cache"
 	workercopy "vvorker/models/worker_copy"
 	"vvorker/rpc"
 	"vvorker/tunnel"
@@ -139,6 +141,12 @@ func AdminGetWorkerByNameSimple(name string) (*WorkerSimple, error) {
 	var worker WorkerSimple
 	db := database.GetDB()
 
+	cacheKey := fmt.Sprintf("db:workerd:uid_name_%s", name)
+	if v, err := sys_cache.Get(cacheKey); err == nil && len(v) != 0 {
+		json.Unmarshal(v, &worker)
+		return &worker, nil
+	}
+
 	if err := db.Model(&Worker{}).Select(
 		"UID",
 		"EnableAccessControl",
@@ -152,6 +160,8 @@ func AdminGetWorkerByNameSimple(name string) (*WorkerSimple, error) {
 	).First(&worker).Error; err != nil {
 		return nil, err
 	}
+	v, _ := json.Marshal(worker)
+	sys_cache.Put(cacheKey, v, 1)
 	return &worker, nil
 }
 

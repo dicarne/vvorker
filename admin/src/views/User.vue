@@ -154,7 +154,6 @@ onMounted(async () => {
 const otpUrl = ref<string>('')
 const otpEnabled = ref<boolean>(false)
 const handleOtpSwitchChange = async (value: boolean) => {
-  console.log(value)
   if (value) {
     try {
       const res = await enableOtp()
