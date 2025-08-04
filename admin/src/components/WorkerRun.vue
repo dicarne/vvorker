@@ -22,6 +22,7 @@ const handleRun = async () => {
     notification.info({
       title: 'Worker Run Result',
       content: () => h('div', {}, decodedResp),
+      duration: 5000,
     })
   } catch (error) {
     console.error('runWorker Error', error)
