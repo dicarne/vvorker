@@ -83,7 +83,7 @@ func GlobalCache(key string, getValueFn func() ([]byte, error), ttl int) ([]byte
 	if v, err := Get(cacheKey); err == nil && len(v) != 0 {
 		go func() {
 			guid := utils.GenerateUID()
-			_, _ = PutNX(lockKey, []byte(guid), 10)
+			_, _ = PutNX(lockKey, []byte(guid), ttl)
 			guid2, _ := Get(lockKey)
 			if guid == string(guid2) {
 				v, err := getValueFn()
