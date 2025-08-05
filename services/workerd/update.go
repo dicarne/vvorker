@@ -2,12 +2,14 @@ package workerd
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"runtime/debug"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/entities"
 	"vvorker/exec"
+	"vvorker/ext/kv/src/sys_cache"
 	"vvorker/models"
 	"vvorker/utils"
 	"vvorker/utils/generate"
@@ -128,6 +130,13 @@ func UpdateEndpointJSON(c *gin.Context) {
 		return
 	}
 
+	if oldworker.Name != worker.Worker.Name {
+		cacheKey := fmt.Sprintf("db:workerd:uid_name_%s_cache:", oldworker.Name)
+		lockKey := fmt.Sprintf("db:workerd:uid_name_%s_lock:", oldworker.Name)
+		sys_cache.Del(cacheKey)
+		sys_cache.Del(lockKey)
+	}
+
 	common.RespOK(c, "update worker success", nil)
 }
 
@@ -190,6 +199,12 @@ func UpdateWorkerWithFile(c *gin.Context) {
 		return
 	}
 
+	if oldWorker.Name != req.Worker.Name {
+		cacheKey := fmt.Sprintf("db:workerd:uid_name_%s_cache:", oldWorker.Name)
+		lockKey := fmt.Sprintf("db:workerd:uid_name_%s_lock:", oldWorker.Name)
+		sys_cache.Del(cacheKey)
+		sys_cache.Del(lockKey)
+	}
 	common.RespOK(c, "update worker with file success", nil)
 }
 

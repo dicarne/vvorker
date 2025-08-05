@@ -67,6 +67,8 @@ func init() {
 			break
 		}
 		utils.WaitForPort("localhost", conf.AppConfigInstance.TunnelAPIPort)
+		logrus.Info("Waitting for client...")
+		time.Sleep(time.Second * 2)
 		NodeWorkersInit()
 	}()
 }
@@ -140,28 +142,30 @@ type WorkerSimple struct {
 func AdminGetWorkerByNameSimple(name string) (*WorkerSimple, error) {
 	var worker WorkerSimple
 	db := database.GetDB()
-
-	cacheKey := fmt.Sprintf("db:workerd:uid_name_%s", name)
-	if v, err := sys_cache.Get(cacheKey); err == nil && len(v) != 0 {
-		json.Unmarshal(v, &worker)
-		return &worker, nil
-	}
-
-	if err := db.Model(&Worker{}).Select(
-		"UID",
-		"EnableAccessControl",
-		"NodeName",
-	).Where(
-		&Worker{
-			Worker: &entities.Worker{
-				Name: name,
+	bytes, err := sys_cache.GlobalCache("worker_uid_name", func() ([]byte, error) {
+		if err := db.Model(&Worker{}).Select(
+			"UID",
+			"EnableAccessControl",
+			"NodeName",
+		).Where(
+			&Worker{
+				Worker: &entities.Worker{
+					Name: name,
+				},
 			},
-		},
-	).First(&worker).Error; err != nil {
+		).First(&worker).Error; err != nil {
+			return nil, err
+		}
+		v, err := json.Marshal(worker)
+		if err != nil {
+			return nil, err
+		}
+		return v, nil
+	}, 10)
+	if err != nil {
 		return nil, err
 	}
-	v, _ := json.Marshal(worker)
-	sys_cache.Put(cacheKey, v, 1)
+	json.Unmarshal(bytes, &worker)
 	return &worker, nil
 }
 
@@ -509,8 +513,7 @@ func (w *Worker) UpdateFile() error {
 }
 
 func (w *Worker) Run() ([]byte, error) {
-	var addr string
-	addr = fmt.Sprintf("http://%s:%d", conf.AppConfigInstance.TunnelHost, conf.AppConfigInstance.TunnelEntryPort)
+	addr := fmt.Sprintf("http://%s:%d", conf.AppConfigInstance.TunnelHost, conf.AppConfigInstance.TunnelEntryPort)
 	resp, err := req.C().R().SetHeader(
 		defs.HeaderHost, fmt.Sprintf("%s%s", w.Name, conf.AppConfigInstance.WorkerURLSuffix),
 	).Get(addr)
