@@ -121,6 +121,19 @@ export function useDebugEndpoint(app0: any) {
                             return c.json({ error: "method not found", req }, 404)
                     }
                 }
+            case "assets":
+                {
+                    let assets = ((c.env as any)[req.binding] as Fetcher)
+                    if (!assets) {
+                        return c.json({ error: "assets binding not found", req }, 404)
+                    }
+                    switch (req.method) {
+                        case "fetch":
+                            return assets.fetch(req.params.url, req.params.init)
+                        default:
+                            return c.json({ error: "method not found", req }, 404)
+                    }
+                }
             case "proxy":
                 {
                     let proxy = ((c.env as any)[req.binding] as ServiceBinding)

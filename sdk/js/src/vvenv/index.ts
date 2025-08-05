@@ -440,28 +440,49 @@ function proxy(key: string, binding: ServiceBinding) {
         return {
             fetch: (url: string, init?: RequestInit) => fetch(url, init)
         }
-        // fetch: async (path: string, init?: RequestInit) => {
-        //     let r = await fetch(`${config().url}/__vvorker__debug`, {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             "Authorization": `Bearer ${config().token}`
-        //         },
-        //         body: JSON.stringify({
-        //             service: "proxy",
-        //             binding: key,
-        //             method: "fetch",
-        //             params: {
-        //                 url: path,
-        //                 init: init
-        //             }
-        //         })
-        //     })
-        //     return r
-        // }
     }
 
     return binding
+}
+
+function assets(key: string, binding: Fetcher) {
+    if (isDev()) {
+        return {
+            fetch: async (path: string, init?: RequestInit) => {
+                if (!init) {
+                    init = {}
+                }
+                if (!init.headers) {
+                    init.headers = {}
+                }
+                init.headers = {
+                    ...init.headers,
+                    "vvorker-worker-uid": ((import.meta as any).env.VITE_APP_UID ?? "") as string
+                }
+                let r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "assets",
+                        binding: key,
+                        method: "fetch",
+                        params: {
+                            url: "http://vvorker.local" + (path.startsWith("/") ? path : "/" + path),
+                            init: init
+                        }
+                    })
+                })
+                return r
+            }
+        }
+    }
+    return {
+        fetch: async (path: string, init?: RequestInit) =>
+            binding.fetch("http://vvorker.local" + (path.startsWith("/") ? path : "/" + path), init)
+    }
 }
 
 /**
@@ -476,6 +497,7 @@ export function vvbind<T extends { env: { vars: any, [key: string]: any } }>(c: 
         kv: (key: string) => vvkv(key, c.env[key]),
         proxy: (key: string) => proxy(key, c.env[key]),
         vars: () => vars<{ vars: T['env']['vars'] }>(c.env),
-        service: (name: string) => service(name, c.env[name])
+        service: (name: string) => service(name, c.env[name]),
+        assets: (key: string) => assets(key, c.env[key])
     }
 }
