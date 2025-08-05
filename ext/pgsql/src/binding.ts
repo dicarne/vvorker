@@ -3,7 +3,7 @@ export interface PGSQLBinding {
     connectionInfo: () => Promise<{ user: string, host: string, database: string, password: string, port: number }>;
     client: () => Promise<PGSQLClient>;
     query: (sql: string, params: any, method: string) => Promise<
-        ({ rows: string[] } | { rows: string[][] }) & { types: string[] }
+        ({ rows: string[] } | { rows: string[][] }) & { types: string[]; code: number, msg?: string }
     >;
 }
 

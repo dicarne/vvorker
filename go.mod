@@ -10,6 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-co-op/gocron/v2 v2.16.2
+	github.com/go-sql-driver/mysql v1.8.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
@@ -19,6 +20,8 @@ require (
 	github.com/lucasepe/codename v0.2.0
 	github.com/minio/madmin-go/v4 v4.0.15
 	github.com/minio/minio-go/v7 v7.0.92
+	github.com/nutsdb/nutsdb v1.0.4
+	github.com/pquerna/otp v1.5.0
 	github.com/samber/lo v1.50.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/sourcegraph/conc v0.3.0
@@ -36,11 +39,8 @@ require (
 	github.com/antlabs/timer v0.1.4 // indirect
 	github.com/boombuler/barcode v1.1.0 // indirect
 	github.com/bwmarrin/snowflake v0.3.0 // indirect
-	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/gofrs/flock v0.12.1 // indirect
 	github.com/jonboulle/clockwork v0.5.0 // indirect
-	github.com/nutsdb/nutsdb v1.0.4 // indirect
-	github.com/pquerna/otp v1.5.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/tidwall/btree v1.7.0 // indirect
 	github.com/xujiajun/mmap-go v1.0.1 // indirect
