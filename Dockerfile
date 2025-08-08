@@ -2,7 +2,7 @@ FROM node:22.15 AS node-builder
 
 USER root
 
-LABEL maintainer dicarne@zhishudali.ink
+LABEL maintainer=dicarne@zhishudali.ink
 
 WORKDIR /app
 
@@ -32,9 +32,9 @@ FROM golang:1.24-alpine AS go-builder
 COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
 WORKDIR /app
 
-ENV GOPROXY https://goproxy.cn,direct
-ENV PATH /usr/local/go/bin:$PATH
-ENV GOROOT /usr/local/go
+ENV GOPROXY=https://goproxy.cn,direct
+ENV PATH=/usr/local/go/bin:$PATH
+ENV GOROOT=/usr/local/go
 
 RUN go install github.com/cweill/gotests/gotests@latest 		&& \
 	go install github.com/fatih/gomodifytags@latest     		&& \
