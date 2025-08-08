@@ -3,7 +3,7 @@ package vvotp
 import (
 	"vvorker/common"
 	"vvorker/conf"
-	kv "vvorker/ext/kv/src"
+	"vvorker/ext/kv/src/sys_cache"
 	"vvorker/models"
 	"vvorker/utils/database"
 
@@ -42,7 +42,7 @@ func EnableOTPEndpoint(c *gin.Context) {
 		return
 	}
 
-	kv.Put("otp", "tmpkey:"+user.UserName, []byte(key.Secret()), 360)
+	sys_cache.Put("otp"+":"+"tmpkey:"+user.UserName, []byte(key.Secret()), 360)
 
 	common.RespOK(c, "OTP enabled successfully", gin.H{"url": key.String()})
 }
@@ -82,7 +82,7 @@ func ValidAddOTPEndpoint(c *gin.Context) {
 		return
 	}
 
-	key, err := kv.Get("otp", "tmpkey:"+user.UserName)
+	key, err := sys_cache.Get("otp" + ":" + "tmpkey:" + user.UserName)
 	if err != nil || len(key) == 0 {
 		common.RespErr(c, 400, "error", gin.H{"error": "Timeout"})
 		return
@@ -109,7 +109,7 @@ func ValidAddOTPEndpoint(c *gin.Context) {
 		return
 	}
 
-	kv.Del("otp", "tmpkey:"+user.UserName)
+	sys_cache.Del("otp" + ":" + "tmpkey:" + user.UserName)
 
 	common.RespOK(c, "OTP enabled successfully", nil)
 }

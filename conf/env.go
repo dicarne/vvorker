@@ -64,8 +64,9 @@ type AppConfig struct {
 	WorkerHostPath string `env:"WORKER_HOST_PATH" env-default:""`     // host 模式需要使用域名进行访问，path则url的第一段为服务名（不包含域名后缀，如example.com/xxxx/admin
 	AdminAPIProxy  bool   `env:"ADMIN_API_PROXY" env-default:"false"` // 允许admin页面代理api请求，这可能会导致路径冲突，并且WORKER_HOST_MODE必须为path
 
-	ServerRedisHost string `env:"SERVER_REDIS_HOST" env-default:"localhost"`
-	ServerRedisPort int    `env:"SERVER_REDIS_PORT" env-default:"6379"`
+	ServerRedisHost     string `env:"SERVER_REDIS_HOST" env-default:"localhost"`
+	ServerRedisPort     int    `env:"SERVER_REDIS_PORT" env-default:"6379"`
+	ServerRedisPassword string `env:"SERVER_REDIS_PASSWORD" env-default:""`
 
 	ServerMinioHost   string `env:"SERVER_MINIO_HOST" env-default:"localhost"` // localhost时为本地
 	ServerMinioPort   int    `env:"SERVER_MINIO_PORT" env-default:"9000"`      // 本地时为9000，远程时为443
@@ -124,7 +125,6 @@ func init() {
 	flag.Parse()
 	logrus.Info("env path: ", *EnvPath)
 
-	var err error
 	AppConfigInstance = &AppConfig{}
 	JwtConf = &JwtConfig{}
 	godotenv.Load(*EnvPath)
@@ -152,10 +152,6 @@ func init() {
 	AppConfigInstance.TunnelPassword = secret.MD5(AppConfigInstance.AgentSecret +
 		AppConfigInstance.WorkerURLSuffix + AppConfigInstance.TunnelUsername)
 	AppConfigInstance.TunnelToken = AppConfigInstance.TunnelPassword
-
-	if err != nil {
-		logrus.Panic(err)
-	}
 }
 
 func IsMaster() bool {

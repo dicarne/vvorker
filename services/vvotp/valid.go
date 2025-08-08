@@ -3,7 +3,7 @@ package vvotp
 import (
 	"fmt"
 	"vvorker/common"
-	kv "vvorker/ext/kv/src"
+	"vvorker/ext/kv/src/sys_cache"
 	"vvorker/models"
 	"vvorker/utils"
 	"vvorker/utils/database"
@@ -42,7 +42,7 @@ func ValidOtpEndpoint(c *gin.Context) {
 	}
 
 	token := utils.GenerateUID()
-	_, err := kv.Put("otp", "validtoken:"+fmt.Sprintf("%d", userID), []byte(token), 360)
+	_, err := sys_cache.Put("otp"+":"+"validtoken:"+fmt.Sprintf("%d", userID), []byte(token), 360)
 	if err != nil {
 		common.RespErr(c, 403, "error", gin.H{"error": "Failed to store OTP token"})
 		return
@@ -72,7 +72,7 @@ func OTPMiddleware() func(c *gin.Context) {
 			return
 		}
 
-		if tk, err := kv.Get("otp", "validtoken:"+fmt.Sprintf("%d", c.GetUint(common.UIDKey))); err != nil || string(tk) != token {
+		if tk, err := sys_cache.Get("otp" + ":" + "validtoken:" + fmt.Sprintf("%d", c.GetUint(common.UIDKey))); err != nil || string(tk) != token {
 			c.AbortWithStatusJSON(403, gin.H{"error": "OTP_REQUIRED", "message": "Unauthorized3"})
 			return
 		}

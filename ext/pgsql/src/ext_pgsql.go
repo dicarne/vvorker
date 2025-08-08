@@ -434,7 +434,7 @@ func MigratePostgreSQLDatabase(userID uint64, pgid string) error {
 
 func init() {
 	funcs.SetMigratePostgreSQLDatabase(MigratePostgreSQLDatabase)
-	dbConns = defs.NewSyncMap[string, *sql.DB](map[string]*sql.DB{})
+	dbConns = defs.NewSyncMap(map[string]*sql.DB{})
 }
 
 var dbConns *defs.SyncMap[string, *sql.DB]
