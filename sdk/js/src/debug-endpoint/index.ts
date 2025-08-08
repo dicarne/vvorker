@@ -81,16 +81,15 @@ export function useDebugEndpoint(app0: any) {
                 }
             case "kv":
                 {
-                    let kv = ((c.env as any)[req.binding] as KVBinding)
-                    if (!kv) {
+                    let client = ((c.env as any)[req.binding] as KVBinding)
+                    if (!client) {
                         return c.json({ error: "kv binding not found", req }, 404)
                     }
-                    let client = await kv.client()
                     switch (req.method) {
                         case "get":
                             return c.json({ message: "kv", data: await client.get(req.params.key) });
                         case "set":
-                            return c.json({ message: "kv", data: await client.set(req.params.key, req.params.value) });
+                            return c.json({ message: "kv", data: await client.set(req.params.key, req.params.value, req.params.options) });
                         case "del":
                             return c.json({ message: "kv", data: await client.del(req.params.key) });
                         case "keys":

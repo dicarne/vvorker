@@ -1,6 +1,6 @@
 {
   "name": "@dicarne/vvorker-sdk",
-  "version": "0.1.30",
+  "version": "0.1.31",
   "description": "VVorker SDK for JavaScript/TypeScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,8 +9,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "pnpm run build",
     "tonpm": "npm publish --access=public"
   },
   "keywords": [
@@ -25,7 +24,7 @@
   },
   "packageManager": "pnpm@10.11.0",
   "dependencies": {
-    "@dicarne/vvorker-kv": "^0.1.3",
+    "@dicarne/vvorker-kv": "^0.1.8",
     "@dicarne/vvorker-mysql": "^0.1.7",
     "@dicarne/vvorker-oss": "^0.1.3",
     "@dicarne/vvorker-pgsql": "^0.1.7",
