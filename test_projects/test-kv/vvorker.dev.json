@@ -7,12 +7,19 @@
   },
   "version": "1.0.0",
   "services": [],
-  "vars": {},
+  "vars": {
+    "MODE": "development"
+  },
   "ai": [],
   "oss": [],
   "pgsql": [],
   "mysql": [],
-  "kv": [],
+  "kv": [
+    {
+      "resource_id": "62c256af2bdd4582a12cedfb4c526260",
+      "binding": "kv"
+    }
+  ],
   "assets": [],
   "compatibility_flags": [
     "nodejs_compat"

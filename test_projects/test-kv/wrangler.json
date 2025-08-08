@@ -4,14 +4,6 @@
   "main": "src/index.ts",
   "compatibility_date": "2025-04-01",
   "upload_source_maps": true,
-  "migrations": [
-    {
-      "new_sqlite_classes": [
-        "MyDurableObject"
-      ],
-      "tag": "v1"
-    }
-  ],
   "observability": {
     "enabled": true
   },
