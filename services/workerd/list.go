@@ -57,10 +57,10 @@ func GetWorkersEndpoint(c *gin.Context) {
 }
 
 type SimpleWorker struct {
-	UID           string `json:"uid"`
-	Name          string `json:"name"`
-	NodeName      string `json:"nodename"`
-	AccessControl bool   `json:"access_control"`
+	UID           string `json:"UID"`
+	Name          string `json:"Name"`
+	NodeName      string `json:"NodeName"`
+	AccessControl bool   `json:"AccessControl"`
 }
 
 func GetAllWorkersEndpoint(c *gin.Context) {
