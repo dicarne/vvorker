@@ -1,0 +1,20 @@
+{
+  "$schema": "vvorker-schema.json",
+  "name": "test-kv",
+  "project": {
+    "uid": "701b4fc728fb44e0b57a758801e29b93",
+    "type": "worker"
+  },
+  "version": "1.0.0",
+  "services": [],
+  "vars": {},
+  "ai": [],
+  "oss": [],
+  "pgsql": [],
+  "mysql": [],
+  "kv": [],
+  "assets": [],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
