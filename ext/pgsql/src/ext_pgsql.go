@@ -358,10 +358,21 @@ func migrateResource(userID uint64, pgid string) error {
 	defer pgdb.Close()
 
 	for _, migrate := range migrates {
+		key := models.GenerateMigrationHistoryKey("pgsql", pgid, migrate.FileName, migrate.FileContent)
+		if err := db.Where(&models.MigrationHistory{
+			Key: key,
+		}).First(&models.MigrationHistory{}).Error; err == nil {
+			continue
+		}
 		_, err = pgdb.Exec(migrate.FileContent)
 		if err != nil {
 			logrus.Error(err)
 			// return err
+		}
+		if err := db.Create(&models.MigrationHistory{
+			Key: key,
+		}).Error; err != nil {
+			logrus.Error(err)
 		}
 	}
 	return nil
@@ -391,10 +402,21 @@ func migrateCustomResource(userID uint64, pgid string) error {
 	}
 	defer pgdb.Close()
 	for _, migrate := range migrates {
+		key := models.GenerateMigrationHistoryKey("pgsql", pgid, migrate.FileName, migrate.FileContent)
+		if err := db.Where(&models.MigrationHistory{
+			Key: key,
+		}).First(&models.MigrationHistory{}).Error; err == nil {
+			continue
+		}
 		_, err = pgdb.Exec(migrate.FileContent)
 		if err != nil {
 			logrus.Error(err)
 			// return err
+		}
+		if err := db.Create(&models.MigrationHistory{
+			Key: key,
+		}).Error; err != nil {
+			logrus.Error(err)
 		}
 	}
 	return nil

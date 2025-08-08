@@ -1,6 +1,9 @@
 package models
 
 import (
+	"crypto/md5"
+	"encoding/hex"
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -74,6 +77,20 @@ type MySQLMigration struct {
 	CustomDBHost     string `json:"custom_db_host"`
 	CustomDBPort     int    `json:"custom_db_port"`
 	CustomDBPassword string `json:"custom_db_password"`
+}
+
+type MigrationHistory struct {
+	gorm.Model
+	Key string `gorm:"index"`
+}
+
+func GenerateMigrationHistoryKey(sqlType string, uid string, fileName string, content string) string {
+	// md5(sqlType:uid:filename:md5(content))
+	hash := md5.Sum([]byte(content))
+	contentMd5 := hex.EncodeToString(hash[:])
+	rawKey := fmt.Sprintf("%s:%s:%s:%s", sqlType, uid, fileName, contentMd5)
+	hash2 := md5.Sum([]byte(rawKey))
+	return hex.EncodeToString(hash2[:])
 }
 
 type Assets struct {

@@ -369,10 +369,21 @@ func migrateCustomMySQLResource(userID uint64, pgid string) error {
 	defer dbConn.Close()
 
 	for _, migrate := range migrates {
+		key := models.GenerateMigrationHistoryKey("mysql", pgid, migrate.FileName, migrate.FileContent)
+		if err := db.Where(&models.MigrationHistory{
+			Key: key,
+		}).First(&models.MigrationHistory{}).Error; err == nil {
+			continue
+		}
 		_, err = dbConn.Exec(migrate.FileContent)
 		if err != nil {
 			logrus.Error(err)
 			// Continue with next migration even if one fails
+		}
+		if err := db.Create(&models.MigrationHistory{
+			Key: key,
+		}).Error; err != nil {
+			logrus.Error(err)
 		}
 	}
 
@@ -407,10 +418,21 @@ func MigrateMySQLDatabase(userID uint64, pgid string) error {
 		defer dbConn.Close()
 
 		for _, migrate := range migrates {
+			key := models.GenerateMigrationHistoryKey("mysql", mysqlResource.UID, migrate.FileName, migrate.FileContent)
+			if err := db.Where(&models.MigrationHistory{
+				Key: key,
+			}).First(&models.MigrationHistory{}).Error; err == nil {
+				continue
+			}
 			_, err = dbConn.Exec(migrate.FileContent)
 			if err != nil {
 				logrus.Error(err)
 				// Continue with next migration even if one fails
+			}
+			if err := db.Create(&models.MigrationHistory{
+				Key: key,
+			}).Error; err != nil {
+				logrus.Error(err)
 			}
 		}
 
