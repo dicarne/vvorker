@@ -368,7 +368,7 @@ func migrateResource(userID uint64, pgid string) error {
 		if err != nil {
 			logrus.Error(err)
 			// return err
-			continue
+			// continue
 		}
 		if err := db.Create(&models.MigrationHistory{
 			Key: key,
@@ -413,7 +413,7 @@ func migrateCustomResource(userID uint64, pgid string) error {
 		if err != nil {
 			logrus.Error(err)
 			// return err
-			continue
+			// continue
 		}
 		if err := db.Create(&models.MigrationHistory{
 			Key: key,

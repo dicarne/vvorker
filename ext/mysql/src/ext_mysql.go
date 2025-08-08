@@ -379,7 +379,7 @@ func migrateCustomMySQLResource(userID uint64, pgid string) error {
 		if err != nil {
 			logrus.Error(err)
 			// Continue with next migration even if one fails
-			continue
+			// continue
 		}
 		if err := db.Create(&models.MigrationHistory{
 			Key: key,
@@ -429,7 +429,7 @@ func MigrateMySQLDatabase(userID uint64, pgid string) error {
 			if err != nil {
 				logrus.Error(err)
 				// Continue with next migration even if one fails
-				continue
+				// continue
 			}
 			if err := db.Create(&models.MigrationHistory{
 				Key: key,
