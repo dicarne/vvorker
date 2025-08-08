@@ -1,0 +1,20 @@
+{
+  "$schema": "vvorker-schema.json",
+  "name": "permfomance",
+  "project": {
+    "uid": "48629db605924ee784a6bd22b909adbb",
+    "type": "worker"
+  },
+  "version": "1.0.0",
+  "services": [],
+  "vars": {},
+  "ai": [],
+  "oss": [],
+  "pgsql": [],
+  "mysql": [],
+  "kv": [],
+  "assets": [],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
