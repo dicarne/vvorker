@@ -35,11 +35,13 @@ async function createWorkerProject(projectName: string, jsonData: object) {
   const wranglerJson = json5.parse(await fs.readFile(wranglerJsonPath, 'utf-8'));
   wranglerJson.compatibility_flags = ["nodejs_compat"];
   wranglerJson.durable_objects = undefined;
+  wranglerJson.migrations = undefined;
   await fs.writeJson(wranglerJsonPath, wranglerJson, { spaces: 2 });
 
   const packageJsonPath = path.join(projectName, 'package.json');
   const packageJson = json5.parse(await fs.readFile(packageJsonPath, 'utf-8'));
   packageJson.type = "module";
+  packageJson.name = projectName;
   packageJson.scripts.dev = "vite";
   packageJson.scripts.build = "vite build";
   packageJson.scripts.start = undefined;
