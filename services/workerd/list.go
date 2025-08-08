@@ -57,9 +57,10 @@ func GetWorkersEndpoint(c *gin.Context) {
 }
 
 type SimpleWorker struct {
-	UID      string `json:"uid"`
-	Name     string `json:"name"`
-	NodeName string `json:"nodename"`
+	UID           string `json:"uid"`
+	Name          string `json:"name"`
+	NodeName      string `json:"nodename"`
+	AccessControl bool   `json:"access_control"`
 }
 
 func GetAllWorkersEndpoint(c *gin.Context) {
@@ -79,9 +80,10 @@ func GetAllWorkersEndpoint(c *gin.Context) {
 	var simpleWorkers []*SimpleWorker
 	for _, worker := range workers {
 		simpleWorkers = append(simpleWorkers, &SimpleWorker{
-			UID:      worker.UID,
-			Name:     worker.Name,
-			NodeName: worker.NodeName,
+			UID:           worker.UID,
+			Name:          worker.Name,
+			NodeName:      worker.NodeName,
+			AccessControl: worker.EnableAccessControl,
 		})
 	}
 
