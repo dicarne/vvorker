@@ -119,6 +119,9 @@ export const deployCommand = new Command('deploy')
       jsFilePath = `${process.cwd()}/dist/${packageJson.name.replaceAll("-", "_")}/index.js`;
     } else {
       jsFilePath = `${process.cwd()}/dist/index.js`;
+      if (!fs.existsSync(jsFilePath)) {
+        jsFilePath = `${process.cwd()}/dist/${packageJson.name.replaceAll("-", "_")}/index.js`;
+      }
     }
 
     const distFilePath = `${process.cwd()}/dist/vvorker.json`;

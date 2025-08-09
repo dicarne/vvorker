@@ -1,4 +1,4 @@
-import { KVBinding, KV } from "@dicarne/vvorker-kv";
+import { KVBinding } from "@dicarne/vvorker-kv";
 import { OSSBinding } from "@dicarne/vvorker-oss";
 import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
 import { MYSQLBinding } from "@dicarne/vvorker-mysql";
@@ -288,81 +288,85 @@ function vvmysql(key: string, binding: MYSQLBinding): MYSQLBinding {
 function vvkv(binding_key: string, binding: KVBinding): KVBinding {
     if (isDev()) {
         return {
-            client: () => Promise.resolve({
-                get: async (key: string) => {
-                    const r = await fetch(`${config().url}/__vvorker__debug`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${config().token}`
-                        },
-                        body: JSON.stringify({
-                            service: "kv",
-                            binding: binding_key,
-                            method: "get",
-                            params: {
-                                key
-                            }
-                        })
+            get: async (key: string) => {
+                const r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "kv",
+                        binding: binding_key,
+                        method: "get",
+                        params: {
+                            key
+                        }
                     })
-                    return (await r.json() as any).data
-                },
-                set: async (key: string, value: string) => {
-                    const r = await fetch(`${config().url}/__vvorker__debug`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${config().token}`
-                        },
-                        body: JSON.stringify({
-                            service: "kv",
-                            binding: binding_key,
-                            method: "set",
-                            params: {
-                                key,
-                                value
-                            }
-                        })
+                })
+                return (await r.json() as any).data
+            },
+            set: async (key: string, value: string, options?: {
+                EX?: number,
+                NX?: boolean,
+                XX?: boolean
+            } | number) => {
+                const r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "kv",
+                        binding: binding_key,
+                        method: "set",
+                        params: {
+                            key,
+                            value,
+                            options
+                        }
                     })
-                    return (await r.json() as any).data
-                },
-                del: async (key: string) => {
-                    const r = await fetch(`${config().url}/__vvorker__debug`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${config().token}`
-                        },
-                        body: JSON.stringify({
-                            service: "kv",
-                            binding: binding_key,
-                            method: "del",
-                            params: {
-                                key
-                            }
-                        })
+                })
+                return (await r.json() as any).data
+            },
+            del: async (key: string) => {
+                const r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "kv",
+                        binding: binding_key,
+                        method: "del",
+                        params: {
+                            key
+                        }
                     })
-                    return (await r.json() as any).data
-                },
-                keys: async (pattern: string) => {
-                    const r = await fetch(`${config().url}/__vvorker__debug`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${config().token}`
-                        },
-                        body: JSON.stringify({
-                            service: "kv",
-                            binding: binding_key,
-                            method: "keys",
-                            params: {
-                                pattern
-                            }
-                        })
+                })
+                return (await r.json() as any).data
+            },
+            keys: async (pattern: string) => {
+                const r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "kv",
+                        binding: binding_key,
+                        method: "keys",
+                        params: {
+                            pattern
+                        }
                     })
-                    return (await r.json() as any).data
-                },
-            })
+                })
+                return (await r.json() as any).data
+            },
+
         }
     } else {
         return binding
@@ -440,28 +444,49 @@ function proxy(key: string, binding: ServiceBinding) {
         return {
             fetch: (url: string, init?: RequestInit) => fetch(url, init)
         }
-        // fetch: async (path: string, init?: RequestInit) => {
-        //     let r = await fetch(`${config().url}/__vvorker__debug`, {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             "Authorization": `Bearer ${config().token}`
-        //         },
-        //         body: JSON.stringify({
-        //             service: "proxy",
-        //             binding: key,
-        //             method: "fetch",
-        //             params: {
-        //                 url: path,
-        //                 init: init
-        //             }
-        //         })
-        //     })
-        //     return r
-        // }
     }
 
     return binding
+}
+
+function assets(key: string, binding: Fetcher) {
+    if (isDev()) {
+        return {
+            fetch: async (path: string, init?: RequestInit) => {
+                if (!init) {
+                    init = {}
+                }
+                if (!init.headers) {
+                    init.headers = {}
+                }
+                init.headers = {
+                    ...init.headers,
+                    "vvorker-worker-uid": ((import.meta as any).env.VITE_APP_UID ?? "") as string
+                }
+                let r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "assets",
+                        binding: key,
+                        method: "fetch",
+                        params: {
+                            url: "http://vvorker.local" + (path.startsWith("/") ? path : "/" + path),
+                            init: init
+                        }
+                    })
+                })
+                return r
+            }
+        }
+    }
+    return {
+        fetch: async (path: string, init?: RequestInit) =>
+            binding.fetch("http://vvorker.local" + (path.startsWith("/") ? path : "/" + path), init)
+    }
 }
 
 /**
@@ -476,6 +501,7 @@ export function vvbind<T extends { env: { vars: any, [key: string]: any } }>(c: 
         kv: (key: string) => vvkv(key, c.env[key]),
         proxy: (key: string) => proxy(key, c.env[key]),
         vars: () => vars<{ vars: T['env']['vars'] }>(c.env),
-        service: (name: string) => service(name, c.env[name])
+        service: (name: string) => service(name, c.env[name]),
+        assets: (key: string) => assets(key, c.env[key])
     }
 }

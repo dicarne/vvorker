@@ -2,10 +2,12 @@
 let mode = "production"
 
 export function init(env: any) {
-    if (env.vars && env.vars.MODE) {
+    if (env && env.vars && env.vars.MODE) {
         mode = env.vars.MODE
     } else {
-        mode = (import.meta as any).env.MODE
+        if (import.meta && (import.meta as any).env && (import.meta as any).env.MODE) {
+            mode = (import.meta as any).env.MODE
+        }
     }
 }
 

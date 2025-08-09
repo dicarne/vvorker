@@ -56,6 +56,13 @@ func GetWorkersEndpoint(c *gin.Context) {
 	common.RespOK(c, "get worker success", models.Trans2Entities(workers))
 }
 
+type SimpleWorker struct {
+	UID           string `json:"UID"`
+	Name          string `json:"Name"`
+	NodeName      string `json:"NodeName"`
+	AccessControl bool   `json:"AccessControl"`
+}
+
 func GetAllWorkersEndpoint(c *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -70,11 +77,17 @@ func GetAllWorkersEndpoint(c *gin.Context) {
 		return
 	}
 
+	var simpleWorkers []*SimpleWorker
 	for _, worker := range workers {
-		worker.Worker.Code = nil
+		simpleWorkers = append(simpleWorkers, &SimpleWorker{
+			UID:           worker.UID,
+			Name:          worker.Name,
+			NodeName:      worker.NodeName,
+			AccessControl: worker.EnableAccessControl,
+		})
 	}
 
-	common.RespOK(c, "get all workers success", models.Trans2Entities(workers))
+	common.RespOK(c, "get all workers success", simpleWorkers)
 }
 
 type GetWorkerRespose struct {

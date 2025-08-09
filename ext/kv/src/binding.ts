@@ -1,9 +1,5 @@
 export interface KVBinding {
-    client: () => Promise<KV>;
-}
-
-export interface KV {
-    get(key: string): Promise<string>;
+    get(key: string): Promise<string | null>;
     set(key: string, value: string, options?: {
         EX?: number,
         NX?: boolean,
@@ -11,5 +7,4 @@ export interface KV {
     } | number): Promise<number>;
     del(key: string): Promise<void>;
     keys(pattern: string, offset: number, size: number): Promise<string[]>;
-
 }

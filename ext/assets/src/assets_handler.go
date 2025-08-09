@@ -3,7 +3,7 @@ package assets
 import (
 	"mime"
 	"vvorker/entities"
-	kv "vvorker/ext/kv/src"
+	"vvorker/ext/kv/src/sys_cache"
 	"vvorker/models"
 	"vvorker/utils/database"
 
@@ -204,7 +204,7 @@ func GetAssetsEndpoint(c *gin.Context) {
 		return
 	}
 
-	cache, err := kv.Get(AssetBucket, asset.UID+":data")
+	cache, err := sys_cache.Get(AssetBucket + ":" + asset.UID + ":data")
 	if len(cache) == 0 || err != nil {
 		var file models.File
 		if err := db.Where(&models.File{
@@ -219,11 +219,11 @@ func GetAssetsEndpoint(c *gin.Context) {
 			// 如果没有匹配的 MIME 类型，默认使用 application/octet-stream
 			mimeType = "application/octet-stream"
 		}
-		kv.Put(AssetBucket, asset.UID+":data", file.Data, 3600)
-		kv.Put(AssetBucket, asset.UID+":mime", []byte(mimeType), 3600)
+		sys_cache.Put(AssetBucket+":"+asset.UID+":data", file.Data, 3600)
+		sys_cache.Put(AssetBucket+":"+asset.UID+":mime", []byte(mimeType), 3600)
 		c.Data(200, mimeType, file.Data)
 	} else {
-		bmimeType, _ := kv.Get(AssetBucket, asset.UID+":mime")
+		bmimeType, _ := sys_cache.Get(AssetBucket + ":" + asset.UID + ":mime")
 		mimeType := string(bmimeType)
 		if mimeType == "" {
 			// 如果没有匹配的 MIME 类型，默认使用 application/octet-stream

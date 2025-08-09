@@ -1,4 +1,3 @@
-import { KV } from "@dicarne/vvorker-kv";
 
 export interface DistributedTaskStatus {
     /**
@@ -30,27 +29,27 @@ export interface DistributedTaskStatus {
     payload?: any
 }
 
-export class DistributedTask {
-    constructor(private kv: KV, public id: string) { }
+// export class DistributedTask {
+//     constructor(private kv: KV, public id: string) { }
 
-    async status(): Promise<DistributedTaskStatus | null> {
-        let r = await this.kv.get(`distributed-task:${this.id}`)
-        if (!r) return null
-        return JSON.parse(r)
-    }
+//     async status(): Promise<DistributedTaskStatus | null> {
+//         let r = await this.kv.get(`distributed-task:${this.id}`)
+//         if (!r) return null
+//         return JSON.parse(r)
+//     }
 
-    async start(payload?: any) {
-        if (!this.status()) {
-            return false
-        }
-        await this.kv.set(`distributed-task:${this.id}`, JSON.stringify({
-            id: this.id,
-            status: "pending",
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            result: undefined,
-            payload: payload
-        }))
-        return true
-    }
-}
+//     async start(payload?: any) {
+//         if (!this.status()) {
+//             return false
+//         }
+//         await this.kv.set(`distributed-task:${this.id}`, JSON.stringify({
+//             id: this.id,
+//             status: "pending",
+//             createdAt: Date.now(),
+//             updatedAt: Date.now(),
+//             result: undefined,
+//             payload: payload
+//         }))
+//         return true
+//     }
+// }

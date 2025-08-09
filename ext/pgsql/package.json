@@ -1,6 +1,6 @@
 {
 	"name": "@dicarne/vvorker-pgsql",
-	"version": "0.1.7",
+	"version": "0.1.8",
 	"scripts": {
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",

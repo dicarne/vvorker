@@ -1,47 +1,34 @@
 package kv
 
 import (
-	"errors"
 	"net/http"
 	"vvorker/common"
 	"vvorker/conf"
-	"vvorker/defs"
 	"vvorker/entities"
-	"vvorker/ext/kv/src/sys_cache"
+	_ "vvorker/ext/kv/src/kv_nutsdb"
+	kvnutsdb "vvorker/ext/kv/src/kv_nutsdb"
+	kvredis "vvorker/ext/kv/src/kv_redis"
+	kvtypes "vvorker/ext/kv/src/kv_types"
 	"vvorker/models"
 	"vvorker/utils"
 	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"github.com/nutsdb/nutsdb"
-	"github.com/sirupsen/logrus"
 )
 
-var db *nutsdb.DB
-
-var buckets *defs.SyncMap[string, bool]
-
-var SystemBucket = "system"
+var kvStorage kvtypes.IKVStorage
 
 func init() {
-	db2, err := nutsdb.Open(
-		nutsdb.DefaultOptions,
-		nutsdb.WithDir(conf.AppConfigInstance.LocalKVDir), // 数据库会自动创建这个目录文件
-	)
-	db = db2
-	if err != nil {
-		logrus.Panic(err)
+	if conf.AppConfigInstance.KVProvider == "redis" {
+		kvStorage = &kvredis.KVRedis{}
+	} else {
+		kvStorage = &kvnutsdb.KVNutsDB{}
 	}
-	buckets = defs.NewSyncMap(map[string]bool{})
-	ExistBucket("sys_cache")
-	sys_cache.InitCache(db)
 }
 
 func Close() {
-	if db != nil {
-		db.Close()
-	}
+	kvStorage.Close()
 }
 
 func CreateKVResourcesEndpoint(c *gin.Context) {
@@ -133,21 +120,7 @@ func DeleteKVResourcesEndpoint(c *gin.Context) {
 	})
 }
 
-type InvokeKVOptions struct {
-	EX int  `json:"EX"`
-	NX bool `json:"NX"`
-	XX bool `json:"XX"`
-}
-
-type InvokeKVRequest struct {
-	RID     string          `json:"rid"`
-	Key     string          `json:"key"`
-	Value   string          `json:"value"`
-	Method  string          `json:"method"`
-	Options InvokeKVOptions `json:"options"`
-	Offset  int             `json:"offset"`
-	Size    int             `json:"size"`
-}
+/////////////////////
 
 func InvokeKVEndpoint(c *gin.Context) {
 	defer func() {
@@ -155,7 +128,7 @@ func InvokeKVEndpoint(c *gin.Context) {
 			common.RespErr(c, http.StatusInternalServerError, "Failed to invoke KV resource", gin.H{"error": err})
 		}
 	}()
-	var req = InvokeKVRequest{}
+	var req = kvtypes.InvokeKVRequest{}
 	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {
 		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": err.Error()})
 		return
@@ -164,7 +137,7 @@ func InvokeKVEndpoint(c *gin.Context) {
 	switch req.Method {
 	case "get":
 		{
-			value, err := Get(req.RID, req.Key)
+			value, err := kvStorage.Get(req.RID, req.Key)
 			if err != nil {
 				common.RespErr(c, http.StatusInternalServerError, "Failed to get KV resource", gin.H{"error": err.Error()})
 				return
@@ -174,7 +147,7 @@ func InvokeKVEndpoint(c *gin.Context) {
 	case "set":
 		{
 			if req.Options.NX {
-				code, err := PutNX(req.RID, req.Key, []byte(req.Value), req.Options.EX)
+				code, err := kvStorage.PutNX(req.RID, req.Key, []byte(req.Value), req.Options.EX)
 				if code != 0 {
 					common.RespOK(c, "success", code)
 					return
@@ -185,7 +158,7 @@ func InvokeKVEndpoint(c *gin.Context) {
 				}
 
 			} else if req.Options.XX {
-				code, err := PutXX(req.RID, req.Key, []byte(req.Value), req.Options.EX)
+				code, err := kvStorage.PutXX(req.RID, req.Key, []byte(req.Value), req.Options.EX)
 				if code != 0 {
 					common.RespOK(c, "success", code)
 					return
@@ -196,7 +169,7 @@ func InvokeKVEndpoint(c *gin.Context) {
 				}
 
 			} else {
-				code, err := Put(req.RID, req.Key, []byte(req.Value), req.Options.EX)
+				code, err := kvStorage.Put(req.RID, req.Key, []byte(req.Value), req.Options.EX)
 				if code != 0 {
 					common.RespOK(c, "success", code)
 					return
@@ -211,7 +184,7 @@ func InvokeKVEndpoint(c *gin.Context) {
 		}
 	case "del":
 		{
-			if err := Del(req.RID, req.Key); err != nil {
+			if err := kvStorage.Del(req.RID, req.Key); err != nil {
 				common.RespErr(c, http.StatusInternalServerError, "Failed to delete KV resource", gin.H{"error": err.Error()})
 				return
 			}
@@ -219,7 +192,7 @@ func InvokeKVEndpoint(c *gin.Context) {
 		}
 	case "keys":
 		{
-			keys, err := Keys(req.RID, req.Key, req.Offset, req.Size)
+			keys, err := kvStorage.Keys(req.RID, req.Key, req.Offset, req.Size)
 			if err != nil {
 				common.RespErr(c, http.StatusInternalServerError, "Failed to get KV resource", gin.H{"error": err.Error()})
 				return
@@ -230,106 +203,4 @@ func InvokeKVEndpoint(c *gin.Context) {
 		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": "invalid request"})
 		return
 	}
-}
-
-func ExistBucket(bucket string) error {
-	if _, exist := buckets.Get(bucket); exist {
-		return nil
-	}
-	return db.Update(func(tx *nutsdb.Tx) error {
-		tx.NewKVBucket(bucket)
-		buckets.Set(bucket, true)
-		return nil
-	})
-}
-
-func Put(bucket string, key string, value []byte, ttl int) (int, error) {
-	ExistBucket(bucket)
-	code := 0
-	return code, db.Update(func(tx *nutsdb.Tx) error {
-		err := tx.Put(bucket, []byte(key), value, uint32(ttl))
-		if err != nil {
-			code = 1
-			logrus.Error(err)
-		}
-		return err
-	})
-}
-
-func PutNX(bucket string, key string, value []byte, ttl int) (int, error) {
-	ExistBucket(bucket)
-	code := 0
-	return code, db.Update(func(tx *nutsdb.Tx) error {
-		err := tx.PutIfNotExists(bucket, []byte(key), value, uint32(ttl))
-		if err != nil {
-			code = 1
-			logrus.Error(err)
-		}
-		return err
-	})
-}
-
-func PutXX(bucket string, key string, value []byte, ttl int) (int, error) {
-	ExistBucket(bucket)
-	code := 0
-	return code, db.Update(func(tx *nutsdb.Tx) error {
-		err := tx.PutIfExists(bucket, []byte(key), value, uint32(ttl))
-		if err != nil {
-			code = 1
-			logrus.Error(err)
-		}
-		return err
-	})
-}
-
-func Get(bucket string, key string) ([]byte, error) {
-	ExistBucket(bucket)
-	var value []byte
-	err := db.View(func(tx *nutsdb.Tx) error {
-		v, err := tx.Get(bucket, []byte(key))
-		if err != nil {
-			return err
-		}
-		value = v
-		return nil
-	})
-	if err != nil {
-		if errors.Is(err, nutsdb.ErrKeyNotFound) {
-			return []byte(""), nil
-		}
-		return nil, err
-	}
-	return value, nil
-}
-
-func Del(bucket string, key string) error {
-	ExistBucket(bucket)
-	return db.Update(func(tx *nutsdb.Tx) error {
-		return tx.Delete(bucket, []byte(key))
-	})
-}
-
-func Keys(bucket string, prefix string, offset int, size int) ([]string, error) {
-	ExistBucket(bucket)
-	var result []string
-	err := db.View(
-		func(tx *nutsdb.Tx) error {
-			prefixBytes := []byte(prefix)
-			// Based on compiler feedback, tx.PrefixScan appears to return a slice of keys ([]byte),
-			// not a slice of Entry structs.
-			entries, err := tx.PrefixScan(bucket, prefixBytes, offset, size)
-			if err != nil {
-				return err
-			}
-			result = make([]string, 0, len(entries))
-			for _, entry := range entries {
-				result = append(result, string(entry))
-			}
-			return nil
-		})
-
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
 }

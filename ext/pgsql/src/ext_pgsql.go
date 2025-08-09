@@ -358,10 +358,22 @@ func migrateResource(userID uint64, pgid string) error {
 	defer pgdb.Close()
 
 	for _, migrate := range migrates {
+		key := models.GenerateMigrationHistoryKey("pgsql", pgid, migrate.FileName, migrate.FileContent)
+		if err := db.Where(&models.MigrationHistory{
+			Key: key,
+		}).First(&models.MigrationHistory{}).Error; err == nil {
+			continue
+		}
 		_, err = pgdb.Exec(migrate.FileContent)
 		if err != nil {
 			logrus.Error(err)
 			// return err
+			// continue
+		}
+		if err := db.Create(&models.MigrationHistory{
+			Key: key,
+		}).Error; err != nil {
+			logrus.Error(err)
 		}
 	}
 	return nil
@@ -391,10 +403,22 @@ func migrateCustomResource(userID uint64, pgid string) error {
 	}
 	defer pgdb.Close()
 	for _, migrate := range migrates {
+		key := models.GenerateMigrationHistoryKey("pgsql", pgid, migrate.FileName, migrate.FileContent)
+		if err := db.Where(&models.MigrationHistory{
+			Key: key,
+		}).First(&models.MigrationHistory{}).Error; err == nil {
+			continue
+		}
 		_, err = pgdb.Exec(migrate.FileContent)
 		if err != nil {
 			logrus.Error(err)
 			// return err
+			// continue
+		}
+		if err := db.Create(&models.MigrationHistory{
+			Key: key,
+		}).Error; err != nil {
+			logrus.Error(err)
 		}
 	}
 	return nil
@@ -410,7 +434,7 @@ func MigratePostgreSQLDatabase(userID uint64, pgid string) error {
 
 func init() {
 	funcs.SetMigratePostgreSQLDatabase(MigratePostgreSQLDatabase)
-	dbConns = defs.NewSyncMap[string, *sql.DB](map[string]*sql.DB{})
+	dbConns = defs.NewSyncMap(map[string]*sql.DB{})
 }
 
 var dbConns *defs.SyncMap[string, *sql.DB]

@@ -2,6 +2,8 @@ package sys_cache
 
 import (
 	"errors"
+	"fmt"
+	"vvorker/utils"
 
 	"github.com/nutsdb/nutsdb"
 	"github.com/sirupsen/logrus"
@@ -48,4 +50,59 @@ func Del(key string) error {
 	return db.Update(func(tx *nutsdb.Tx) error {
 		return tx.Delete("sys_cache", []byte(key))
 	})
+}
+
+func PutNX(key string, value []byte, ttl int) (int, error) {
+	code := 0
+	return code, db.Update(func(tx *nutsdb.Tx) error {
+		err := tx.PutIfNotExists("sys_cache", []byte(key), value, uint32(ttl))
+		if err != nil {
+			code = 1
+			logrus.Error(err)
+		}
+		return err
+	})
+}
+
+func PutXX(key string, value []byte, ttl int) (int, error) {
+	code := 0
+	return code, db.Update(func(tx *nutsdb.Tx) error {
+		err := tx.PutIfExists("sys_cache", []byte(key), value, uint32(ttl))
+		if err != nil {
+			code = 1
+			logrus.Error(err)
+		}
+		return err
+	})
+}
+
+func GlobalCache(key string, getValueFn func() ([]byte, error), ttl int) ([]byte, error) {
+	cacheKey := fmt.Sprintf("db:workerd:%s_cache:", key)
+	lockKey := fmt.Sprintf("db:workerd:%s_lock:", key)
+
+	if v, err := Get(cacheKey); err == nil && len(v) != 0 {
+		go func() {
+			guid := utils.GenerateUID()
+			_, _ = PutNX(lockKey, []byte(guid), ttl)
+			guid2, _ := Get(lockKey)
+			if guid == string(guid2) {
+				v, err := getValueFn()
+				if err != nil {
+					Del(lockKey)
+					Del(cacheKey)
+					return
+				}
+				Put(cacheKey, v, 0)
+			}
+		}()
+		return v, nil
+	}
+
+	v, err := getValueFn()
+	if err != nil {
+		return nil, err
+	}
+	Put(cacheKey, v, 0)
+	Put(lockKey, []byte(utils.GenerateUID()), ttl)
+	return v, nil
 }

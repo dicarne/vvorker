@@ -1,6 +1,6 @@
 {
 	"name": "@dicarne/vvorker-kv",
-	"version": "0.1.3",
+	"version": "0.1.8",
 	"scripts": {
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
@@ -9,6 +9,7 @@
 		"cf-typegen": "wrangler types",
 		"build": "tsc && wrangler deploy --dry-run --outdir dist",
 		"package": "tsc",
+		"prepublishOnly": "tsc",
 		"tonpm": "npm publish --access=public"
 	},
 	"devDependencies": {
@@ -18,7 +19,6 @@
 		"wrangler": "^4.16.1"
 	},
 	"dependencies": {
-		"redis": "^5.1.0"
 	},
 	"types": "distpkg/index.d.ts",
 	"files": [

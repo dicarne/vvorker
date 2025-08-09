@@ -8,70 +8,81 @@ import pc from "picocolors"
 import { config, getEnv } from '../utils/config';
 
 async function createWorkerProject(projectName: string, jsonData: object) {
-  await fs.ensureDir(projectName);
-
-  const gitignoreContent = `node_modules\n`;
-
-  const defaultJSCode = `
-export default {
-  async fetch(req, env) {
-    try {
-		let resp = new Response("worker: " + req.url + " is online! -- " + new Date())
-		return resp
-	} catch(e) {
-		return new Response(e.stack, { status: 500 })
-	}
-  }
-};
+  const vueJSCode = `
+  import { Hono } from "hono";
+  import { EnvBinding } from "./binding";
+  import { init, useDebugEndpoint } from "@dicarne/vvorker-sdk";
+  import { env } from "cloudflare:workers";
+  init(env)
+  
+  const app = new Hono<{ Bindings: EnvBinding }>();
+  useDebugEndpoint(app)
+  
+  export default app;  
     `;
 
-  const packageJson = {
-    "name": projectName,
-    "version": "1.0.0",
-    "description": "",
-    "private": true,
-    "scripts": {
-      "deploy": "vvcli deploy",
-      "dev": "wrangler dev",
-      "start": "wrangler dev",
-      "test": "vitest",
-      "cf-typegen": "wrangler types",
-      "build": "wrangler deploy --dry-run --outdir dist"
-    },
-    "dependencies": {
-      "@dicarne/vvorker-sdk": "^0.1.10",
-      "hono": "^4.7.11"
-    },
-    "devDependencies": {
-      "@cloudflare/vitest-pool-workers": "^0.8.19",
-      "typescript": "^5.5.2",
-      "vitest": "~3.0.7",
-      "wrangler": "^4.15.2"
-    },
-  };
+  await runCommand('pnpm', ['create', "cloudflare@latest", projectName, "--template=cloudflare/templates/hello-world-do-template", "--git", "--no-deploy", "--lang=ts"]);
 
-  const wranglerConfig = {
-    "$schema": "node_modules/wrangler/config-schema.json",
-    "name": projectName,
-    "main": "src/index.ts",
-    "compatibility_date": "2025-05-20",
-    "observability": {
-      "enabled": true
-    }
-  };
 
-  const projectPath = projectName;
-  await fs.writeJson(path.join(projectPath, `vvorker.${getEnv()}.json`), jsonData, { spaces: 2 });
-  await fs.writeFile(path.join(projectPath, '.gitignore'), gitignoreContent);
-  await fs.ensureDir(path.join(projectPath, 'src'));
-  await fs.writeFile(path.join(projectPath, 'src', 'index.ts'), defaultJSCode);
-  await fs.writeJson(path.join(projectPath, 'package.json'), packageJson, { spaces: 2 });
-  await fs.writeJson(path.join(projectPath, 'wrangler.jsonc'), wranglerConfig);
+  const jsFilePath = path.join(projectName, 'src', 'index.ts');
+  await fs.writeFile(jsFilePath, vueJSCode);
 
-  console.log(`项目 ${projectName} 初始化完成`);
-  console.log(`请执行以下命令开始开发：`);
-  console.log(`  cd ${projectName}`);
-  console.log(`  pnpm install`);
+  const env = getEnv();
+  const jsonFilePath = `vvorker.${env}.json`;
+  await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
+
+  const wranglerJsonPath = path.join(projectName, 'wrangler.json');
+  const wranglerJson = json5.parse(await fs.readFile(wranglerJsonPath, 'utf-8'));
+  wranglerJson.compatibility_flags = ["nodejs_compat"];
+  wranglerJson.durable_objects = undefined;
+  wranglerJson.migrations = undefined;
+  await fs.writeJson(wranglerJsonPath, wranglerJson, { spaces: 2 });
+
+  const packageJsonPath = path.join(projectName, 'package.json');
+  const packageJson = json5.parse(await fs.readFile(packageJsonPath, 'utf-8'));
+  packageJson.type = "module";
+  packageJson.name = projectName;
+  packageJson.scripts.dev = "vite";
+  packageJson.scripts.build = "vite build";
+  packageJson.scripts.start = undefined;
+  packageJson.scripts.deploy = undefined;
+  await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+
+  const viteConfigText = `import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from 'vite'
+import { cloudflare } from "@cloudflare/vite-plugin"
+
+// https://vite.dev/config/
+export default defineConfig({
+	plugins: [
+		cloudflare(),
+	],
+	base: "./",
+	resolve: {
+		alias: {
+			'@': fileURLToPath(new URL('./src', import.meta.url))
+		},
+	},
+})
+`
+
+  await fs.writeFile(path.join(projectName, 'vite.config.ts'), viteConfigText);
+
+  console.log(pc.green(`项目 ${projectName} 初始化完成`));
+
+  try {
+    await runCommand('pnpm', ['install'], projectName);
+    await runCommand('pnpm', ['install', "@types/node", "vite", "@cloudflare/vite-plugin", "-D"], projectName);
+    await runCommand('pnpm', ['install', "hono", "@dicarne/vvorker-sdk"], projectName);
+  } catch (error) {
+    console.log(pc.red(`安装依赖失败，请手动安装`));
+  }
+  try {
+    await runCommand('vvcli', ['types'], projectName);
+    await runCommand('pnpm', ['run', 'cf-typegen'], projectName);
+  } catch (error) {
+    console.log(pc.red(`生成类型提示失败，请手动运行 vvcli types 生成`));
+  }
 }
 
 async function createVueProject(projectName: string, jsonData: object) {
@@ -102,7 +113,7 @@ async function createVueProject(projectName: string, jsonData: object) {
   export default app;  
     `;
 
-  await runCommand('pnpm', ['create', "cloudflare@latest", projectName, "--framework=vue"]);
+  await runCommand('pnpm', ['create', "cloudflare@latest", projectName, "--framework=vue", "--git", "--no-deploy", "--lang=ts"]);
 
 
   const jsFilePath = path.join(projectName, 'server', 'index.ts');
@@ -118,16 +129,30 @@ async function createVueProject(projectName: string, jsonData: object) {
   const jsonFilePath = `vvorker.${env}.json`;
   await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
 
+  const wranglerJsonPath = path.join(projectName, 'wrangler.json');
+  const wranglerJson = json5.parse(await fs.readFile(wranglerJsonPath, 'utf-8'));
+  wranglerJson.compatibility_flags = ["nodejs_compat"];
+  wranglerJson.durable_objects = undefined;
+  wranglerJson.migrations = undefined;
+  await fs.writeJson(wranglerJsonPath, wranglerJson, { spaces: 2 });
+
+  const packageJsonPath = path.join(projectName, 'package.json');
+  const packageJson = json5.parse(await fs.readFile(packageJsonPath, 'utf-8'));
+  packageJson.scripts.deploy = undefined;
+  await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+
   console.log(pc.green(`项目 ${projectName} 初始化完成`));
 
   try {
     await runCommand('pnpm', ['install'], projectName);
+    await runCommand('pnpm', ['install', "@types/node", "-D"], projectName);
     await runCommand('pnpm', ['install', "hono", "@dicarne/vvorker-sdk"], projectName);
   } catch (error) {
     console.log(pc.red(`安装依赖失败，请手动安装`));
   }
   try {
     await runCommand('vvcli', ['types'], projectName);
+    await runCommand('pnpm', ['run', 'cf-typegen'], projectName);
   } catch (error) {
     console.log(pc.red(`生成类型提示失败，请手动运行 vvcli types 生成`));
   }
@@ -161,7 +186,6 @@ export const initCommand = new Command('init')
         "type": projtype
       },
       "version": "1.0.0",
-      "extensions": [],
       "services": [],
       "vars": {},
       "ai": [],
@@ -170,6 +194,9 @@ export const initCommand = new Command('init')
       "mysql": [],
       "kv": [],
       "assets": [],
+      "compatibility_flags": [
+        "nodejs_compat"
+      ],
     };
 
     switch (projtype) {
