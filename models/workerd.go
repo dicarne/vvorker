@@ -67,8 +67,12 @@ func init() {
 			break
 		}
 		tunnel.GetClient()
-		utils.WaitForPort("localhost", conf.AppConfigInstance.TunnelAPIPort)
-		logrus.Info("Waitting for client...")
+		if conf.IsMaster() {
+			utils.WaitForPort("localhost", conf.AppConfigInstance.TunnelAPIPort)
+			logrus.Info("Waitting for client...")
+		} else {
+			utils.WaitForPort(conf.AppConfigInstance.TunnelHost, conf.AppConfigInstance.TunnelAPIPort)
+		}
 		time.Sleep(time.Second * 2)
 		NodeWorkersInit()
 	}()
