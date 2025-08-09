@@ -66,6 +66,7 @@ func init() {
 			}
 			break
 		}
+		tunnel.GetClient()
 		utils.WaitForPort("localhost", conf.AppConfigInstance.TunnelAPIPort)
 		logrus.Info("Waitting for client...")
 		time.Sleep(time.Second * 2)
