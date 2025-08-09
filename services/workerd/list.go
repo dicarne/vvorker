@@ -77,6 +77,14 @@ func GetAllWorkersEndpoint(c *gin.Context) {
 	common.RespOK(c, "get all workers success", models.Trans2Entities(workers))
 }
 
+type GetWorkerRespose struct {
+	UID      string `json:"UID"`
+	NodeName string `json:"NodeName"`
+	Name     string `json:"Name"`
+	Version  string `json:"Version"`
+	MaxCount int32  `json:"MaxCount"`
+}
+
 func GetWorkerEndpoint(c *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -96,7 +104,13 @@ func GetWorkerEndpoint(c *gin.Context) {
 		return
 	}
 	worker.Worker.Code = nil
-	common.RespOK(c, "get workers success", models.Trans2Entities([]*models.Worker{worker}))
+	common.RespOK(c, "get workers success", GetWorkerRespose{
+		UID:      worker.UID,
+		NodeName: worker.NodeName,
+		Name:     worker.Name,
+		Version:  worker.Version,
+		MaxCount: worker.MaxCount,
+	})
 }
 
 type GetWorkerEndpointJSONReq struct {

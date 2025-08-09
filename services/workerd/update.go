@@ -116,6 +116,9 @@ func UpdateEndpointJSON(c *gin.Context) {
 	if worker.Worker.Code == nil {
 		worker.Worker.Code = oldworker.Code
 	}
+	if worker.Worker.Template == "" {
+		worker.Worker.Template = oldworker.Template
+	}
 	if worker.Worker.MaxCount == 0 {
 		worker.Worker.MaxCount = oldworker.MaxCount
 		if worker.Worker.MaxCount == 0 {
