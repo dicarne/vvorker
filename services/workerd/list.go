@@ -117,12 +117,14 @@ func GetWorkerEndpoint(c *gin.Context) {
 		return
 	}
 	worker.Worker.Code = nil
-	common.RespOK(c, "get workers success", GetWorkerRespose{
-		UID:      worker.UID,
-		NodeName: worker.NodeName,
-		Name:     worker.Name,
-		Version:  worker.Version,
-		MaxCount: worker.MaxCount,
+	common.RespOK(c, "get workers success", []GetWorkerRespose{
+		{
+			UID:      worker.UID,
+			NodeName: worker.NodeName,
+			Name:     worker.Name,
+			Version:  worker.Version,
+			MaxCount: worker.MaxCount,
+		},
 	})
 }
 
