@@ -84,6 +84,12 @@ struct Config {
   # A list of gates which are enabled.
   # These are used to gate features/changes in workerd and in our internal repo. See the equivalent
   # config definition in our internal repo for more details.
+
+  structuredLogging @5 :Bool = false;
+  # If true, logs will be emitted as JSON for structured logging.
+  # When false, logs use the traditional human-readable format.
+  # This affects the format of logs from KJ_LOG and exception reporting as well as js logs.
+  # This won't work for logs coming from service worker syntax workers with the old module registry.
 }
 
 # ========================================================================================
@@ -354,6 +360,10 @@ struct Worker {
       service @9 :ServiceDesignator;
       # Binding to a named service (possibly, a worker).
 
+      durableObjectClass @26 :ServiceDesignator;
+      # A Durable Object class binding, without an actual storage namespace. This can be used to
+      # implement a facet.
+
       durableObjectNamespace @10 :DurableObjectNamespaceDesignator;
       # Binding to the durable object namespace implemented by the given class.
       #
@@ -415,6 +425,22 @@ struct Worker {
         limits @25 :MemoryCacheLimits;
       }
 
+      workerLoader :group {
+        # A binding representing the ability to dynamically load Workers from code presented at
+        # runtime.
+        #
+        # A Worker loader is not just a function that loads a Worker, but also serves as a
+        # cache of Workers, automatically unloading Workers that are not in use. To that end, each
+        # Worker must have a name, and if a Worker with that name already exists, it'll be reused.
+
+        id @27 :Text;
+        # Optional: The identifier associated with this Worker loader. Multiple Workers can bind to
+        # the same ID in order to access the same loader, so that if they request the same name
+        # from it, they'll end up sharing the same loaded Worker.
+        #
+        # (If omitted, the binding will not share a cache with any other binding.)
+      }
+
       # TODO(someday): dispatch, other new features
     }
 
@@ -438,6 +464,7 @@ struct Worker {
         queue @11 :Void;
         analyticsEngine @12 : Void;
         hyperdrive @13: Void;
+        durableObjectClass @14: Void;
       }
     }
 
@@ -601,6 +628,18 @@ struct Worker {
     # workerd uses SQLite to back all Durable Objects, but the SQL API is hidden by default to
     # emulate behavior of traditional DO namespaces on Cloudflare that aren't SQLite-backed. This
     # flag should be enabled when testing code that will run on a SQLite-backed namespace.
+
+    container @5 :ContainerOptions;
+    # If present, Durable Objects in this namespace have attached containers.
+    # workerd will talk to the configured container engine to start containers for each
+    # Durable Object based on the given image. The Durable Object can access the container via the
+    # ctx.container API. TODO(CloudChamber): add link to docs.
+
+    struct ContainerOptions {
+      imageName @0 :Text;
+      # Image name to be used to create the container using supported provider.
+      # By default, we pull the "latest" tag of this image.
+    }
   }
 
   durableObjectUniqueKeyModifier @8 :Text;
@@ -651,6 +690,20 @@ struct Worker {
   streamingTails @15 :List(ServiceDesignator);
   # List of streaming tail worker services that should receive tail events for this worker.
   # NOTE: This will be deleted in a future refactor, do not depend on this.
+
+  containerEngine :union {
+    none @16 :Void;
+    # No container engine configured. Container operations will not be available.
+
+    localDocker @17 :DockerConfiguration;
+    # Use local Docker daemon for container operations.
+    # Only used for local development and testing purposes.
+  }
+
+  struct DockerConfiguration {
+    socketPath @0 :Text;
+    # Path to the Docker socket.
+  }
 }
 
 struct ExternalServer {
@@ -955,4 +1008,21 @@ struct Extension {
     esModule @2 :Text;
     # Raw source code of ES module.
   }
+}
+
+# ========================================================================================
+# Fallback Service Request
+#  Used only to define the JSON structure of a request to the fallback service.
+
+struct FallbackServiceRequest {
+  type @0 :Text;
+  specifier @1 :Text;
+  rawSpecifier @2 :Text;
+  referrer @3 :Text;
+
+  struct Attribute {
+    name @0: Text;
+    value @1: Text;
+  }
+  attributes @4 :List(Attribute);
 }
