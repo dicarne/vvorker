@@ -95,7 +95,16 @@ async function createVueProject(projectName: string, jsonData: object) {
   
   const app = new Hono<{ Bindings: EnvBinding }>();
   useDebugEndpoint(app)
-  
+
+  app.onError(async (err, c) => {
+    console.error(err)
+    return c.json({
+      code: 500,
+      msg: err.message,
+      data: null
+    }, 500)
+  })
+
   app.notFound(async (c) => {
     try {
       const r = await c.env.ASSETS.fetch(c.req.url, c.req)
