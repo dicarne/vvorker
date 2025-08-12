@@ -365,6 +365,11 @@ func HandleStaticFile(f embed.FS) {
 
 	router.NoRoute(func(c *gin.Context) {
 		path := c.Request.URL.Path
+		if path == "/admin" {
+			path = "/admin/"
+			c.Redirect(http.StatusFound, path)
+			return
+		}
 		adminPrefix := "/admin"
 		if conf.AppConfigInstance.WorkerHostMode == "path" && conf.AppConfigInstance.WorkerHostPath != "" && strings.HasPrefix(path, "/"+conf.AppConfigInstance.WorkerHostPath) {
 			// path = strings.Replace(c.Request.URL.Path, "/"+conf.AppConfigInstance.WorkerHostPath, "", 1)
@@ -375,7 +380,9 @@ func HandleStaticFile(f embed.FS) {
 				logrus.Println("admin api proxy only support path mode")
 			}
 			if !strings.HasPrefix(path, adminPrefix) {
-				modifyProxyRequestHeaders(c)
+				if !modifyProxyRequestHeaders(c) {
+					return
+				}
 				proxyService.Endpoint(c)
 				return
 			}
@@ -427,7 +434,7 @@ func RegisterNodeToMaster() {
 	}
 }
 
-func modifyProxyRequestHeaders(c *gin.Context) {
+func modifyProxyRequestHeaders(c *gin.Context) bool {
 	if conf.AppConfigInstance.WorkerHostMode == "path" && c.Request.Header.Get("Server-Host") == "" {
 		// 此时，URL的第一段会被提取出来作为host name，并在传下去的url中去掉这一段
 		// 按照 / 切分
@@ -449,6 +456,9 @@ func modifyProxyRequestHeaders(c *gin.Context) {
 				} else {
 					c.Request.URL.Path = "/"
 				}
+			} else {
+				c.Redirect(http.StatusFound, url+"/")
+				return false
 			}
 		} else {
 			parts := strings.SplitN(url, "/", 3)
@@ -462,6 +472,9 @@ func modifyProxyRequestHeaders(c *gin.Context) {
 				} else {
 					c.Request.URL.Path = "/"
 				}
+			} else {
+				c.Redirect(http.StatusFound, url+"/")
+				return false
 			}
 
 		}
@@ -473,9 +486,12 @@ func modifyProxyRequestHeaders(c *gin.Context) {
 			c.Request.Host = host
 		}
 	}
+	return true
 }
 
 func modifyProxyRequestHeadersMid(c *gin.Context) {
-	modifyProxyRequestHeaders(c)
+	if !modifyProxyRequestHeaders(c) {
+		return
+	}
 	c.Next()
 }
