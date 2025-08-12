@@ -19,6 +19,7 @@ export interface ResourceData {
     uid: string
     name: string
     type: string
+    error_msg?: string[] | null
 }
 export interface ListResourceResponse {
     total: number

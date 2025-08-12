@@ -297,7 +297,7 @@ func UpdateMigrate(c *gin.Context) {
 		UID = req.ResourceID
 	}
 
-	if err := db.Where(&models.PostgreSQLMigration{
+	if err := db.Unscoped().Where(&models.PostgreSQLMigration{
 		UserID: userID,
 		DBUID:  UID,
 	}).Delete(&models.PostgreSQLMigration{}).Error; err != nil {
@@ -365,16 +365,19 @@ func migrateResource(userID uint64, pgid string) error {
 			continue
 		}
 		_, err = pgdb.Exec(migrate.FileContent)
+		errMsg := ""
 		if err != nil {
 			logrus.Error(err)
-			// return err
-			// continue
+			errMsg = err.Error()
 		}
 		if err := db.Create(&models.MigrationHistory{
-			Key: key,
+			Key:   key,
+			Error: errMsg,
 		}).Error; err != nil {
 			logrus.Error(err)
 		}
+		migrate.MigrateKey = key
+		db.Save(&migrate)
 	}
 	return nil
 }
@@ -410,16 +413,19 @@ func migrateCustomResource(userID uint64, pgid string) error {
 			continue
 		}
 		_, err = pgdb.Exec(migrate.FileContent)
+		errMsg := ""
 		if err != nil {
 			logrus.Error(err)
-			// return err
-			// continue
+			errMsg = err.Error()
 		}
 		if err := db.Create(&models.MigrationHistory{
-			Key: key,
+			Key:   key,
+			Error: errMsg,
 		}).Error; err != nil {
 			logrus.Error(err)
 		}
+		migrate.MigrateKey = key
+		db.Save(&migrate)
 	}
 	return nil
 }

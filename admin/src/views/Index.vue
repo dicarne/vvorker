@@ -25,15 +25,15 @@ const menuOptions: MenuOption[] = [
     icon: renderIcon(WorkersIcon),
   },
   {
-    label: renderMenuRouterLink('Status', 'Status'),
+    label: renderMenuRouterLink('状态', 'Status'),
     key: 'status',
     icon: renderIcon(StatusIcon),
   },
-  {
-    label: renderMenuRouterLink('Task', 'Task'),
-    key: 'task',
-    icon: renderIcon(TaskIcon),
-  },
+  // {
+  //   label: renderMenuRouterLink('Task', 'Task'),
+  //   key: 'task',
+  //   icon: renderIcon(TaskIcon),
+  // },
   {
     label: renderMenuRouterLink('PGSQL', 'PGSQL'),
     key: 'pgsql',
@@ -55,7 +55,7 @@ const menuOptions: MenuOption[] = [
     icon: renderIcon(KVIcon),
   },
   {
-    label: renderMenuRouterLink('User', 'User'),
+    label: renderMenuRouterLink('用户', 'User'),
     key: 'user',
     icon: renderIcon(UserIcon),
   },

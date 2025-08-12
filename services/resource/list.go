@@ -16,9 +16,10 @@ type ListResourceRequest struct {
 }
 
 type ResourceData struct {
-	UID  string `json:"uid"`
-	Name string `json:"name"`
-	Type string `json:"type"`
+	UID      string   `json:"uid"`
+	Name     string   `json:"name"`
+	Type     string   `json:"type"`
+	ErrorMsg []string `json:"error_msg"`
 }
 
 type ListResourceResponse struct {
@@ -96,6 +97,23 @@ func ListResourceEndpoint(c *gin.Context) {
 				Type: "pgsql",
 			})
 		}
+		for i, d := range resources {
+			var migrations []models.PostgreSQLMigration
+			db.Where(&models.PostgreSQLMigration{
+				DBUID: d.UID,
+			}).Find(&migrations)
+			for _, migration := range migrations {
+				if migration.MigrateKey != "" {
+					var mg models.MigrationHistory
+					db.Where(&models.MigrationHistory{
+						Key: migration.MigrateKey,
+					}).Find(&mg)
+					if mg.Error != "" {
+						response.Data[i].ErrorMsg = append(response.Data[i].ErrorMsg, mg.Error)
+					}
+				}
+			}
+		}
 		response.Total = total
 	} else if request.RType == "mysql" {
 		var total int64
@@ -112,6 +130,23 @@ func ListResourceEndpoint(c *gin.Context) {
 				Name: resource.Name,
 				Type: "mysql",
 			})
+		}
+		for i, d := range resources {
+			var migrations []models.MySQLMigration
+			db.Where(&models.MySQLMigration{
+				DBUID: d.UID,
+			}).Find(&migrations)
+			for _, migration := range migrations {
+				if migration.MigrateKey != "" {
+					var mg models.MigrationHistory
+					db.Where(&models.MigrationHistory{
+						Key: migration.MigrateKey,
+					}).Find(&mg)
+					if mg.Error != "" {
+						response.Data[i].ErrorMsg = append(response.Data[i].ErrorMsg, mg.Error)
+					}
+				}
+			}
 		}
 		response.Total = total
 	}

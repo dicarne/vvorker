@@ -309,7 +309,7 @@ func UpdateMigrate(c *gin.Context) {
 		UID = req.ResourceID
 	}
 
-	if err := db.Where(&models.MySQLMigration{
+	if err := db.Unscoped().Where(&models.MySQLMigration{
 		UserID: userID,
 		DBUID:  UID,
 	}).Delete(&models.MySQLMigration{}).Error; err != nil {
@@ -376,16 +376,19 @@ func migrateCustomMySQLResource(userID uint64, pgid string) error {
 			continue
 		}
 		_, err = dbConn.Exec(migrate.FileContent)
+		errMsg := ""
 		if err != nil {
 			logrus.Error(err)
-			// Continue with next migration even if one fails
-			// continue
+			errMsg = err.Error()
 		}
 		if err := db.Create(&models.MigrationHistory{
-			Key: key,
+			Key:   key,
+			Error: errMsg,
 		}).Error; err != nil {
 			logrus.Error(err)
 		}
+		migrate.MigrateKey = key
+		db.Save(&migrate)
 	}
 
 	return nil
@@ -426,16 +429,19 @@ func MigrateMySQLDatabase(userID uint64, pgid string) error {
 				continue
 			}
 			_, err = dbConn.Exec(migrate.FileContent)
+			errMsg := ""
 			if err != nil {
 				logrus.Error(err)
-				// Continue with next migration even if one fails
-				// continue
+				errMsg = err.Error()
 			}
 			if err := db.Create(&models.MigrationHistory{
-				Key: key,
+				Key:   key,
+				Error: errMsg,
 			}).Error; err != nil {
 				logrus.Error(err)
 			}
+			migrate.MigrateKey = key
+			db.Save(&migrate)
 		}
 
 		return nil

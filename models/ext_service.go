@@ -53,6 +53,7 @@ type PostgreSQLMigration struct {
 	CustomDBHost     string `json:"custom_db_host"`
 	CustomDBPort     int    `json:"custom_db_port"`
 	CustomDBPassword string `json:"custom_db_password"`
+	MigrateKey       string `json:"migrate_key"`
 }
 
 type MySQL struct {
@@ -77,11 +78,13 @@ type MySQLMigration struct {
 	CustomDBHost     string `json:"custom_db_host"`
 	CustomDBPort     int    `json:"custom_db_port"`
 	CustomDBPassword string `json:"custom_db_password"`
+	MigrateKey       string `json:"migrate_key"`
 }
 
 type MigrationHistory struct {
 	gorm.Model
-	Key string `gorm:"index"`
+	Key   string `gorm:"index"`
+	Error string
 }
 
 func GenerateMigrationHistoryKey(sqlType string, uid string, fileName string, content string) string {

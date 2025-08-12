@@ -11,6 +11,7 @@ import {
   NModal,
   NForm,
   NFormItem,
+  NAlert,
   type FormInst,
   type FormRules,
 } from 'naive-ui'
@@ -126,37 +127,26 @@ onMounted(async () => {
             <NButton quaternary type="primary" @click="handleDeleteClick(item.uid)"> 删除 </NButton>
           </template>
           <div class="v-item">ID: {{ item.uid }}</div>
+          <div v-if="item.error_msg" v-for="err in item.error_msg" style="margin-top: 10px">
+            <NAlert title="Error" type="error">
+              {{ err }}
+            </NAlert>
+          </div>
         </NListItem>
       </NList>
     </NCard>
-    <NModal
-      v-model:show="showCreateModal"
-      preset="dialog"
-      :title="`创建 ${props.rType}`"
-      positive-text="确认"
-      negative-text="取消"
-      :loading="IsCreating"
-      :mask-closable="false"
-      @positive-click="handleCreateConfirm"
-      @negative-click="handleCreateClose"
-    >
+    <NModal v-model:show="showCreateModal" preset="dialog" :title="`创建 ${props.rType}`" positive-text="确认"
+      negative-text="取消" :loading="IsCreating" :mask-closable="false" @positive-click="handleCreateConfirm"
+      @negative-click="handleCreateClose">
       <NForm :model="createForm" :rules="createRules" ref="createFormRef">
         <NFormItem label="名称" path="name">
           <NInput v-model:value="createForm.name" placeholder="请输入名称" />
         </NFormItem>
       </NForm>
     </NModal>
-    <NModal
-      v-model:show="showDeleteModal"
-      preset="dialog"
-      :title="`删除 ${props.rType}`"
-      positive-text="确认"
-      negative-text="取消"
-      :loading="IsDeleting"
-      :mask-closable="false"
-      @positive-click="handleDeleteConfirm"
-      @negative-click="handleDeleteClose"
-    >
+    <NModal v-model:show="showDeleteModal" preset="dialog" :title="`删除 ${props.rType}`" positive-text="确认"
+      negative-text="取消" :loading="IsDeleting" :mask-closable="false" @positive-click="handleDeleteConfirm"
+      @negative-click="handleDeleteClose">
       <div>确认要删除 {{ props.rType }} {{ resourceToDelete }}？</div>
     </NModal>
   </div>
