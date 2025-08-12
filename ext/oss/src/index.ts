@@ -212,7 +212,7 @@ export default class OSS extends WorkerEntrypoint {
 			method: "POST",
 			headers: {
 				...commonConfig,
-				Path: path,
+				Object: path,
 				Recursive: recursive ? "true" : "false",
 			},
 		});

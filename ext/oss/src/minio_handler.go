@@ -68,7 +68,7 @@ func getMinioConfig(c *gin.Context) (string, string) {
 	bucketName := c.GetHeader("Bucket")
 	objectName := c.GetHeader("Object")
 	if conf.AppConfigInstance.MinioSingleBucketMode {
-		if objectName[0] == '/' {
+		if len(objectName) > 0 && objectName[0] == '/' {
 			objectName = objectName[1:]
 		}
 		bucketName = conf.AppConfigInstance.MinioSingleBucketName
