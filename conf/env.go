@@ -75,8 +75,9 @@ type AppConfig struct {
 	ServerMinioAccess string `env:"SERVER_MINIO_ACCESS" env-default:"minioadmin"`
 	ServerMinioSecret string `env:"SERVER_MINIO_SECRET" env-default:"minioadmin"`
 
-	MinioSingleBucketMode bool   `env:"MINIO_SINGLE_BUCKET_MODE" env-default:"false"`   // 是否使用单个bucket，所有应用都使用同一个bucket下的不同文件夹，注意，这将不进行权限管控
-	MinioSingleBucketName string `env:"MINIO_SINGLE_BUCKET_NAME" env-default:"vvorker"` // 如果使用单个bucket，bucket名称
+	MinioSingleBucketMode   bool   `env:"MINIO_SINGLE_BUCKET_MODE" env-default:"false"`     // 是否使用单个bucket，所有应用都使用同一个bucket下的不同文件夹，注意，这将不进行权限管控
+	MinioSingleBucketName   string `env:"MINIO_SINGLE_BUCKET_NAME" env-default:"vvorker"`   // 如果使用单个bucket，bucket名称
+	MinioSingleBucketPrefix string `env:"MINIO_SINGLE_BUCKET_PREFIX" env-default:"vvorker"` // 文件夹前缀
 
 	ServerPostgreHost     string `env:"SERVER_POSTGRE_HOST" env-default:"localhost"`
 	ServerPostgrePort     int    `env:"SERVER_POSTGRE_PORT" env-default:"5432"`
