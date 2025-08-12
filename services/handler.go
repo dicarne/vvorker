@@ -18,6 +18,7 @@ import (
 	kv "vvorker/ext/kv/src"
 	extmysql "vvorker/ext/mysql/src"
 	oss "vvorker/ext/oss/src"
+	alioss "vvorker/ext/oss/src/alioss"
 	pgsql "vvorker/ext/pgsql/src"
 	"vvorker/models"
 	"vvorker/rpc"
@@ -195,8 +196,14 @@ func init() {
 		{
 			ossAPI := extAPI.Group("/oss")
 			{
-				ossAPI.POST("/upload", authz.AgentAuthz(), oss.UploadFile)
-				ossAPI.POST("/download", authz.AgentAuthz(), oss.DownloadFile)
+				if conf.AppConfigInstance.ServerOSSType == "aliyun" {
+					ossAPI.POST("/upload", authz.AgentAuthz(), alioss.UploadFile)
+					ossAPI.POST("/download", authz.AgentAuthz(), alioss.DownloadFile)
+				} else {
+					ossAPI.POST("/upload", authz.AgentAuthz(), oss.UploadFile)
+					ossAPI.POST("/download", authz.AgentAuthz(), oss.DownloadFile)
+				}
+
 				ossAPI.POST("/list-buckets", authz.AgentAuthz(), oss.ListBuckets)
 				ossAPI.POST("/delete", authz.AgentAuthz(), oss.DeleteFile)
 				ossAPI.POST("/list-objects", authz.AgentAuthz(), oss.ListObjects)
