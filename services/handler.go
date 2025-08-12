@@ -372,11 +372,21 @@ func HandleStaticFile(f embed.FS) {
 
 	router.NoRoute(func(c *gin.Context) {
 		path := c.Request.URL.Path
-		if path == "/admin" {
-			path = "/admin/"
-			c.Redirect(http.StatusFound, path)
-			return
+
+		if conf.AppConfigInstance.WorkerHostMode == "path" && conf.AppConfigInstance.WorkerHostPath != "" {
+			if path == "/"+conf.AppConfigInstance.WorkerHostPath+"/admin" {
+				path = path + "/"
+				c.Redirect(http.StatusFound, path)
+				return
+			}
+		} else {
+			if path == "/admin" {
+				path = path + "/"
+				c.Redirect(http.StatusFound, path)
+				return
+			}
 		}
+
 		adminPrefix := "/admin"
 		if conf.AppConfigInstance.WorkerHostMode == "path" && conf.AppConfigInstance.WorkerHostPath != "" && strings.HasPrefix(path, "/"+conf.AppConfigInstance.WorkerHostPath) {
 			// path = strings.Replace(c.Request.URL.Path, "/"+conf.AppConfigInstance.WorkerHostPath, "", 1)
@@ -464,7 +474,7 @@ func modifyProxyRequestHeaders(c *gin.Context) bool {
 					c.Request.URL.Path = "/"
 				}
 			} else {
-				c.Redirect(http.StatusFound, url+"/")
+				c.Redirect(http.StatusFound, "/"+url+"/")
 				return false
 			}
 		} else {
@@ -480,7 +490,7 @@ func modifyProxyRequestHeaders(c *gin.Context) bool {
 					c.Request.URL.Path = "/"
 				}
 			} else {
-				c.Redirect(http.StatusFound, url+"/")
+				c.Redirect(http.StatusFound, "/"+url+"/")
 				return false
 			}
 
