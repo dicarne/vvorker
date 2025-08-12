@@ -16,7 +16,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/sirupsen/logrus"
 )
 
 // MinioClient 定义Minio客户端结构体
@@ -54,8 +53,8 @@ func getMinioClient(c *gin.Context) (*MinioClient, error) {
 		useSSLStr = fmt.Sprintf("%v", conf.AppConfigInstance.ServerMinioUseSSL)
 	}
 
-	logrus.Infof("Endpoint: %s, AccessKeyID: %s, SecretAccessKey: %s, UseSSL: %s, Region: %s",
-		endpoint, accessKeyID, secretAccessKey, useSSLStr, region)
+	// logrus.Infof("Endpoint: %s, AccessKeyID: %s, SecretAccessKey: %s, UseSSL: %s, Region: %s",
+	// 	endpoint, accessKeyID, secretAccessKey, useSSLStr, region)
 
 	useSSL, err := strconv.ParseBool(useSSLStr)
 	if err != nil {
@@ -69,6 +68,9 @@ func getMinioConfig(c *gin.Context) (string, string) {
 	bucketName := c.GetHeader("Bucket")
 	objectName := c.GetHeader("Object")
 	if conf.AppConfigInstance.MinioSingleBucketMode {
+		if objectName[0] == '/' {
+			objectName = objectName[1:]
+		}
 		bucketName = conf.AppConfigInstance.MinioSingleBucketName
 		objectName = c.GetHeader("ResourceID") + "/" + objectName
 		if conf.AppConfigInstance.MinioSingleBucketPrefix != "" {
