@@ -9,17 +9,26 @@ import { config, getEnv } from '../utils/config';
 
 async function createWorkerProject(projectName: string, jsonData: object) {
   const vueJSCode = `
-  import { Hono } from "hono";
-  import { EnvBinding } from "./binding";
-  import { init, useDebugEndpoint } from "@dicarne/vvorker-sdk";
-  import { env } from "cloudflare:workers";
-  init(env)
+import { Hono } from "hono";
+import { EnvBinding } from "./binding";
+import { init, useDebugEndpoint } from "@dicarne/vvorker-sdk";
+import { env } from "cloudflare:workers";
+init(env)
+
+const app = new Hono<{ Bindings: EnvBinding }>();
+useDebugEndpoint(app)
+
+app.onError(async (err, c) => {
+  console.error(err)
+  return c.json({
+    code: 500,
+    msg: err.message,
+    data: null
+  }, 500)
+})
   
-  const app = new Hono<{ Bindings: EnvBinding }>();
-  useDebugEndpoint(app)
-  
-  export default app;  
-    `;
+export default app;
+`;
 
   await runCommand('pnpm', ['create', "cloudflare@latest", projectName, "--template=cloudflare/templates/hello-world-do-template", "--git", "--no-deploy", "--lang=ts"]);
 
@@ -87,40 +96,39 @@ export default defineConfig({
 
 async function createVueProject(projectName: string, jsonData: object) {
   const vueJSCode = `
-  import { Hono } from "hono";
-  import { EnvBinding } from "./binding";
-  import { init, useDebugEndpoint } from "@dicarne/vvorker-sdk";
-  import { env } from "cloudflare:workers";
-  init(env)
-  
-  const app = new Hono<{ Bindings: EnvBinding }>();
-  useDebugEndpoint(app)
+import { Hono } from "hono";
+import { EnvBinding } from "./binding";
+import { init, useDebugEndpoint } from "@dicarne/vvorker-sdk";
+import { env } from "cloudflare:workers";
+init(env)
 
-  app.onError(async (err, c) => {
-    console.error(err)
-    return c.json({
-      code: 500,
-      msg: err.message,
-      data: null
-    }, 500)
-  })
+const app = new Hono<{ Bindings: EnvBinding }>();
+useDebugEndpoint(app)
+app.onError(async (err, c) => {
+  console.error(err)
+  return c.json({
+    code: 500,
+    msg: err.message,
+    data: null
+  }, 500)
+})
 
-  app.notFound(async (c) => {
-    try {
-      const r = await c.env.ASSETS.fetch(c.req.url, c.req)
-      const url = new URL(c.req.url);
-      if (r.status === 404) {
-        return c.env.ASSETS.fetch("https://" + url.host + "/index.html", c.req)
-      }
-      return r
-    } catch (error) {
-      return c.text("404 Not Found", 404)
+app.notFound(async (c) => {
+  try {
+    const r = await c.env.ASSETS.fetch(c.req.url, c.req)
+    const url = new URL(c.req.url);
+    if (r.status === 404) {
+      return c.env.ASSETS.fetch("https://" + url.host + "/index.html", c.req)
     }
-  
-  });
-  
-  export default app;  
-    `;
+    return r
+  } catch (error) {
+    return c.text("404 Not Found", 404)
+  }
+
+});
+
+export default app;  
+`;
 
   await runCommand('pnpm', ['create', "cloudflare@latest", projectName, "--framework=vue", "--git", "--no-deploy", "--lang=ts"]);
 
