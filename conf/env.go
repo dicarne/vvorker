@@ -74,6 +74,7 @@ type AppConfig struct {
 	ServerMinioUseSSL bool   `env:"SERVER_MINIO_USE_SSL" env-default:"false"`
 	ServerMinioAccess string `env:"SERVER_MINIO_ACCESS" env-default:"minioadmin"`
 	ServerMinioSecret string `env:"SERVER_MINIO_SECRET" env-default:"minioadmin"`
+	ServerOSSType     string `env:"SERVER_OSS_TYPE" env-default:"minio"` // minio / aliyun (兼容模式，只支持上传和下载，其他API复用minio)
 
 	MinioSingleBucketMode   bool   `env:"MINIO_SINGLE_BUCKET_MODE" env-default:"false"`     // 是否使用单个bucket，所有应用都使用同一个bucket下的不同文件夹，注意，这将不进行权限管控
 	MinioSingleBucketName   string `env:"MINIO_SINGLE_BUCKET_NAME" env-default:"vvorker"`   // 如果使用单个bucket，bucket名称
