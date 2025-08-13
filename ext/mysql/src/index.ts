@@ -50,7 +50,7 @@ export default class MySQL extends WorkerEntrypoint {
 	}
 	async query(sql: string, params: any, method: string) {
 		return (await rpc(sql, params, method,
-			`${cfg.user}:${encodeURIComponent(cfg.password)}@tcp(${cfg.host}:${cfg.port})/${cfg.database}`
+			`${cfg.user}:${cfg.password}@tcp(${cfg.host}:${cfg.port})/${cfg.database}`
 		)).json()
 	}
 }
