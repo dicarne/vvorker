@@ -467,6 +467,13 @@ func CommonDBQuery(conns *defs.SyncMap[string, *sql.DB], c *gin.Context, sqltype
 		}
 		conns.Set(req.ConnectionString, dbConn2)
 		dbConn = dbConn2
+		err = dbConn2.Ping()
+		if err != nil {
+			logrus.Error(err)
+			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
+				gin.H{"error": err.Error()})
+			return
+		}
 	}
 	logrus.Info(req) // ------------------------------------------------------------------------
 	if req.Method == "execute" && sqltype == "mysql" {
