@@ -3,6 +3,7 @@ package sys_cache
 import (
 	"errors"
 	"fmt"
+	"vvorker/defs"
 	"vvorker/utils"
 
 	"github.com/nutsdb/nutsdb"
@@ -11,8 +12,23 @@ import (
 
 var db *nutsdb.DB
 
+var buckets *defs.SyncMap[string, bool]
+
+func ExistBucket(bucket string) error {
+	if _, exist := buckets.Get(bucket); exist {
+		return nil
+	}
+	return db.Update(func(tx *nutsdb.Tx) error {
+		tx.NewKVBucket(bucket)
+		buckets.Set(bucket, true)
+		return nil
+	})
+}
+
 func InitCache(_db *nutsdb.DB) {
 	db = _db
+	buckets = defs.NewSyncMap(map[string]bool{})
+	ExistBucket("sys_cache")
 }
 
 func Put(key string, value []byte, ttl int) (int, error) {
