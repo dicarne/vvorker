@@ -62,7 +62,8 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                 return (await r.json() as any).data
             },
             uploadFile: async (data: Uint8Array, fileName: string) => {
-                const base64 = btoa(String.fromCharCode(...data))
+                const text = new TextDecoder().decode(data);
+                const base64 = btoa(text);
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
                     method: "POST",
                     headers: {
