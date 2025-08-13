@@ -26,9 +26,10 @@ type MinioClient struct {
 // NewMinioClient 创建新的Minio客户端
 func NewMinioClient(endpoint, accessKeyID, secretAccessKey string, useSSL bool, region string) (*MinioClient, error) {
 	client, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
-		Secure: useSSL,
-		Region: region,
+		Creds:        credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+		Secure:       useSSL,
+		Region:       region,
+		BucketLookup: minio.BucketLookupType(conf.AppConfigInstance.ServerMinioBucketLoopUp),
 	})
 	if err != nil {
 		return nil, err

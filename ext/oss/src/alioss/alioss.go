@@ -43,7 +43,8 @@ func getOSSClient(c *gin.Context) (*aoss.Client, error) {
 		WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")).
 		WithRegion(region).
 		WithEndpoint(endpoint).
-		WithDisableSSL(!useSSL)
+		WithDisableSSL(!useSSL).
+		WithUsePathStyle(conf.AppConfigInstance.ServerMinioBucketLoopUp == 2)
 
 	client := aoss.NewClient(cfg)
 	return client, nil

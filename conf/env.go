@@ -68,13 +68,14 @@ type AppConfig struct {
 	ServerRedisPort     int    `env:"SERVER_REDIS_PORT" env-default:"6379"`
 	ServerRedisPassword string `env:"SERVER_REDIS_PASSWORD" env-default:""`
 
-	ServerMinioHost   string `env:"SERVER_MINIO_HOST" env-default:"localhost"` // localhost时为本地
-	ServerMinioPort   int    `env:"SERVER_MINIO_PORT" env-default:"9000"`      // 本地时为9000，远程时为443
-	ServerMinioRegion string `env:"SERVER_MINIO_REGION" env-default:"us-east-1"`
-	ServerMinioUseSSL bool   `env:"SERVER_MINIO_USE_SSL" env-default:"false"`
-	ServerMinioAccess string `env:"SERVER_MINIO_ACCESS" env-default:"minioadmin"`
-	ServerMinioSecret string `env:"SERVER_MINIO_SECRET" env-default:"minioadmin"`
-	ServerOSSType     string `env:"SERVER_OSS_TYPE" env-default:"minio"` // minio / aliyun (兼容模式，只支持上传和下载，其他API复用minio)
+	ServerMinioHost         string `env:"SERVER_MINIO_HOST" env-default:"localhost"` // localhost时为本地
+	ServerMinioPort         int    `env:"SERVER_MINIO_PORT" env-default:"9000"`      // 本地时为9000，远程时为443
+	ServerMinioRegion       string `env:"SERVER_MINIO_REGION" env-default:"us-east-1"`
+	ServerMinioUseSSL       bool   `env:"SERVER_MINIO_USE_SSL" env-default:"false"`
+	ServerMinioBucketLoopUp int    `env:"SERVER_MINIO_BUCKET_LOOP_UP" env-default:"0"` // 0 auto 1 host 2 path
+	ServerMinioAccess       string `env:"SERVER_MINIO_ACCESS" env-default:"minioadmin"`
+	ServerMinioSecret       string `env:"SERVER_MINIO_SECRET" env-default:"minioadmin"`
+	ServerOSSType           string `env:"SERVER_OSS_TYPE" env-default:"minio"` // minio / aliyun (兼容模式，只支持上传和下载，其他API复用minio)
 
 	MinioSingleBucketMode   bool   `env:"MINIO_SINGLE_BUCKET_MODE" env-default:"false"`     // 是否使用单个bucket，所有应用都使用同一个bucket下的不同文件夹，注意，这将不进行权限管控
 	MinioSingleBucketName   string `env:"MINIO_SINGLE_BUCKET_NAME" env-default:"vvorker"`   // 如果使用单个bucket，bucket名称

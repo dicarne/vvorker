@@ -78,7 +78,9 @@ RUN DEBIAN_FRONTEND="noninteractive" apt-get install -y \
 	apt-transport-https \
 	ca-certificates \
 	fuse3 \
-	sqlite3
+	sqlite3 \
+	curl \
+	vim
 
 COPY litefs.yml /etc/litefs.yml
 COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
