@@ -31,7 +31,9 @@ export function useDebugEndpoint(app0: any) {
                         case "downloadFile":
                             return c.json({ message: "oss", data: await oss.downloadFile(req.params.fileName) });
                         case "uploadFile":
-                            return c.json({ message: "oss", data: await oss.uploadFile(req.params.data, req.params.fileName) });
+                            let base64 = req.params.data
+                            const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+                            return c.json({ message: "oss", data: await oss.uploadFile(bytes, req.params.fileName) });
                         case "uploadStreamFile":
                             return c.json({ message: "oss", data: await oss.uploadStreamFile(req.params.stream, req.params.fileName) });
                         case "downloadStreamFile":
