@@ -338,10 +338,17 @@ func FinishWorkerConfig(worker *models.Worker) string {
 				db.Model(&models.OSS{}).Where(&models.OSS{UID: ext.ResourceID, UserID: uint64(UserID)}).First(&ossresources)
 				// 配置oss
 				if ossresources.ID != 0 {
-					ext.Bucket = ossresources.Bucket
-					ext.Region = ossresources.Region
-					ext.AccessKeyId = ossresources.AccessKey
-					ext.AccessKeySecret = ossresources.SecretKey
+					if !conf.AppConfigInstance.MinioSingleBucketMode {
+						ext.Bucket = ossresources.Bucket
+						ext.Region = ossresources.Region
+						ext.AccessKeyId = ossresources.AccessKey
+						ext.AccessKeySecret = ossresources.SecretKey
+					} else {
+						ext.Bucket = ossresources.Bucket
+						ext.Region = conf.AppConfigInstance.ServerMinioRegion
+						ext.AccessKeyId = conf.AppConfigInstance.ServerMinioAccess
+						ext.AccessKeySecret = conf.AppConfigInstance.ServerMinioSecret
+					}
 				} else {
 					ext.ResourceID = ""
 				}
