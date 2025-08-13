@@ -37,6 +37,7 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible // indirect
 	github.com/antlabs/stl v0.0.2 // indirect
 	github.com/antlabs/timer v0.1.4 // indirect
 	github.com/boombuler/barcode v1.1.0 // indirect

@@ -19,6 +19,7 @@ import (
 	extmysql "vvorker/ext/mysql/src"
 	oss "vvorker/ext/oss/src"
 	alioss "vvorker/ext/oss/src/alioss"
+	"vvorker/ext/oss/src/alioss1"
 	pgsql "vvorker/ext/pgsql/src"
 	"vvorker/models"
 	"vvorker/rpc"
@@ -196,10 +197,14 @@ func init() {
 		{
 			ossAPI := extAPI.Group("/oss")
 			{
-				if conf.AppConfigInstance.ServerOSSType == "aliyun" {
+				switch conf.AppConfigInstance.ServerOSSType {
+				case "aliyun":
 					ossAPI.POST("/upload", authz.AgentAuthz(), alioss.UploadFile)
 					ossAPI.POST("/download", authz.AgentAuthz(), alioss.DownloadFile)
-				} else {
+				case "aliyun1":
+					ossAPI.POST("/upload", authz.AgentAuthz(), alioss1.UploadFile)
+					ossAPI.POST("/download", authz.AgentAuthz(), alioss1.DownloadFile)
+				default:
 					ossAPI.POST("/upload", authz.AgentAuthz(), oss.UploadFile)
 					ossAPI.POST("/download", authz.AgentAuthz(), oss.DownloadFile)
 				}

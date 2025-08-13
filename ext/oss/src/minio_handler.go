@@ -25,8 +25,18 @@ type MinioClient struct {
 
 // NewMinioClient 创建新的Minio客户端
 func NewMinioClient(endpoint, accessKeyID, secretAccessKey string, useSSL bool, region string) (*MinioClient, error) {
+	var cre *credentials.Credentials
+	switch conf.AppConfigInstance.ServerOSSAuthVersion {
+	case 4:
+		cre = credentials.NewStaticV4(accessKeyID, secretAccessKey, "")
+	case 2:
+		credentials.NewStaticV2(accessKeyID, secretAccessKey, "")
+	default:
+		cre = credentials.NewStaticV4(accessKeyID, secretAccessKey, "")
+	}
+
 	client, err := minio.New(endpoint, &minio.Options{
-		Creds:        credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+		Creds:        cre,
 		Secure:       useSSL,
 		Region:       region,
 		BucketLookup: minio.BucketLookupType(conf.AppConfigInstance.ServerMinioBucketLoopUp),

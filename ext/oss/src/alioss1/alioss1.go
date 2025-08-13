@@ -1,7 +1,6 @@
-package alioss
+package alioss1
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,8 +8,7 @@ import (
 	"vvorker/common"
 	"vvorker/conf"
 
-	aoss "github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
-	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
+	aoss "github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,16 +37,29 @@ func getOSSClient(c *gin.Context) (*aoss.Client, error) {
 		return nil, err
 	}
 
-	cfg := aoss.LoadDefaultConfig().
-		WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")).
-		WithRegion(region).
-		WithEndpoint(endpoint).
-		WithDisableSSL(!useSSL).
-		WithInsecureSkipVerify(true).
-		WithSignatureVersion(aoss.SignatureVersionType(conf.AppConfigInstance.ServerOSSAuthVersion)).
-		WithUsePathStyle(conf.AppConfigInstance.ServerMinioBucketLoopUp == 2)
+	clientOptions := []aoss.ClientOption{}
+	clientOptions = append(clientOptions, aoss.Region(region))
+	switch conf.AppConfigInstance.ServerOSSAuthVersion {
+	case 4:
+		clientOptions = append(clientOptions, aoss.AuthVersion(aoss.AuthV4))
+	case 2:
+		clientOptions = append(clientOptions, aoss.AuthVersion(aoss.AuthV2))
+	case 1:
+		clientOptions = append(clientOptions, aoss.AuthVersion(aoss.AuthV1))
+	default:
+		clientOptions = append(clientOptions, aoss.AuthVersion(aoss.AuthV4))
+	}
 
-	client := aoss.NewClient(cfg)
+	if useSSL {
+		endpoint = "https://" + endpoint
+	} else {
+		endpoint = "http://" + endpoint
+	}
+
+	client, err := aoss.New(endpoint, accessKeyID, secretAccessKey, clientOptions...)
+	if err != nil {
+		return nil, err
+	}
 	return client, nil
 }
 
@@ -71,7 +82,7 @@ func getMinioConfig(c *gin.Context) (string, string) {
 
 // DownloadFile 下载文件接口
 func DownloadFile(c *gin.Context) {
-	mc, err := getOSSClient(c)
+	client, err := getOSSClient(c)
 	if err != nil {
 		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
 		return
@@ -79,23 +90,23 @@ func DownloadFile(c *gin.Context) {
 
 	bucketName, objectName := getMinioConfig(c)
 
-	// 使用 GetObject 获取文件流
-	obj, err := mc.GetObject(context.Background(), &aoss.GetObjectRequest{
-		Bucket: &bucketName,
-		Key:    &objectName,
-	})
+	bucket, err := client.Bucket(bucketName)
+	if err != nil {
+		common.RespErr(c, http.StatusInternalServerError, "Failed to get bucket", gin.H{"error": err.Error()})
+		return
+	}
+
+	// 下载文件到流。
+	body, err := bucket.GetObject(objectName)
 	if err != nil {
 		common.RespErr(c, http.StatusInternalServerError, "Failed to get object", gin.H{"error": err.Error()})
 		return
 	}
-
-	// 设置响应头
-	c.Header("Content-Type", *obj.ContentType)
-	c.Header("Content-Length", strconv.FormatInt(obj.ContentLength, 10))
-	c.Header("Content-Disposition", "attachment; filename="+objectName)
+	// 数据读取完成后，获取的流必须关闭，否则会造成连接泄漏，导致请求无连接可用，程序无法正常工作。
+	defer body.Close()
 
 	// 将文件流写入响应体
-	_, err = io.Copy(c.Writer, obj.Body)
+	_, err = io.Copy(c.Writer, body)
 	if err != nil {
 		common.RespErr(c, http.StatusInternalServerError, "Failed to copy object to response", gin.H{"error": err.Error()})
 		return
@@ -107,7 +118,7 @@ func DownloadFile(c *gin.Context) {
 
 // UploadFile 上传文件接口
 func UploadFile(c *gin.Context) {
-	mc, err := getOSSClient(c)
+	client, err := getOSSClient(c)
 	if err != nil {
 		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
 		return
@@ -130,16 +141,17 @@ func UploadFile(c *gin.Context) {
 	}
 	defer src.Close()
 
-	// 上传文件到 MinIO
-	info, err := mc.PutObject(context.Background(), &aoss.PutObjectRequest{
-		Bucket: &bucketName,
-		Key:    &objectName,
-		Body:   src,
-	})
+	bucket, err := client.Bucket(bucketName)
 	if err != nil {
-		common.RespErr(c, http.StatusInternalServerError, "Failed to upload file", gin.H{"error": err.Error()})
+		common.RespErr(c, http.StatusInternalServerError, "Failed to get bucket", gin.H{"error": err.Error()})
 		return
 	}
 
-	common.RespOK(c, "File uploaded successfully", gin.H{"info": info})
+	err = bucket.PutObject(objectName, src)
+	if err != nil {
+		common.RespErr(c, http.StatusInternalServerError, "Failed to put object", gin.H{"error": err.Error()})
+		return
+	}
+
+	common.RespOK(c, "File uploaded successfully", gin.H{"info": "success"})
 }
