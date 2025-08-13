@@ -60,7 +60,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                         }
                     })
                 })
-                return (await r.json() as any).data
+                return Base64.toUint8Array((await r.json() as any).data)
             },
             uploadFile: async (data: Uint8Array, fileName: string) => {
                 const base64 = Base64.fromUint8Array(data)

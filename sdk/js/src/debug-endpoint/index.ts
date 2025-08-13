@@ -31,7 +31,7 @@ export function useDebugEndpoint(app0: any) {
                         case "listObjects":
                             return c.json({ message: "oss", data: await oss.listObjects(req.params.bucket) });
                         case "downloadFile":
-                            return c.json({ message: "oss", data: await oss.downloadFile(req.params.fileName) });
+                            return c.json({ message: "oss", data: Base64.fromUint8Array(await oss.downloadFile(req.params.fileName)) });
                         case "uploadFile":
                             let base64 = req.params.data
                             const bytes = Base64.toUint8Array(base64)
