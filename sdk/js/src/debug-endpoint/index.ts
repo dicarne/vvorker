@@ -5,6 +5,8 @@ import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
 import { OSSBinding } from "@dicarne/vvorker-oss";
 import { isDev } from "../common/common";
 import { MYSQLBinding } from "@dicarne/vvorker-mysql";
+import { Base64 } from 'js-base64';
+
 
 /**
  * VITE_VVORKER_BASE_URL 设置为到服务的url
@@ -32,7 +34,7 @@ export function useDebugEndpoint(app0: any) {
                             return c.json({ message: "oss", data: await oss.downloadFile(req.params.fileName) });
                         case "uploadFile":
                             let base64 = req.params.data
-                            const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+                            const bytes = Base64.toUint8Array(base64)
                             return c.json({ message: "oss", data: await oss.uploadFile(bytes, req.params.fileName) });
                         case "uploadStreamFile":
                             return c.json({ message: "oss", data: await oss.uploadStreamFile(req.params.stream, req.params.fileName) });

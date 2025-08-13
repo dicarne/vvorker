@@ -4,6 +4,7 @@ import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
 import { MYSQLBinding } from "@dicarne/vvorker-mysql";
 import { config, isDev } from "../common/common";
 import { ServiceBinding } from "../types/debug-endpoint";
+import { Base64 } from 'js-base64';
 
 
 function vvoss(key: string, binding: OSSBinding): OSSBinding {
@@ -62,8 +63,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
                 return (await r.json() as any).data
             },
             uploadFile: async (data: Uint8Array, fileName: string) => {
-                const text = new TextDecoder().decode(data);
-                const base64 = btoa(text);
+                const base64 = Base64.fromUint8Array(data)
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
                     method: "POST",
                     headers: {
