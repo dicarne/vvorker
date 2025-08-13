@@ -50,6 +50,8 @@ func getOSSClient(c *gin.Context) (*aoss.Client, error) {
 		clientOptions = append(clientOptions, aoss.AuthVersion(aoss.AuthV4))
 	}
 
+	aoss.ForcePathStyle(conf.AppConfigInstance.ServerMinioBucketLoopUp == 2)
+
 	if useSSL {
 		endpoint = "https://" + endpoint
 	} else {
