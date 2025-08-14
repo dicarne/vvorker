@@ -168,7 +168,7 @@ func Endpoint(c *gin.Context) {
 						}
 					}
 					if resp.StatusCode != http.StatusOK {
-						logrus.Infof("sso auth failed, status code: %d, url: %s", resp.StatusCode, conf.AppConfigInstance.SSOAuthURL)
+						logrus.Infof("sso auth failed, status code: %d, url: %s", resp.StatusCode, requestPath)
 						c.AbortWithStatus(resp.StatusCode)
 						return
 					}
