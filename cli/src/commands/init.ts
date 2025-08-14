@@ -82,7 +82,7 @@ export default defineConfig({
   try {
     await runCommand('pnpm', ['install'], projectName);
     await runCommand('pnpm', ['install', "@types/node", "vite", "@cloudflare/vite-plugin", "-D"], projectName);
-    await runCommand('pnpm', ['install', "hono", "@dicarne/vvorker-sdk"], projectName);
+    await runCommand('pnpm', ['install', "hono", "@dicarne/vvorker-sdk", "@hono/zod-validator", "zod"], projectName);
   } catch (error) {
     console.log(pc.red(`安装依赖失败，请手动安装`));
   }
@@ -163,7 +163,7 @@ export default app;
   try {
     await runCommand('pnpm', ['install'], projectName);
     await runCommand('pnpm', ['install', "@types/node", "-D"], projectName);
-    await runCommand('pnpm', ['install', "hono", "@dicarne/vvorker-sdk"], projectName);
+    await runCommand('pnpm', ['install', "hono", "@dicarne/vvorker-sdk", "@hono/zod-validator", "zod"], projectName);
   } catch (error) {
     console.log(pc.red(`安装依赖失败，请手动安装`));
   }
