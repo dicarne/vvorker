@@ -4,9 +4,9 @@ import (
 	"archive/zip"
 	"bytes"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"errors"
-	"io"
 	"path/filepath"
 	"vvorker/common"
 	"vvorker/dao"
@@ -23,27 +23,30 @@ const (
 	zipMimeType = ".zip"
 )
 
+type UploadFileReq struct {
+	File string `json:"file"`
+	Path string `json:"path"`
+}
+
 type UploadFileResp struct {
 	FileID   string `json:"fileId"`
 	FileHash string `json:"fileHash"`
 }
 
 func UploadFileEndpoint(c *gin.Context) {
-	fileHeader, _ := c.FormFile("file")
-	file, err := fileHeader.Open()
-	if err != nil {
-		return
-	}
-	defer file.Close()
-
-	data, err := io.ReadAll(file)
-	if err != nil {
-		logrus.WithError(err).Error("read file error")
+	var req UploadFileReq
+	if err := c.ShouldBindJSON(&req); err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 
-	contentType := filepath.Ext(fileHeader.Filename)
+	data, err := base64.StdEncoding.DecodeString(req.File)
+	if err != nil {
+		logrus.WithError(err).Error("decode base64 error")
+		common.RespErr(c, common.RespCodeInternalError, "Internal error processing file.", nil)
+		return
+	}
+	contentType := filepath.Ext(req.Path)
 	if contentType == zipMimeType {
 		zipReader, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 		if err != nil {

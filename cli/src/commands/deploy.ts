@@ -84,12 +84,13 @@ export const deployCommand = new Command('deploy')
             const fileUrl = filePath.replace(wwwAssetsPath, '').replace(/\\/g, '/');
             console.log(pc.gray(fileUrl));
 
-            const formData = new FormData();
-            formData.append('file', new Blob([fileContent]), fileUrl);
-
-            let up1 = await apiClient.post(`/api/file/upload`, formData, {
+            let up1 = await apiClient.post(`/api/file/upload`, {
+              file: fileContent.toString('base64'),
+              path: fileUrl,
+            }, {
               headers: {
-                'Content-Type': 'multipart/form-data'
+                'Content-Type': 'application/json',
+                'x-encrypted-data': vk != "" ? vk : undefined
               },
             })
 

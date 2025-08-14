@@ -100,7 +100,7 @@ func encrypt(plaintext []byte, key []byte) ([]byte, error) {
 
 // Decrypt decrypts ciphertext using AES-GCM
 func decrypt(encrypted []byte, key []byte) ([]byte, error) {
-	encrypted = encrypted[1 : len(encrypted)-1]
+	encrypted = encrypted[1 : len(encrypted)-1] // 去除双引号，数据是 "Base64data" 的样子
 	ciphertext, err := base64.StdEncoding.DecodeString(string(encrypted))
 	if err != nil {
 		logrus.Error("Failed to decode base64 data:", err)
