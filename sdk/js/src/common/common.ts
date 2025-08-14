@@ -15,6 +15,10 @@ export function isDev() {
     return mode === "development"
 }
 
+const localDev = (import.meta as any)?.env?.DEV
+export function isLocalDev() {
+    return localDev && isDev()
+}
 
 export function config() {
     let url = (import.meta as any).env.VITE_VVORKER_BASE_URL

@@ -2,13 +2,13 @@ import { KVBinding } from "@dicarne/vvorker-kv";
 import { OSSBinding } from "@dicarne/vvorker-oss";
 import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
 import { MYSQLBinding } from "@dicarne/vvorker-mysql";
-import { config, isDev } from "../common/common";
+import { config, isLocalDev } from "../common/common";
 import { ServiceBinding } from "../types/debug-endpoint";
 import { Base64 } from 'js-base64';
 
 
 function vvoss(key: string, binding: OSSBinding): OSSBinding {
-    if (isDev()) {
+    if (isLocalDev()) {
         return {
             listBuckets: async () => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -144,7 +144,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
 }
 
 function vvpgsql(key: string, binding: PGSQLBinding): PGSQLBinding {
-    if (isDev()) {
+    if (isLocalDev()) {
         return {
             client: () => Promise.resolve({
                 query: async (sql: string) => {
@@ -225,7 +225,7 @@ function vvpgsql(key: string, binding: PGSQLBinding): PGSQLBinding {
 }
 
 function vvmysql(key: string, binding: MYSQLBinding): MYSQLBinding {
-    if (isDev()) {
+    if (isLocalDev()) {
 
         return {
             connectionString: async () => {
@@ -288,7 +288,7 @@ function vvmysql(key: string, binding: MYSQLBinding): MYSQLBinding {
 }
 
 function vvkv(binding_key: string, binding: KVBinding): KVBinding {
-    if (isDev()) {
+    if (isLocalDev()) {
         return {
             get: async (key: string) => {
                 const r = await fetch(`${config().url}/__vvorker__debug`, {
@@ -376,7 +376,7 @@ function vvkv(binding_key: string, binding: KVBinding): KVBinding {
 }
 
 async function vars<T extends { vars: any }>(binding: any): Promise<T['vars']> {
-    if (isDev()) {
+    if (isLocalDev()) {
         let r = await fetch(`${config().url}/__vvorker__debug`, {
             method: "POST",
             headers: {
@@ -402,7 +402,7 @@ async function vars<T extends { vars: any }>(binding: any): Promise<T['vars']> {
  * @returns 
  */
 function service(key: string, binding: ServiceBinding) {
-    if (isDev()) {
+    if (isLocalDev()) {
         return {
             fetch: async (path: string, init?: RequestInit) => {
                 if (!init) {
@@ -442,7 +442,7 @@ function service(key: string, binding: ServiceBinding) {
 }
 
 function proxy(key: string, binding: ServiceBinding) {
-    if (isDev()) {
+    if (isLocalDev()) {
         return {
             fetch: (url: string, init?: RequestInit) => fetch(url, init)
         }
@@ -452,7 +452,7 @@ function proxy(key: string, binding: ServiceBinding) {
 }
 
 function assets(key: string, binding: Fetcher) {
-    if (isDev()) {
+    if (isLocalDev()) {
         return {
             fetch: async (path: string, init?: RequestInit) => {
                 if (!init) {
