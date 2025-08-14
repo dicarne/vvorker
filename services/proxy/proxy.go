@@ -136,14 +136,14 @@ func Endpoint(c *gin.Context) {
 							break
 						}
 					}
-					req.Header.Add("vv-sso-data", rule.Data)
+					req.Header.Add(conf.AppConfigInstance.SSOCookieName+"-data", rule.Data)
 					resp, err := client.Do(req)
 					if err != nil {
 						c.AbortWithStatus(http.StatusUnauthorized)
 						return
 					}
 					defer resp.Body.Close()
-					if resp.StatusCode == 400 {
+					if resp.StatusCode == 401 {
 						if conf.AppConfigInstance.SSORedirectURL != "" && strings.Contains(c.Request.Header.Get("Accept"), "text/html") {
 							// Add original URL as query parameter
 							rpath := c.Request.URL.Path
