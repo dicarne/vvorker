@@ -147,7 +147,7 @@ type WorkerSimple struct {
 func AdminGetWorkerByNameSimple(name string) (*WorkerSimple, error) {
 	var worker WorkerSimple
 	db := database.GetDB()
-	bytes, err := sys_cache.GlobalCache("worker_uid_name", func() ([]byte, error) {
+	bytes, err := sys_cache.GlobalCache("worker_uid_name:"+name, func() ([]byte, error) {
 		if err := db.Model(&Worker{}).Select(
 			"UID",
 			"EnableAccessControl",
