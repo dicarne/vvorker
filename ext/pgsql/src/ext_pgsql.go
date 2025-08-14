@@ -475,7 +475,7 @@ func CommonDBQuery(conns *defs.SyncMap[string, *sql.DB], c *gin.Context, sqltype
 			return
 		}
 	}
-	logrus.Info(req) // ------------------------------------------------------------------------
+
 	if req.Method == "execute" && sqltype == "mysql" {
 		result, err := dbConn.Exec(req.Sql, req.Params...)
 		if err != nil {
