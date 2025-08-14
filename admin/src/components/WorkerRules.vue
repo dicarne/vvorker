@@ -106,6 +106,7 @@ const createRuleForm = ref({
   path: '/',
   description: '',
   ruleType: 'internal',
+  data: '',
 })
 const createRuleFormRef = ref<FormInst | null>(null)
 const createRuleRules: FormRules = {
@@ -140,6 +141,7 @@ const handleCreateRuleConfirm = async () => {
       path: createRuleForm.value.path,
       description: createRuleForm.value.description,
       rule_uid: '',
+      data: createRuleForm.value.data,
     })
     await fetchRules()
     message.success('创建规则成功')
@@ -156,6 +158,7 @@ const handleCreateRuleClose = () => {
   createRuleForm.value.path = '/'
   createRuleForm.value.description = ''
   createRuleForm.value.ruleType = 'internal'
+  createRuleForm.value.data = ''
 }
 
 // 删除 rule
@@ -207,6 +210,7 @@ onMounted(async () => {
             <th>路由前缀</th>
             <th>控制类型</th>
             <th>描述</th>
+            <th>权限</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -218,6 +222,7 @@ onMounted(async () => {
               ({{ item.rule_type }})
             </td>
             <td>{{ item.description }}</td>
+            <td>{{ item.data }}</td>
             <td>
               <NButton quaternary type="primary" @click="handleDeleteRuleClick(item.rule_uid)">
                 删除
@@ -239,6 +244,9 @@ onMounted(async () => {
         </NFormItem>
         <NFormItem label="规则类型">
           <NSelect v-model:value="createRuleForm.ruleType" :options="ruleTypeOptions" />
+        </NFormItem>
+        <NFormItem label="权限">
+          <NInput v-model:value="createRuleForm.data" placeholder="请输入权限" />
         </NFormItem>
       </NForm>
     </NModal>

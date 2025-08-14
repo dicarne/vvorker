@@ -148,6 +148,8 @@ export interface AccessRule {
   // path
   path: string;
   rule_uid: string;
+
+  data: string;
 }
 
 
