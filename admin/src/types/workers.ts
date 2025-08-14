@@ -9,6 +9,7 @@ export interface WorkerItem {
   Name: string
   Template: string
   MaxCount: number
+  AccessControl: boolean
 }
 
 export interface WorkerItemProperties {
