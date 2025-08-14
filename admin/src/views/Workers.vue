@@ -18,6 +18,7 @@ import {
   MoreHorizontal24Regular as DropdownIcon,
   Edit24Regular as EditIcon,
   Link24Regular as LinkIcon,
+  LockClosed24Regular as LockIcon,
 } from '@vicons/fluent'
 // 引入 WorkerRun 组件
 import WorkerRun from '@/components/WorkerRun.vue'
@@ -82,7 +83,7 @@ const handleCreateWorkerClick = async () => {
 // 打开 Worker
 const handleOpenWorkerClick = async (worker: WorkerItem) => {
   const workerUrl = genWorkerUrl(appConfig.value, worker.Name)
-  if(workerUrl) {
+  if (workerUrl) {
     window.open(workerUrl, '_blank')
   } else {
     message.error('Worker URL 无效')
@@ -195,7 +196,10 @@ onMounted(async () => {
             </div>
           </template>
           <div class="v-flex-center-start-column">
-            <div class="v-item">{{ item.Name }}</div>
+            <div class="v-item">
+              {{ item.Name }}
+              <NIcon class="v-item" v-if="item.AccessControl"><LockIcon /></NIcon>
+            </div>
             <div class="v-item">
               Node:
               <NTag size="small" :style="{ color: CH.hex(item.NodeName || '') }">
