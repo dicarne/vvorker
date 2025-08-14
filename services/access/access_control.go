@@ -115,6 +115,44 @@ func AddAccessRuleEndpoint(c *gin.Context) {
 	common.RespOK(c, common.RespMsgOK, nil)
 }
 
+func UpdateAccessRuleEndpoint(c *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
+			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+		}
+	}()
+	uid := uint64(c.GetUint(common.UIDKey))
+	if uid == 0 {
+		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+		return
+	}
+	request := models.AccessRule{}
+	if err := c.BindJSON(&request); err != nil {
+		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
+		return
+	}
+	request.Length = len(request.Path)
+
+	db := database.GetDB()
+	var user models.Worker
+	if err := db.Where(&models.Worker{Worker: &entities.Worker{UID: request.WorkerUID, UserID: uid}}).First(&user).Error; err != nil {
+		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+		return
+	}
+	if err := db.Unscoped().Delete(&models.AccessRule{RuleUID: request.RuleUID, WorkerUID: request.WorkerUID}).Error; err != nil {
+		common.RespErr(c, common.RespCodeInvalidRequest, "rule not found", nil)
+		return
+	}
+	request.RuleUID = utils.GenerateUID()
+	request.ID = 0
+	if err := db.Create(&request).Error; err != nil {
+		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
+		return
+	}
+	common.RespOK(c, common.RespMsgOK, nil)
+}
+
 type DeleteAccessRuleRequest struct {
 	WorkerUID string `json:"worker_uid"`
 	RuleUID   string `json:"rule_uid"`

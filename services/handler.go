@@ -115,6 +115,7 @@ func init() {
 						controlApi.POST("/get-control", access.GetAccessControlEndpoint)
 						controlApi.POST("/list-rules", access.ListAccessRuleEndpoint)
 						controlApi.POST("/create-rule", access.AddAccessRuleEndpoint)
+						controlApi.POST("/update-rule", access.UpdateAccessRuleEndpoint)
 						controlApi.POST("/delete-rule", access.DeleteAccessRuleEndpoint)
 					}
 				}
