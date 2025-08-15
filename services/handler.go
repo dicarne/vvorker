@@ -204,11 +204,11 @@ func init() {
 					ossAPI.POST("/upload", authz.AgentAuthz(), alioss.UploadFile)
 					ossAPI.POST("/download", authz.AgentAuthz(), alioss.DownloadFile)
 				case "aliyun1":
-					ossAPI.POST("/upload", authz.AgentAuthz(), alioss1.UploadFile)
-					ossAPI.POST("/download", authz.AgentAuthz(), alioss1.DownloadFile)
+					ossAPI.POST("/upload", authz.AgentAuthz(), alioss1.UploadFileEndpoint)
+					ossAPI.POST("/download", authz.AgentAuthz(), alioss1.DownloadFileEndpoint)
 				default:
-					ossAPI.POST("/upload", authz.AgentAuthz(), oss.UploadFile)
-					ossAPI.POST("/download", authz.AgentAuthz(), oss.DownloadFile)
+					ossAPI.POST("/upload", authz.AgentAuthz(), oss.UploadFileEndpoint)
+					ossAPI.POST("/download", authz.AgentAuthz(), oss.DownloadFileEndpoint)
 				}
 
 				ossAPI.POST("/list-buckets", authz.AgentAuthz(), oss.ListBuckets)

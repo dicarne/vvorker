@@ -1,9 +1,14 @@
 package assets
 
 import (
+	"fmt"
+	"io"
 	"mime"
+	"net/http"
+	"vvorker/conf"
 	"vvorker/entities"
 	"vvorker/ext/kv/src/sys_cache"
+	oss "vvorker/ext/oss/src"
 	"vvorker/models"
 	"vvorker/utils/database"
 
@@ -219,6 +224,20 @@ func GetAssetsEndpoint(c *gin.Context) {
 			// 如果没有匹配的 MIME 类型，默认使用 application/octet-stream
 			mimeType = "application/octet-stream"
 		}
+
+		if conf.AppConfigInstance.FileStorageUseOSS {
+			dd, err := oss.DownloadFileFromSysBucket(fmt.Sprintf("files/%d/%s", asset.UserID, asset.Hash))
+			if err == nil {
+				data, err := io.ReadAll(dd)
+				if err != nil {
+					c.Data(http.StatusNotFound, mimeType, file.Data)
+					return
+				}
+				file.Data = data
+			}
+			defer dd.Close()
+		}
+
 		sys_cache.Put(AssetBucket+":"+asset.UID+":data", file.Data, 3600)
 		sys_cache.Put(AssetBucket+":"+asset.UID+":mime", []byte(mimeType), 3600)
 		c.Data(200, mimeType, file.Data)

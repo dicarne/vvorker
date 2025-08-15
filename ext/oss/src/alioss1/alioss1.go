@@ -82,8 +82,8 @@ func getMinioConfig(c *gin.Context) (string, string) {
 	return bucketName, objectName
 }
 
-// DownloadFile 下载文件接口
-func DownloadFile(c *gin.Context) {
+// DownloadFileEndpoint 下载文件接口
+func DownloadFileEndpoint(c *gin.Context) {
 	client, err := getOSSClient(c)
 	if err != nil {
 		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
@@ -118,8 +118,8 @@ func DownloadFile(c *gin.Context) {
 	c.Writer.Flush()
 }
 
-// UploadFile 上传文件接口
-func UploadFile(c *gin.Context) {
+// UploadFileEndpoint 上传文件接口
+func UploadFileEndpoint(c *gin.Context) {
 	client, err := getOSSClient(c)
 	if err != nil {
 		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
@@ -156,4 +156,85 @@ func UploadFile(c *gin.Context) {
 	}
 
 	common.RespOK(c, "File uploaded successfully", gin.H{"info": "success"})
+}
+
+func UploadFile(objectName string, file io.Reader) error {
+	bucketName := conf.AppConfigInstance.FileStorageOSSBucket
+	client, err := getSysBucketClient()
+	if err != nil {
+		return err
+	}
+	bucket, err := client.Bucket(bucketName)
+	if err != nil {
+		return err
+	}
+	err = bucket.PutObject(conf.AppConfigInstance.FileStorageOSSPrefix+objectName, file)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DownloadFile(objectName string) (io.ReadCloser, error) {
+	bucketName := conf.AppConfigInstance.FileStorageOSSBucket
+	client, err := getSysBucketClient()
+	if err != nil {
+		return nil, err
+	}
+	bucket, err := client.Bucket(bucketName)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := bucket.GetObject(conf.AppConfigInstance.FileStorageOSSPrefix + objectName)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+func getSysBucketClient() (*aoss.Client, error) {
+
+	endpoint := fmt.Sprintf("%s:%d", conf.AppConfigInstance.ServerMinioHost, conf.AppConfigInstance.ServerMinioPort)
+	accessKeyID := conf.AppConfigInstance.ServerMinioAccess
+	secretAccessKey := conf.AppConfigInstance.ServerMinioSecret
+	region := conf.AppConfigInstance.ServerMinioRegion
+	useSSLStr := fmt.Sprintf("%v", conf.AppConfigInstance.ServerMinioUseSSL)
+
+	// logrus.Infof("Endpoint: %s, AccessKeyID: %s, SecretAccessKey: %s, UseSSL: %s, Region: %s",
+	// 	endpoint, accessKeyID, secretAccessKey, useSSLStr, region)
+
+	useSSL, err := strconv.ParseBool(useSSLStr)
+	if err != nil {
+		return nil, err
+	}
+
+	clientOptions := []aoss.ClientOption{}
+	clientOptions = append(clientOptions, aoss.Region(region))
+	switch conf.AppConfigInstance.ServerOSSAuthVersion {
+	case 4:
+		clientOptions = append(clientOptions, aoss.AuthVersion(aoss.AuthV4))
+	case 2:
+		clientOptions = append(clientOptions, aoss.AuthVersion(aoss.AuthV2))
+	case 1:
+		clientOptions = append(clientOptions, aoss.AuthVersion(aoss.AuthV1))
+	default:
+		clientOptions = append(clientOptions, aoss.AuthVersion(aoss.AuthV4))
+	}
+
+	aoss.ForcePathStyle(conf.AppConfigInstance.ServerMinioBucketLoopUp == 2)
+
+	if useSSL {
+		endpoint = "https://" + endpoint
+	} else {
+		endpoint = "http://" + endpoint
+	}
+
+	client, err := aoss.New(endpoint, accessKeyID, secretAccessKey, clientOptions...)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
+
 }

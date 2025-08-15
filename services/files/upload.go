@@ -7,9 +7,12 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"vvorker/common"
+	"vvorker/conf"
 	"vvorker/dao"
+	oss "vvorker/ext/oss/src"
 	"vvorker/models"
 	"vvorker/utils"
 
@@ -79,6 +82,16 @@ func UploadFileEndpoint(c *gin.Context) {
 		logrus.WithError(err).Error("get file error")
 		common.RespErr(c, common.RespCodeInternalError, "Internal error getting file.", nil)
 		return
+	}
+
+	if conf.AppConfigInstance.FileStorageUseOSS {
+		err = oss.UploadFileToSysBucket(fmt.Sprintf("files/%d/%s", uid, hash), bytes.NewReader(data))
+		if err != nil {
+			logrus.WithError(err).Error("upload file to oss error")
+			common.RespErr(c, common.RespCodeInternalError, "Internal error uploading file to OSS.", nil)
+			return
+		}
+		data = nil
 	}
 
 	fileRecord, err = dao.SaveFile(c, &models.File{

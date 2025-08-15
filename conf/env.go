@@ -37,6 +37,10 @@ type AppConfig struct {
 	WorkerLimit    int    `env:"WORKER_LIMIT" env-default:"10000"`
 	WorkerdBinPath string `env:"WORKERD_BIN_PATH" env-default:"/bin/workerd"`
 
+	FileStorageUseOSS    bool   `env:"FILE_STORAGE_USE_OSS" env-default:"false"` // 文件是否使用oss存储，而不是数据库
+	FileStorageOSSBucket string `env:"FILE_STORAGE_OSS_BUCKET"`                  // oss bucket
+	FileStorageOSSPrefix string `env:"FILE_STORAGE_OSS_PREFIX"`                  // oss prefix
+
 	EncryptionKey string `env:"ENCRYPTION_KEY" env-default:""`
 
 	APIWebBaseURL  string `env:"API_WEB_BASE_URL"`

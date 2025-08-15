@@ -92,8 +92,8 @@ func getMinioConfig(c *gin.Context) (string, string) {
 	return bucketName, objectName
 }
 
-// DownloadFile 下载文件接口
-func DownloadFile(c *gin.Context) {
+// DownloadFileEndpoint 下载文件接口
+func DownloadFileEndpoint(c *gin.Context) {
 	mc, err := getMinioClient(c)
 	if err != nil {
 		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
@@ -250,8 +250,8 @@ func AbortMultipartUpload(c *gin.Context) {
 	})
 }
 
-// UploadFile 上传文件接口
-func UploadFile(c *gin.Context) {
+// UploadFileEndpoint 上传文件接口
+func UploadFileEndpoint(c *gin.Context) {
 	mc, err := getMinioClient(c)
 	if err != nil {
 		common.RespErr(c, http.StatusBadRequest, "Failed to create Minio client", gin.H{"error": err.Error()})
