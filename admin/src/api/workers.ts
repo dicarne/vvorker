@@ -130,6 +130,11 @@ export const addAccessRule = async (request: AccessRule) => {
   return res.data;
 };
 
+export const updateAccessRule = async (request: AccessRule) => {
+  const res = await api.post<CommonResponse<null>>('api/worker/access/control/update-rule', request);
+  return res.data;
+};
+
 export const deleteAccessRule = async (request: DeleteAccessRuleRequest) => {
   const res = await api.post<CommonResponse<null>>('api/worker/access/control/delete-rule', request);
   return res.data;

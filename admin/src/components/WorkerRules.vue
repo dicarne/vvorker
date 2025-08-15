@@ -18,11 +18,13 @@ import { h } from 'vue'
 import type {
   AccessRule,
   AccessRuleType,
+  UpdateAccessRuleRequest,
   DeleteAccessRuleRequest,
   EnableAccessControlRequest,
 } from '@/types/access'
 import {
   addAccessRule,
+  updateAccessRule,
   deleteAccessRule,
   getAccessControl,
   listAccessRules,
@@ -67,8 +69,8 @@ const renderAccessControl = () =>
 const rules = ref<AccessRule[]>([])
 const fetchRules = async () => {
   try {
-    const response1 = await getAccessControl({ worker_uid: props.uid });
-    isAccessControlEnabled.value = response1.data.EnableAccessControl;
+    const response1 = await getAccessControl({ worker_uid: props.uid })
+    isAccessControlEnabled.value = response1.data.EnableAccessControl
     const response = await listAccessRules({
       worker_uid: props.uid,
       page: 1,
@@ -109,7 +111,7 @@ const createRuleForm = ref({
   data: '',
 })
 const createRuleFormRef = ref<FormInst | null>(null)
-const createRuleRules: FormRules = {
+const workerRuleRules: FormRules = {
   path: {
     required: true,
     message: '请输入路径',
@@ -135,14 +137,15 @@ const handleCreateRuleConfirm = async () => {
   try {
     // 调用创建规则接口
     IsCreatingRule.value = true
-    await addAccessRule({
+    const request: AccessRule = {
       worker_uid: props.uid,
       rule_type: createRuleForm.value.ruleType as AccessRuleType,
       path: createRuleForm.value.path,
       description: createRuleForm.value.description,
       rule_uid: '',
       data: createRuleForm.value.data,
-    })
+    }
+    await addAccessRule(request)
     await fetchRules()
     message.success('创建规则成功')
     handleCreateRuleClose()
@@ -159,6 +162,54 @@ const handleCreateRuleClose = () => {
   createRuleForm.value.description = ''
   createRuleForm.value.ruleType = 'internal'
   createRuleForm.value.data = ''
+}
+
+// 编辑 rule
+const showEditRuleModal = ref<boolean>(false)
+const IsEditingRule = ref<boolean>(false)
+const editRuleForm = ref({
+  path: '/',
+  description: '',
+  ruleType: 'internal',
+  data: '',
+})
+const editRuleFormRef = ref<FormInst | null>(null)
+const ruleUidToEdit = ref<string>('')
+const handleEditRuleClick = async (item: AccessRule) => {
+  ruleUidToEdit.value = item.rule_uid
+  editRuleForm.value.path = item.path
+  editRuleForm.value.description = item.description
+  editRuleForm.value.ruleType = item.rule_type
+  editRuleForm.value.data = item.data
+
+  showEditRuleModal.value = true
+}
+const handleEditRuleConfirm = async () => {
+  if (!ruleUidToEdit.value) return
+  try {
+    IsEditingRule.value = true
+    const request: UpdateAccessRuleRequest = {
+      worker_uid: props.uid,
+      rule_uid: ruleUidToEdit.value,
+      description: editRuleForm.value.description,
+      path: editRuleForm.value.path,
+      rule_type: editRuleForm.value.ruleType as AccessRuleType,
+      data: editRuleForm.value.data,
+    }
+    await updateAccessRule(request)
+    await fetchRules()
+    message.success('编辑规则成功')
+    handleEditRuleClose()
+  } catch (error) {
+    console.error('updateAccessRule Error', error)
+    message.error('编辑规则失败')
+  } finally {
+    IsEditingRule.value = false
+  }
+}
+const handleEditRuleClose = () => {
+  showEditRuleModal.value = false
+  ruleUidToEdit.value = ''
 }
 
 // 删除 rule
@@ -218,12 +269,13 @@ onMounted(async () => {
           <tr v-for="item in rules" :key="item.rule_uid">
             <td>{{ item.path }}</td>
             <td>
-              {{ruleTypeOptions.find((option) => option.value === item.rule_type)?.label}}
+              {{ ruleTypeOptions.find((option) => option.value === item.rule_type)?.label }}
               ({{ item.rule_type }})
             </td>
             <td>{{ item.description }}</td>
             <td>{{ item.data }}</td>
             <td>
+              <NButton quaternary type="primary" @click="handleEditRuleClick(item)"> 编辑 </NButton>
               <NButton quaternary type="primary" @click="handleDeleteRuleClick(item.rule_uid)">
                 删除
               </NButton>
@@ -232,10 +284,18 @@ onMounted(async () => {
         </tbody>
       </NTable>
     </NCard>
-    <NModal v-model:show="showCreateRuleModal" preset="dialog" title="添加规则" positive-text="确认" negative-text="取消"
-      :loading="IsCreatingRule" :mask-closable="false" @positive-click="handleCreateRuleConfirm"
-      @negative-click="handleCreateRuleClose">
-      <NForm ref="createRuleFormRef" :rules="createRuleRules" :model="createRuleForm">
+    <NModal
+      v-model:show="showCreateRuleModal"
+      preset="dialog"
+      title="添加规则"
+      positive-text="确认"
+      negative-text="取消"
+      :loading="IsCreatingRule"
+      :mask-closable="false"
+      @positive-click="handleCreateRuleConfirm"
+      @negative-click="handleCreateRuleClose"
+    >
+      <NForm ref="createRuleFormRef" :rules="workerRuleRules" :model="createRuleForm">
         <NFormItem label="路由前缀">
           <NInput v-model:value="createRuleForm.path" placeholder="请输入路由前缀" />
         </NFormItem>
@@ -250,9 +310,43 @@ onMounted(async () => {
         </NFormItem>
       </NForm>
     </NModal>
-    <NModal v-model:show="showDeleteRuleModal" preset="dialog" title="删除规则" positive-text="确认" negative-text="取消"
-      :loading="IsDeletingRule" :mask-closable="false" @positive-click="handleDeleteRuleConfirm"
-      @negative-click="handleDeleteRuleClose">
+    <NModal
+      v-model:show="showEditRuleModal"
+      preset="dialog"
+      title="编辑规则"
+      positive-text="确认"
+      negative-text="取消"
+      :loading="IsEditingRule"
+      :mask-closable="false"
+      @positive-click="handleEditRuleConfirm"
+      @negative-click="handleEditRuleClose"
+    >
+      <NForm ref="editRuleFormRef" :rules="workerRuleRules" :model="editRuleForm">
+        <NFormItem label="路由前缀">
+          <NInput v-model:value="editRuleForm.path" placeholder="请输入路由前缀" />
+        </NFormItem>
+        <NFormItem label="描述">
+          <NInput v-model:value="editRuleForm.description" placeholder="请输入描述" />
+        </NFormItem>
+        <NFormItem label="规则类型">
+          <NSelect v-model:value="editRuleForm.ruleType" :options="ruleTypeOptions" />
+        </NFormItem>
+        <NFormItem label="权限">
+          <NInput v-model:value="editRuleForm.data" placeholder="请输入权限" />
+        </NFormItem>
+      </NForm>
+    </NModal>
+    <NModal
+      v-model:show="showDeleteRuleModal"
+      preset="dialog"
+      title="删除规则"
+      positive-text="确认"
+      negative-text="取消"
+      :loading="IsDeletingRule"
+      :mask-closable="false"
+      @positive-click="handleDeleteRuleConfirm"
+      @negative-click="handleDeleteRuleClose"
+    >
       <div>确认要删除此规则？</div>
     </NModal>
   </div>
