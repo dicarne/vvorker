@@ -7,9 +7,15 @@ import (
 	"strconv"
 	"vvorker/conf"
 	"vvorker/ext/oss/src/alioss1"
+	"vvorker/funcs"
 
 	"github.com/minio/minio-go/v7"
 )
+
+func init() {
+	funcs.SetUploadFileToSysBucket(UploadFileToSysBucket)
+	funcs.SetDownloadFileFromSysBucket(DownloadFileFromSysBucket)
+}
 
 func UploadFileToSysBucket(path string, obj io.Reader) error {
 	switch conf.AppConfigInstance.ServerOSSType {

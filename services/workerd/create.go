@@ -1,10 +1,14 @@
 package workerd
 
 import (
+	"bytes"
+	"fmt"
 	"runtime/debug"
 	"vvorker/common"
+	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/entities"
+	"vvorker/funcs"
 	"vvorker/models"
 	"vvorker/utils"
 	"vvorker/utils/database"
@@ -50,6 +54,17 @@ func CreateEndpoint(c *gin.Context) {
 func Create(userID uint, worker *entities.Worker) (string, error) {
 	FillWorkerValue(worker, false, "", userID)
 	worker.Version = utils.GenerateUID()
+
+	code := worker.Code
+	if conf.AppConfigInstance.FileStorageUseOSS {
+		err := funcs.UploadFileToSysBucket(fmt.Sprintf("code/%s", worker.GetUID()), bytes.NewReader(code))
+		if err != nil {
+			logrus.Errorf("failed to upload worker code, err: %v", err)
+			return "", err
+		}
+		worker.Code = nil
+	}
+
 	if err := (&models.Worker{Worker: worker}).Create(); err != nil {
 		logrus.Errorf("failed to create worker, err: %v", err)
 		return "", err

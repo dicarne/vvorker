@@ -1,15 +1,15 @@
 package workerd
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
-	"io"
 	"runtime/debug"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/entities"
 	"vvorker/exec"
 	"vvorker/ext/kv/src/sys_cache"
+	"vvorker/funcs"
 	"vvorker/models"
 	"vvorker/utils"
 	"vvorker/utils/generate"
@@ -46,6 +46,18 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker) error {
 	// 创建新的worker
 	newWorker := &models.Worker{Worker: worker, EnableAccessControl: workerRecord.EnableAccessControl}
 	newWorker.Version = utils.GenerateUID()
+	code := newWorker.Code
+	if conf.AppConfigInstance.FileStorageUseOSS {
+		newWorker.Code = nil
+	}
+
+	if conf.AppConfigInstance.FileStorageUseOSS {
+		err = funcs.UploadFileToSysBucket(fmt.Sprintf("code/%s", newWorker.GetUID()), bytes.NewReader(code))
+		if err != nil {
+			return err
+		}
+	}
+
 	err = newWorker.Create()
 	if err != nil {
 		return err
@@ -60,39 +72,6 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker) error {
 	}
 	return nil
 }
-
-// 【弃用】更新worker，请采用 UpdateWorkerWithFile
-// func UpdateEndpoint(c *gin.Context) {
-// 	defer func() {
-// 		if r := recover(); r != nil {
-// 			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-// 			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-// 		}
-// 	}()
-
-// 	UID := c.Param("uid")
-// 	var newWorker *UpdateWorkerReq
-// 	if err := permissions.BindJSON(c, &newWorker); err != nil {
-// 		return
-// 	}
-
-// 	userID := c.GetUint(common.UIDKey)
-// 	oldworker, err := permissions.CanWriteWorker(c, uint64(userID), UID)
-// 	if err != nil {
-// 		return
-// 	}
-
-// 	if newWorker.Worker.Code == nil {
-// 		// 如果没有更新代码，则从旧的代码中查找原本的代码进行覆盖
-// 		newWorker.Worker.Code = oldworker.Code
-// 	}
-// 	if err := UpdateWorker(userID, UID, newWorker.Worker); err != nil {
-// 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
-// 		return
-// 	}
-
-// 	common.RespOK(c, "update worker success", nil)
-// }
 
 // 更新worker
 func UpdateEndpointJSON(c *gin.Context) {
@@ -129,6 +108,7 @@ func UpdateEndpointJSON(c *gin.Context) {
 	}
 
 	if err := UpdateWorker(userID, UID, worker.Worker); err != nil {
+		logrus.WithError(err).Errorf("update worker error, worker is: [%+v]", worker.Worker)
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}
@@ -142,124 +122,3 @@ func UpdateEndpointJSON(c *gin.Context) {
 
 	common.RespOK(c, "update worker success", nil)
 }
-
-func UpdateWorkerWithFile(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in UpdateWorkerWithFile: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
-
-	// 1. Parse the multipart form
-	if err := c.Request.ParseMultipartForm(1 << 30); err != nil { // 32MB max memory
-		common.RespErr(c, common.RespCodeInvalidParams, "failed to parse form", nil)
-		return
-	}
-
-	// 2. Get the JSON data
-	jsonData := c.PostForm("data")
-	if jsonData == "" {
-		common.RespErr(c, common.RespCodeAuthErr, "missing data field", nil)
-		return
-	}
-	var req UpdateWorkerReq
-	if err := json.Unmarshal([]byte(jsonData), &req); err != nil {
-		common.RespErr(c, common.RespCodeInvalidParams, "invalid json data", nil)
-		return
-	}
-	userID := c.GetUint(common.UIDKey)
-
-	// 3. Get the file
-	oldWorker, err := permissions.CanWriteWorker(c, uint64(userID), req.UID)
-	if err != nil {
-		return
-	}
-	file, _, err := c.Request.FormFile("file")
-	if err != nil {
-		req.Worker.Code = oldWorker.Code
-	} else {
-		defer file.Close()
-		// 4. Read file content
-		fileBytes, err := io.ReadAll(file)
-		if err != nil {
-			common.RespErr(c, common.RespCodeInternalError, "failed to read file", nil)
-			return
-		}
-
-		// 5. Use the file content as the worker code
-		req.Worker.Code = fileBytes
-	}
-	if req.Worker.MaxCount == 0 {
-		req.Worker.MaxCount = oldWorker.MaxCount
-		if req.Worker.MaxCount == 0 {
-			req.Worker.MaxCount = 1
-		}
-	}
-
-	if err := UpdateWorker(userID, req.UID, req.Worker); err != nil {
-		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
-		return
-	}
-
-	if oldWorker.Name != req.Worker.Name {
-		cacheKey := fmt.Sprintf("db:workerd:uid_name_%s_cache:", oldWorker.Name)
-		lockKey := fmt.Sprintf("db:workerd:uid_name_%s_lock:", oldWorker.Name)
-		sys_cache.Del(cacheKey)
-		sys_cache.Del(lockKey)
-	}
-	common.RespOK(c, "update worker with file success", nil)
-}
-
-// type GetWorkerCountReq struct {
-// 	UID string `json:"uid"`
-// }
-
-// func GetWorkerCountEndpoint(c *gin.Context) {
-// 	defer func() {
-// 		if r := recover(); r != nil {
-// 			logrus.Errorf("Recovered in GetWorkerCount: %+v, stack: %+v", r, string(debug.Stack()))
-// 			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-// 		}
-// 	}()
-
-// 	var req GetWorkerCountReq
-// 	if err := permissions.BindJSON(c, &req); err != nil {
-// 		return
-// 	}
-// 	workerRecord, err := permissions.CanWriteWorker(c, uint64(c.GetUint(common.UIDKey)), req.UID)
-// 	if err != nil {
-// 		return
-// 	}
-// 	common.RespOK(c, "get worker count success", workerRecord.MaxCount)
-// }
-
-// type UpdateWorkerCountReq struct {
-// 	UID      string `json:"uid"`
-// 	MaxCount int32  `json:"max_count"`
-// }
-
-// func UpdateWorkerCountEndpoint(c *gin.Context) {
-// 	defer func() {
-// 		if r := recover(); r != nil {
-// 			logrus.Errorf("Recovered in UpdateWorkerCount: %+v, stack: %+v", r, string(debug.Stack()))
-// 			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-// 		}
-// 	}()
-
-// 	var req UpdateWorkerCountReq
-// 	if err := permissions.BindJSON(c, &req); err != nil {
-// 		return
-// 	}
-
-// 	workerRecord, err := permissions.CanWriteWorker(c, uint64(c.GetUint(common.UIDKey)), req.UID)
-// 	if err != nil {
-// 		return
-// 	}
-// 	workerRecord.MaxCount = req.MaxCount
-// 	if err := workerRecord.Update(); err != nil {
-// 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
-// 		return
-// 	}
-// 	common.RespOK(c, "update worker count success", nil)
-// }

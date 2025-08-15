@@ -14,7 +14,7 @@ func NodeWorkersInit() {
 	logrus.Infof("this node will init %d workers", len(workerRecords))
 	for _, worker := range workerRecords {
 		if err := worker.Flush(); err != nil {
-			logrus.WithError(err).Errorf("init failed to flush worker, worker is: [%+v]", worker.ToEntity())
+			logrus.WithError(err).Errorf("init failed to flush worker, worker is: [%+v]", worker.UID)
 		}
 	}
 }

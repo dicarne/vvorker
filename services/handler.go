@@ -78,7 +78,6 @@ func init() {
 				workerApi.GET("/run/:uid", workerd.RunWorkerEndpoint)
 				workerApi.POST("/create", workerd.CreateEndpoint)
 				workerApi.POST("/version/:workerId/:fileId", workerd.NewVersionEndpoint)
-				// workerApi.POST("/:uid", workerd.UpdateEndpoint)
 				workerApi.DELETE("/:uid", workerd.DeleteEndpoint)
 
 				workerApi.GET("/information/:id", workerd.GetWorkerInformationByIDEndpoint)
@@ -125,7 +124,6 @@ func init() {
 				{
 					workerV2.POST("/get-worker", workerd.GetWorkerEndpointJSON)
 					workerV2.POST("/update-worker", vvotp.OTPMiddleware(), workerd.UpdateEndpointJSON)
-					workerV2.POST("/update-worker-with-file", vvotp.OTPMiddleware(), workerd.UpdateWorkerWithFile)
 
 					workerV2.POST("/export-workers", export.ExportResourcesConfigEndpoint)
 					workerV2.POST("/import-workers", export.ImportResourcesConfigEndpoint)

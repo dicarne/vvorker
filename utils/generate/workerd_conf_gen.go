@@ -469,6 +469,7 @@ func GenWorkerConfig(worker *entities.Worker, workerQuery funcs.WorkerQuery) err
 	db := database.GetDB()
 	copies := []workercopy.WorkerCopy{}
 	db.Where(&workercopy.WorkerCopy{WorkerUID: worker.GetUID()}).Find(&copies)
+
 	for _, copy := range copies {
 		newworker := &entities.Worker{
 			UID:             worker.GetUID(),

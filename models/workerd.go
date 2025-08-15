@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -16,6 +17,7 @@ import (
 	"vvorker/entities"
 	"vvorker/exec"
 	"vvorker/ext/kv/src/sys_cache"
+	"vvorker/funcs"
 	workercopy "vvorker/models/worker_copy"
 	"vvorker/rpc"
 	"vvorker/tunnel"
@@ -494,6 +496,17 @@ func (w *Worker) DeleteFile() error {
 }
 
 func (w *Worker) UpdateFile() error {
+	if conf.AppConfigInstance.FileStorageUseOSS && len(w.ActiveVersionID) == 0 {
+		code, err := funcs.DownloadFileFromSysBucket(fmt.Sprintf("code/%s", w.GetUID()))
+		if err != nil {
+			return err
+		}
+		codeBytes, err := io.ReadAll(code)
+		if err != nil {
+			return err
+		}
+		w.Code = codeBytes
+	}
 	if len(w.ActiveVersionID) == 0 {
 		return utils.WriteFile(
 			filepath.Join(
