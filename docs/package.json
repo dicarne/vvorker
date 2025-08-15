@@ -8,7 +8,7 @@
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
     "docs:preview": "vitepress preview",
-    "build": "wrangler deploy --dry-run --outdir dist",
+    "build": "vitepress build && wrangler deploy --dry-run --outdir dist",
     "cf-typegen": "wrangler types"
   },
   "keywords": [],

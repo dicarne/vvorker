@@ -9,7 +9,7 @@ hero:
   actions:
     - theme: brand
       text: SDK
-      link: /sdk/js/vvorker-sdk
+      link: /sdk/vvorker-sdk
     - theme: alt
       text: CLI
       link: /cli/vvorker-cli

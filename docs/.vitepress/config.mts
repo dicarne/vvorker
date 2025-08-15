@@ -15,7 +15,8 @@ export default withMermaid({
       {
         text: 'SDK',
         items: [
-          { text: 'JS SDK', link: '/sdk/js/vvorker-sdk' },
+          { text: '基础', link: '/sdk/vvorker-sdk' },
+          { text: '最佳实践', link: '/sdk/best-practice' },
         ]
       },
       {
