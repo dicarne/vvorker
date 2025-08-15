@@ -556,7 +556,6 @@ func CommonDBQuery(conns *defs.SyncMap[string, *sql.DB], c *gin.Context, sqltype
 			}
 			rowsAll = append(rowsAll, row)
 		}
-		logrus.Info(rowsAll)
 		c.JSON(200, entities.QuerySQLRespAll{Rows: rowsAll, Types: types})
 	}
 
