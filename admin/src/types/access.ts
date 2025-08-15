@@ -152,7 +152,6 @@ export interface AccessRule {
   data: string;
 }
 
-
 // 访问控制请求接口
 export interface EnableAccessControlRequest {
   enable: boolean;
@@ -161,6 +160,15 @@ export interface EnableAccessControlRequest {
 
 export interface AccessControlRequest {
   worker_uid: string;
+}
+
+export interface UpdateAccessRuleRequest {
+  worker_uid: string;
+  rule_uid: string;
+  description: string;
+  path: string;
+  rule_type: AccessRuleType;
+  data: string;
 }
 
 export interface DeleteAccessRuleRequest {
