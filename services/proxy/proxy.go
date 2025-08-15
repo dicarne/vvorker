@@ -59,14 +59,15 @@ func Endpoint(c *gin.Context) {
 		authed := false
 		rules := []models.AccessRule{}
 		db := database.GetDB()
-		db.Where(&models.AccessRule{
-			WorkerUID: worker.UID,
-			Disable:   0,
+		db.Model(&models.AccessRule{}).Where(map[string]interface{}{
+			"worker_uid": worker.UID,
+			"status":     1,
 		}).Order(clause.OrderByColumn{Column: clause.Column{Name: "length"}, Desc: true}).Find(&rules)
 
 		requestPath := c.Request.URL.Path
 
 		for _, rule := range rules {
+			logrus.Info(rule)
 			if strings.HasPrefix(requestPath, rule.Path) {
 				if rule.RuleType == "open" {
 					authed = true
