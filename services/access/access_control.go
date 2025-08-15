@@ -140,7 +140,7 @@ func UpdateAccessRuleEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
 		return
 	}
-	if err := db.Unscoped().Delete(&models.AccessRule{RuleUID: request.RuleUID, WorkerUID: request.WorkerUID}).Error; err != nil {
+	if err := db.Unscoped().Where(&models.AccessRule{RuleUID: request.RuleUID, WorkerUID: request.WorkerUID}).Delete(&models.AccessRule{}).Error; err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest, "rule not found", nil)
 		return
 	}
