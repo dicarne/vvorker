@@ -61,6 +61,7 @@ func Endpoint(c *gin.Context) {
 		db := database.GetDB()
 		db.Where(&models.AccessRule{
 			WorkerUID: worker.UID,
+			Disable:   0,
 		}).Order(clause.OrderByColumn{Column: clause.Column{Name: "length"}, Desc: true}).Find(&rules)
 
 		requestPath := c.Request.URL.Path

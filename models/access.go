@@ -44,4 +44,5 @@ type AccessRule struct {
 	Length      int    `json:"length"`
 	RuleUID     string `json:"rule_uid"`
 	Data        string `json:"data"`
+	Disable     int    `json:"disable" default:"0"`
 }

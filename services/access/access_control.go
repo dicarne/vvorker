@@ -245,3 +245,41 @@ func ListAccessRuleEndpoint(c *gin.Context) {
 		"access_rules": accessRules,
 	})
 }
+
+type SwitchAccessRuleRequest struct {
+	WorkerUID string `json:"worker_uid"`
+	RuleUID   string `json:"rule_uid"`
+	Disable   bool   `json:"disable"`
+}
+
+func SwitchAccessRuleEndpoint(c *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
+			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+		}
+	}()
+	uid := uint64(c.GetUint(common.UIDKey))
+	if uid == 0 {
+		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+		return
+	}
+	request := SwitchAccessRuleRequest{}
+	if err := c.BindJSON(&request); err != nil {
+		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
+		return
+	}
+
+	db := database.GetDB()
+	stat := 0
+	if request.Disable {
+		stat = 1
+	}
+
+	if err := db.Where(&models.AccessRule{RuleUID: request.RuleUID, WorkerUID: request.WorkerUID}).Update("disable", stat).Error; err != nil {
+		common.RespErr(c, common.RespCodeInvalidRequest, "rule not found", nil)
+		return
+	}
+
+	common.RespOK(c, common.RespMsgOK, nil)
+}
