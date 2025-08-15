@@ -23,7 +23,6 @@ export const getUserInfo = async () => {
 }
 
 export const logout = () => {
-  localStorage.removeItem('token')
   return api.get('api/auth/logout')
 }
 

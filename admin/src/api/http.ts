@@ -7,19 +7,10 @@ const instance = axios.create({})
 const loginExpired = debounce(() => {
   console.log("loginExpired")
   router.push('/login')
-  localStorage.removeItem('token')
 }, 500)
-
-instance.interceptors.request.use((request) => {
-  request.headers.Authorization = 'Bearer ' + localStorage.getItem('token')
-  return request
-})
 
 instance.interceptors.response.use(
   (response) => {
-    if (response.headers?.['x-authorization-token']) {
-      localStorage.setItem('token', response.headers['x-authorization-token'])
-    }
     if (!!response.data.code) {
       throw response.data.msg
     }
