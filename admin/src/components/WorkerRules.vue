@@ -21,6 +21,7 @@ import type {
   UpdateAccessRuleRequest,
   DeleteAccessRuleRequest,
   EnableAccessControlRequest,
+  SwitchAccessRuleRequest,
 } from '@/types/access'
 import {
   addAccessRule,
@@ -28,6 +29,7 @@ import {
   deleteAccessRule,
   getAccessControl,
   listAccessRules,
+  switchAccessRule,
   updateEnableAccessControl,
 } from '@/api/workers'
 
@@ -164,6 +166,23 @@ const handleCreateRuleClose = () => {
   createRuleForm.value.data = ''
 }
 
+// 启用/禁用每条规则
+const handleRuleSwitchChange = async (item: AccessRule) => {
+  try {
+    const request: SwitchAccessRuleRequest = {
+      worker_uid: props.uid,
+      rule_uid: item.rule_uid,
+      disable: !item.disabled,
+    }
+    await switchAccessRule(request)
+    await fetchRules()
+    message.success('更新规则状态成功')
+  } catch (error) {
+    console.error('switchAccessRule Error', error)
+    message.error('更新规则状态失败')
+  }
+}
+
 // 编辑 rule
 const showEditRuleModal = ref<boolean>(false)
 const IsEditingRule = ref<boolean>(false)
@@ -275,6 +294,7 @@ onMounted(async () => {
             <td>{{ item.description }}</td>
             <td>{{ item.data }}</td>
             <td>
+              <NSwitch class="v-item" :value="item.disabled" @update:value="handleRuleSwitchChange(item)"/>
               <NButton quaternary type="primary" @click="handleEditRuleClick(item)"> 编辑 </NButton>
               <NButton quaternary type="primary" @click="handleDeleteRuleClick(item.rule_uid)">
                 删除

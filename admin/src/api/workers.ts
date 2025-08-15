@@ -12,6 +12,7 @@ import type {
   ExternalServerToken,
   AccessRule,
   ListAccessRuleRequest,
+  SwitchAccessRuleRequest,
   DeleteAccessRuleRequest,
   AccessControlRequest,
   EnableAccessControlRequest
@@ -127,6 +128,11 @@ export const getAccessControl = async (request: AccessControlRequest) => {
 
 export const addAccessRule = async (request: AccessRule) => {
   const res = await api.post<CommonResponse<null>>('api/worker/access/control/create-rule', request);
+  return res.data;
+};
+
+export const switchAccessRule = async (request: SwitchAccessRuleRequest) => {
+  const res = await api.post<CommonResponse<null>>('api/worker/access/control/switch-rule', request);
   return res.data;
 };
 

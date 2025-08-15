@@ -1,183 +1,189 @@
 // 访问令牌创建请求接口
 export interface AccessTokenCreateRequest {
   // 关联的 Worker UID
-  worker_uid: string;
+  worker_uid: string
   // 访问令牌描述信息
-  description: string;
+  description: string
 }
 
 // 访问令牌列表请求接口
 export interface AccessTokenListRequest {
   // 关联的 Worker UID
-  worker_uid: string;
+  worker_uid: string
   // 分页页码，从 1 开始
-  page: number;
+  page: number
   // 每页显示的记录数量
-  page_size: number;
+  page_size: number
 }
 
 // 访问令牌删除请求接口
 export interface AccessTokenDeleteRequest {
-  worker_uid: string;
+  worker_uid: string
   id: number
 }
 
 // 内部白名单创建请求接口
 export interface InternalWhiteListCreateRequest {
   // 关联的 Worker UID
-  worker_uid: string;
+  worker_uid: string
   // 允许访问的 Worker Name
-  name: string;
+  name: string
   // 白名单描述信息
-  description: string;
+  description: string
 }
 
 // 内部白名单列表请求接口
 export interface InternalWhiteListListRequest {
   // 关联的 Worker UID
-  worker_uid: string;
+  worker_uid: string
   // 分页页码，从 1 开始
-  page: number;
+  page: number
   // 每页显示的记录数量
-  page_size: number;
+  page_size: number
 }
 
 // 内部白名单更新请求接口
 export interface InternalWhiteListUpdateRequest {
   // 关联的 Worker UID
-  worker_uid: string;
+  worker_uid: string
   // 白名单描述信息
-  description: string;
+  description: string
 }
 
 // 内部白名单删除请求接口
 export interface InternalWhiteListDeleteRequest {
   // 关联的 Worker UID
-  worker_uid: string;
-  id: number;
+  worker_uid: string
+  id: number
 }
 
 // AccessKey 实体接口
 export interface AccessKey {
   // 自增 ID
-  id: number;
+  id: number
   // 创建时间
-  created_at: string;
+  created_at: string
   // 更新时间
-  updated_at: string;
+  updated_at: string
   // 删除时间
-  deleted_at: string | null;
+  deleted_at: string | null
   // 用户 ID
-  user_id: number;
+  user_id: number
   // 访问密钥名称
-  name: string;
+  name: string
   // 访问密钥
-  key: string;
+  key: string
 }
 
 // InternalServerWhiteList 实体接口
 export interface InternalServerWhiteList {
   // 自增 ID
-  ID: number;
+  ID: number
   // 关联的 Worker UID
-  worker_uid: string;
+  worker_uid: string
   // 允许访问的 Worker UID
-  allow_worker_uid: string;
+  allow_worker_uid: string
   // 白名单描述信息
-  description: string;
-  WorkerName: string;
+  description: string
+  WorkerName: string
 }
 
 // ExternalServerAKSK 实体接口
 export interface ExternalServerAKSK {
   // 自增 ID
-  id: number;
+  id: number
   // 创建时间
-  created_at: string;
+  created_at: string
   // 更新时间
-  updated_at: string;
+  updated_at: string
   // 删除时间
-  deleted_at: string | null;
+  deleted_at: string | null
   // 关联的 Worker UID
-  worker_uid: string;
+  worker_uid: string
   // 访问密钥
-  access_key: string;
+  access_key: string
   // 密钥
-  secret_key: string;
+  secret_key: string
   // 描述信息
-  description: string;
+  description: string
   // 是否永久有效
-  forever: boolean;
+  forever: boolean
   // 过期时间
-  expiration_time: string;
+  expiration_time: string
 }
 
 // ExternalServerToken 实体接口
 export interface ExternalServerToken {
   // 自增 ID
-  ID: number;
+  ID: number
   // 创建时间
-  created_at: string;
+  created_at: string
   // 更新时间
-  updated_at: string;
+  updated_at: string
   // 删除时间
-  deleted_at: string | null;
+  deleted_at: string | null
   // 关联的 Worker UID
-  worker_uid: string;
+  worker_uid: string
   // 令牌
-  token: string;
+  token: string
   // 描述信息
-  description: string;
+  description: string
   // 是否永久有效
-  forever: boolean;
+  forever: boolean
   // 过期时间
-  expiration_time: string;
+  expiration_time: string
 }
 
 // AccessRule 实体接口
-export type AccessRuleType = "internal" | "aksk" | "token" | "sso" | "open";
+export type AccessRuleType = 'internal' | 'aksk' | 'token' | 'sso' | 'open'
 export interface AccessRule {
   // 自增 ID
-  id?: number;
+  id?: number
   // 关联的 Worker UID
-  worker_uid: string;
+  worker_uid: string
   // 规则类型
-  rule_type: AccessRuleType;
+  rule_type: AccessRuleType
   // 规则描述信息
-  description: string;
+  description: string
   // path
-  path: string;
-  rule_uid: string;
-
-  data: string;
+  path: string
+  rule_uid: string
+  data: string
+  disabled?: 0 | 1
 }
 
 // 访问控制请求接口
 export interface EnableAccessControlRequest {
-  enable: boolean;
-  worker_uid: string;
+  enable: boolean
+  worker_uid: string
 }
 
 export interface AccessControlRequest {
-  worker_uid: string;
+  worker_uid: string
+}
+
+export interface SwitchAccessRuleRequest {
+  worker_uid: string
+  rule_uid: string
+  disable: boolean
 }
 
 export interface UpdateAccessRuleRequest {
-  worker_uid: string;
-  rule_uid: string;
-  description: string;
-  path: string;
-  rule_type: AccessRuleType;
-  data: string;
+  worker_uid: string
+  rule_uid: string
+  description: string
+  path: string
+  rule_type: AccessRuleType
+  data: string
 }
 
 export interface DeleteAccessRuleRequest {
-  worker_uid: string;
-  rule_uid: string;
+  worker_uid: string
+  rule_uid: string
 }
 
 export interface ListAccessRuleRequest {
-  worker_uid: string;
-  page: number;
-  page_size: number;
+  worker_uid: string
+  page: number
+  page_size: number
 }
