@@ -172,7 +172,7 @@ const handleRuleSwitchChange = async (item: AccessRule) => {
     const request: SwitchAccessRuleRequest = {
       worker_uid: props.uid,
       rule_uid: item.rule_uid,
-      disable: !item.disabled,
+      disable: !!item.disabled,
     }
     await switchAccessRule(request)
     await fetchRules()
@@ -294,7 +294,7 @@ onMounted(async () => {
             <td>{{ item.description }}</td>
             <td>{{ item.data }}</td>
             <td>
-              <NSwitch class="v-item" :value="item.disabled" @update:value="handleRuleSwitchChange(item)"/>
+              <NSwitch class="v-item" :round="false" :value="!item.disabled" @update:value="handleRuleSwitchChange(item)"/>
               <NButton quaternary type="primary" @click="handleEditRuleClick(item)"> 编辑 </NButton>
               <NButton quaternary type="primary" @click="handleDeleteRuleClick(item.rule_uid)">
                 删除
