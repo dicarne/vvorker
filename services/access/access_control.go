@@ -276,7 +276,8 @@ func SwitchAccessRuleEndpoint(c *gin.Context) {
 		stat = 1
 	}
 
-	if err := db.Where(&models.AccessRule{RuleUID: request.RuleUID, WorkerUID: request.WorkerUID}).Update("disable", stat).Error; err != nil {
+	if err := db.Model(&models.AccessRule{}).Where(&models.AccessRule{RuleUID: request.RuleUID, WorkerUID: request.WorkerUID}).Update("disable", stat).Error; err != nil {
+		logrus.Error(err)
 		common.RespErr(c, common.RespCodeInvalidRequest, "rule not found", nil)
 		return
 	}
