@@ -19,6 +19,44 @@ vvcli init myproject
 
 其次，需要在前端访问后端的类型代码，设置include或references等选项达成此目的。
 
+一个典型的前端tsconfig配置如下：
+> [!warning]
+> 格外注意其中的`path`字段与`strict`字段。
+
+
+```json
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": [
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.vue",
+    "types/*"
+  ],
+  "exclude": [
+    "src/**/__tests__/*"
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "allowJs": true,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "server/*": [
+        "./server/*"
+      ]
+    },
+    "types": [
+      "./worker-configuration.d.ts",
+      "vite/client",
+      "node"
+    ],
+    "strict": true
+  }
+}
+```
+
 ## 三、编写后端代码
 
 首先我们可以创建一个上下文类，用于存储所需的请求信息，如用户ID、数据库等。
