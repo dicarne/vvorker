@@ -120,5 +120,7 @@ func UpdateEndpointJSON(c *gin.Context) {
 		sys_cache.Del(lockKey)
 	}
 
-	common.RespOK(c, "update worker success", nil)
+	common.RespOK(c, "update worker success", gin.H{
+		"version": worker.Worker.Version,
+	})
 }
