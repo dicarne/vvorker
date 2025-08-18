@@ -7,6 +7,17 @@ import { runCommand } from '../utils/system';
 import pc from "picocolors"
 import { config, getEnv } from '../utils/config';
 
+const drizzleDefaultConfig = `
+import 'dotenv/config';
+import { defineConfig } from 'drizzle-kit';
+
+export default defineConfig({
+  out: './server/db/drizzle',
+  schema: './server/db/schemamysql.ts',
+  dialect: 'mysql',
+});
+`
+
 async function createWorkerProject(projectName: string, jsonData: object) {
   const vueJSCode = `
 import { Hono } from "hono";
@@ -53,6 +64,7 @@ export default app;
   packageJson.name = projectName;
   packageJson.scripts.dev = "vite";
   packageJson.scripts.build = "vite build";
+  packageJson.scripts.db = "drizzle-kit generate";
   packageJson.scripts.start = undefined;
   packageJson.scripts.deploy = undefined;
   await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
@@ -76,6 +88,7 @@ export default defineConfig({
 `
 
   await fs.writeFile(path.join(projectName, 'vite.config.ts'), viteConfigText);
+  await fs.writeFile(path.join(projectName, 'drizzle.config.ts'), drizzleDefaultConfig);
 
   console.log(pc.green(`项目 ${projectName} 初始化完成`));
 
@@ -117,7 +130,7 @@ app.notFound(async (c) => {
   try {
     const r = await c.env.ASSETS.fetch(c.req.url, c.req)
     const url = new URL(c.req.url);
-    if (r.status === 404 && c.req.method === "GET") {
+    if (r.status === 404) {
       return c.env.ASSETS.fetch("https://" + url.host + "/index.html", c.req)
     }
     return r
@@ -156,7 +169,10 @@ export default app;
   const packageJsonPath = path.join(projectName, 'package.json');
   const packageJson = json5.parse(await fs.readFile(packageJsonPath, 'utf-8'));
   packageJson.scripts.deploy = undefined;
+  packageJson.scripts.db = "drizzle-kit generate";
   await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+  
+  await fs.writeFile(path.join(projectName, 'drizzle.config.ts'), drizzleDefaultConfig);
 
   console.log(pc.green(`项目 ${projectName} 初始化完成`));
 
