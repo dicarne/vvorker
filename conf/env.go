@@ -48,6 +48,7 @@ type AppConfig struct {
 	CookieName     string `env:"COOKIE_NAME" env-default:"vv-authorization"`
 	CookieAge      int    `env:"COOKIE_AGE" env-default:"86400"`            // second 86400 = 1 day
 	CookieDomain   string `env:"COOKIE_DOMAIN" env-default:"vvorker.local"` // required, e.g. example.com
+	CookieSecure   bool   `env:"COOKIE_SECURE" env-default:"false"`
 	EnableRegister bool   `env:"ENABLE_REGISTER" env-default:"false"`
 	RunMode        string `env:"RUN_MODE" env-default:"master"` // master, agent
 

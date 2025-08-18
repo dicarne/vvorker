@@ -76,7 +76,7 @@ func resignJWT(c *gin.Context, t *conf.JwtClaims) error {
 		conf.AppConfigInstance.CookieAge,
 		"/",
 		conf.AppConfigInstance.CookieDomain,
-		true, true)
+		conf.AppConfigInstance.CookieSecure, true)
 	return nil
 }
 
@@ -86,5 +86,5 @@ func SetToken(c *gin.Context, token string) {
 		conf.AppConfigInstance.CookieAge,
 		"/",
 		conf.AppConfigInstance.CookieDomain,
-		true, true)
+		conf.AppConfigInstance.CookieSecure, true)
 }
