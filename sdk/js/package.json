@@ -1,6 +1,6 @@
 {
   "name": "@dicarne/vvorker-sdk",
-  "version": "0.1.36",
+  "version": "0.1.37",
   "description": "VVorker SDK for JavaScript/TypeScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

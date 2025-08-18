@@ -497,13 +497,13 @@ function assets(key: string, binding: Fetcher) {
  */
 export function vvbind<T extends { env: { vars: any, [key: string]: any } }>(c: T) {
     return {
-        oss: (key: string) => vvoss(key, c.env[key]),
-        pgsql: (key: string) => vvpgsql(key, c.env[key]),
-        mysql: (key: string) => vvmysql(key, c.env[key]),
-        kv: (key: string) => vvkv(key, c.env[key]),
-        proxy: (key: string) => proxy(key, c.env[key]),
+        oss: (key: keyof T['env']) => vvoss(key as string, c.env[key as string]),
+        pgsql: (key: keyof T['env']) => vvpgsql(key as string, c.env[key as string]),
+        mysql: (key: keyof T['env']) => vvmysql(key as string, c.env[key as string]),
+        kv: (key: keyof T['env']) => vvkv(key as string, c.env[key as string]),
+        proxy: (key: keyof T['env']) => proxy(key as string, c.env[key as string]),
         vars: () => vars<{ vars: T['env']['vars'] }>(c.env),
-        service: (name: string) => service(name, c.env[name]),
-        assets: (key: string) => assets(key, c.env[key])
+        service: (name: keyof T['env']) => service(name as string, c.env[name as string]),
+        assets: (key: keyof T['env']) => assets(key as string, c.env[key as string])
     }
 }
