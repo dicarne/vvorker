@@ -117,7 +117,7 @@ app.notFound(async (c) => {
   try {
     const r = await c.env.ASSETS.fetch(c.req.url, c.req)
     const url = new URL(c.req.url);
-    if (r.status === 404) {
+    if (r.status === 404 && c.req.method === "GET") {
       return c.env.ASSETS.fetch("https://" + url.host + "/index.html", c.req)
     }
     return r
