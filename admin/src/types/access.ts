@@ -149,7 +149,7 @@ export interface AccessRule {
   path: string
   rule_uid: string
   data: string
-  disabled?: 0 | 1
+  status?: 1 | 2
 }
 
 // 访问控制请求接口
