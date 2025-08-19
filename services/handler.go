@@ -479,8 +479,8 @@ func modifyProxyRequestHeaders(c *gin.Context) bool {
 					c.Request.URL.Path = "/"
 				}
 			} else {
-				c.Redirect(http.StatusFound, "/"+url+"/")
-				return false
+				// c.Redirect(http.StatusFound, "/"+url+"/")
+				return true
 			}
 		} else {
 			parts := strings.SplitN(url, "/", 3)
@@ -495,8 +495,8 @@ func modifyProxyRequestHeaders(c *gin.Context) bool {
 					c.Request.URL.Path = "/"
 				}
 			} else {
-				c.Redirect(http.StatusFound, "/"+url+"/")
-				return false
+				// c.Redirect(http.StatusFound, "/"+url+"/")
+				return true
 			}
 
 		}

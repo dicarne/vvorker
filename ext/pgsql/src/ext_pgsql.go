@@ -529,7 +529,7 @@ func CommonDBQuery(conns *defs.SyncMap[string, *sql.DB], c *gin.Context, sqltype
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
 		}
-		logrus.Info(columns)
+
 		for _, t := range _types {
 			types = append(types, t.DatabaseTypeName())
 		}

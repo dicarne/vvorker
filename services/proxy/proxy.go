@@ -67,7 +67,6 @@ func Endpoint(c *gin.Context) {
 		requestPath := c.Request.URL.Path
 
 		for _, rule := range rules {
-			logrus.Info(rule)
 			if strings.HasPrefix(requestPath, rule.Path) {
 				if rule.RuleType == "open" {
 					authed = true
