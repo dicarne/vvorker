@@ -172,11 +172,11 @@ const handleRuleSwitchChange = async (item: AccessRule) => {
     const request: SwitchAccessRuleRequest = {
       worker_uid: props.uid,
       rule_uid: item.rule_uid,
-      disable: !!item.disabled,
+      disable: item.status === 1,
     }
     await switchAccessRule(request)
     await fetchRules()
-    message.success('更新规则状态成功')
+    message.success(item.status === 1 ? '禁用本规则成功' : '启用本规则成功')
   } catch (error) {
     console.error('switchAccessRule Error', error)
     message.error('更新规则状态失败')
@@ -294,7 +294,12 @@ onMounted(async () => {
             <td>{{ item.description }}</td>
             <td>{{ item.data }}</td>
             <td>
-              <NSwitch class="v-item" :round="false" :value="!item.disabled" @update:value="handleRuleSwitchChange(item)"/>
+              <NSwitch
+                class="v-item"
+                :round="false"
+                :value="item.status === 1"
+                @update:value="handleRuleSwitchChange(item)"
+              />
               <NButton quaternary type="primary" @click="handleEditRuleClick(item)"> 编辑 </NButton>
               <NButton quaternary type="primary" @click="handleDeleteRuleClick(item.rule_uid)">
                 删除
