@@ -139,6 +139,7 @@ func Endpoint(c *gin.Context) {
 						}
 					}
 					req.Header.Add(conf.AppConfigInstance.SSOCookieName+"-data", rule.Data)
+					req.Header.Add(conf.AppConfigInstance.SSOCookieName+"-worker-uid", worker.UID)
 					resp, err := client.Do(req)
 					if err != nil {
 						c.AbortWithStatus(http.StatusUnauthorized)
