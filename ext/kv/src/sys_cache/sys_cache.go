@@ -122,3 +122,12 @@ func GlobalCache(key string, getValueFn func() ([]byte, error), ttl int) ([]byte
 	Put(lockKey, []byte(utils.GenerateUID()), ttl)
 	return v, nil
 }
+
+func DeleteGlobalCache(key string) ([]byte, error) {
+	cacheKey := fmt.Sprintf("db:workerd:%s_cache:", key)
+	lockKey := fmt.Sprintf("db:workerd:%s_lock:", key)
+
+	Del(cacheKey)
+	Del(lockKey)
+	return nil, nil
+}

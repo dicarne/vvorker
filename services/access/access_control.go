@@ -4,6 +4,7 @@ import (
 	"runtime/debug"
 	"vvorker/common"
 	"vvorker/entities"
+	"vvorker/ext/kv/src/sys_cache"
 	"vvorker/models"
 	"vvorker/utils"
 	"vvorker/utils/database"
@@ -46,6 +47,7 @@ func UpdateEnableAccessControlEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}
+	sys_cache.DeleteGlobalCache("worker_uid_name:" + user.Name)
 	common.RespOK(c, common.RespMsgOK, nil)
 }
 
