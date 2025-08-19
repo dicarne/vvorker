@@ -137,8 +137,8 @@ func Endpoint(c *gin.Context) {
 							break
 						}
 					}
-					req.Header.Add(conf.AppConfigInstance.SSOCookieName+"-data", rule.Data)
-					req.Header.Add(conf.AppConfigInstance.SSOCookieName+"-worker-uid", worker.UID)
+					req.Header.Set(conf.AppConfigInstance.SSOCookieName+"-data", rule.Data)
+					req.Header.Set(conf.AppConfigInstance.SSOCookieName+"-worker-uid", worker.UID)
 					resp, err := client.Do(req)
 					if err != nil {
 						c.AbortWithStatus(http.StatusUnauthorized)
@@ -180,9 +180,9 @@ func Endpoint(c *gin.Context) {
 						c.AbortWithStatus(http.StatusForbidden)
 						return
 					}
-					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName+"-user-id", authInfo.UserID)
-					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName+"-token", authInfo.Token)
-					c.Request.Header.Add(conf.AppConfigInstance.SSOCookieName+"-real-name", authInfo.RealName)
+					c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-user-id", authInfo.UserID)
+					c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-token", authInfo.Token)
+					c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-real-name", authInfo.RealName)
 					authed = true
 					break
 				}
