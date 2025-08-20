@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, h } from 'vue'
+import { h } from 'vue'
 import { NButton, useMessage, useNotification, NIcon } from 'naive-ui'
 import { Play24Regular as RunIcon } from '@vicons/fluent'
 import { runWorker } from '@/api/workers'
