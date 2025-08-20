@@ -15,6 +15,7 @@ import (
 	oss "vvorker/ext/oss/src"
 	"vvorker/models"
 	"vvorker/utils"
+	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -72,12 +73,17 @@ func UploadFileEndpoint(c *gin.Context) {
 	uid := c.GetUint(common.UIDKey)
 	fileRecord, err := dao.GetFileByHashAndCreator(c, hash, uid)
 	if err == nil {
-		logrus.Infof("file already exists: %s", fileRecord.UID)
-		common.RespOK(c, "File already exists.", UploadFileResp{
-			FileID:   fileRecord.UID,
-			FileHash: hash,
-		})
-		return
+		if conf.AppConfigInstance.MAN_ASSET_FILE_REPLACE {
+			database.GetDB().Unscoped().Model(&models.File{}).Delete(fileRecord)
+		} else {
+			logrus.Infof("file already exists: %s", fileRecord.UID)
+			common.RespOK(c, "File already exists.", UploadFileResp{
+				FileID:   fileRecord.UID,
+				FileHash: hash,
+			})
+			return
+		}
+
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		logrus.WithError(err).Error("get file error")
 		common.RespErr(c, common.RespCodeInternalError, "Internal error getting file.", nil)

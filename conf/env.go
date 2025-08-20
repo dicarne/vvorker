@@ -112,6 +112,9 @@ type AppConfig struct {
 	SSOCookieName  string `env:"SSO_COOKIE_NAME" env-default:"vv-sso"`
 	SSORedirectURL string `env:"SSO_REDIRECT_URL"` // 登录页
 	SSOBaseURL     string `env:"SSO_BASE_URL"`     // sso基础地址，如 abc
+
+	// 维护用
+	MAN_ASSET_FILE_REPLACE bool `env:"MAN_ASSET_FILE_REPLACE" env-default:"false"` // 每次上传文件总是替换原有文件，即使已经上传过了
 }
 
 type JwtConfig struct {
