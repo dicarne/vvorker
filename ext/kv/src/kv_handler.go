@@ -142,7 +142,11 @@ func InvokeKVEndpoint(c *gin.Context) {
 				common.RespErr(c, http.StatusInternalServerError, "Failed to get KV resource", gin.H{"error": err.Error()})
 				return
 			}
-			common.RespOK(c, "success", string(value))
+			if value != nil {
+				common.RespOK(c, "success", string(value))
+			} else {
+				common.RespOK(c, "success", nil)
+			}
 		}
 	case "set":
 		{
