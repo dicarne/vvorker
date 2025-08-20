@@ -1,16 +1,22 @@
 package auth
 
 import (
+	"encoding/json"
 	"runtime/debug"
 	"vvorker/authz"
 	"vvorker/common"
 	"vvorker/entities"
+	"vvorker/ext/kv/src/sys_cache"
 	"vvorker/models"
 	"vvorker/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
+
+type tryCount struct {
+	Count int `json:"count"`
+}
 
 func LoginEndpoint(c *gin.Context) {
 	defer func() {
@@ -26,8 +32,29 @@ func LoginEndpoint(c *gin.Context) {
 		return
 	}
 
+	try_count := &tryCount{}
+	try_count_bin, err := sys_cache.Get("login_try_count:" + req.UserName)
+	if err != nil {
+		try_count = &tryCount{Count: 0}
+	} else {
+		err = json.Unmarshal([]byte(try_count_bin), try_count)
+		if err != nil {
+			try_count = &tryCount{Count: 0}
+		}
+	}
+
+	if try_count.Count >= 5 {
+		common.RespErr(c, common.RespCodeAuthErr,
+			common.RespMsgAuthErr, nil)
+		return
+	}
+
 	ok, err := models.CheckUserPassword(req.UserName, req.Password)
 	if err != nil || !ok {
+		try_count.Count++
+		try_count_bin, _ := json.Marshal(try_count)
+		sys_cache.Put("login_try_count:"+req.UserName, try_count_bin, 120)
+
 		common.RespErr(c, common.RespCodeAuthErr,
 			common.RespMsgAuthErr, nil)
 		return
