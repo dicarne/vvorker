@@ -30,14 +30,17 @@ const { navigate } = useNavigate()
 
 const userInfo = inject<Ref<UserInfo>>('userInfo')!
 
+  const loading = ref(false)
 // 处理登录逻辑的函数
 const handleLogin = async () => {
   if (!formRef.value) return
+  loading.value = true
   try {
     // 校验表单
     await formRef.value.validate()
   } catch (error) {
     console.error('formRef validate Error', error)
+    loading.value = false 
     return
   }
   try {
@@ -51,12 +54,14 @@ const handleLogin = async () => {
         console.error('getUserInfo Error', error)
         message.error('登录成功后获取用户信息失败')
       }
+      loading.value = false
       message.success('登录成功')
       navigate('/workers')
     }
   } catch (error) {
     console.error('login Error', error)
     message.error('登录失败')
+    loading.value = false
   }
 }
 </script>
@@ -74,7 +79,7 @@ const handleLogin = async () => {
           <NInput v-model:value="form.password" type="password" placeholder="请输入密码" />
         </NFormItem>
         <NFormItem>
-          <NButton type="primary" native-type="submit" block @click="handleLogin"> 登录 </NButton>
+          <NButton type="primary" native-type="submit" block :loading="loading" @click="handleLogin"> 登录 </NButton>
         </NFormItem>
       </NForm>
       <div v-if="appConfig.EnableRegister" class="v-flex-center">
