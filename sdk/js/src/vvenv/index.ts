@@ -432,13 +432,72 @@ function service(key: string, binding: ServiceBinding) {
                     })
                 })
                 return r
+            },
+            /**
+             * 简化调用方法，直接以json形式调用
+             * @param path 
+             * @param data 
+             * @returns 响应体json，而不是Response
+             */
+            call: async (path: string, data?: any) => {
+                let r = await fetch(`${config().url}/__vvorker__debug`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${config().token}`
+                    },
+                    body: JSON.stringify({
+                        service: "service",
+                        binding: key,
+                        method: "fetch",
+                        params: {
+                            url: "http://vvorker.local" + (path.startsWith("/") ? path : "/" + path),
+                            init: {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "vvorker-worker-uid": ((import.meta as any).env.VITE_APP_UID ?? "") as string
+                                },
+                                body: JSON.stringify(data)
+                            }
+                        }
+                    })
+                })
+                return rpcResultWrap(r)
             }
         }
     }
     return {
         fetch: async (path: string, init?: RequestInit) =>
-            binding.fetch("http://vvorker.local" + (path.startsWith("/") ? path : "/" + path), init)
+            binding.fetch("http://vvorker.local" + (path.startsWith("/") ? path : "/" + path), init),
+        /**
+        * 简化调用方法，直接以json形式调用
+        * @param path 
+        * @param data 
+        * @returns 响应体json，而不是Response
+        */
+        call: async (path: string, data?: any) => {
+            let r = await binding.fetch("http://vvorker.local" + (path.startsWith("/") ? path : "/" + path), {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data)
+            })
+            return rpcResultWrap(r)
+        }
     }
+}
+
+async function rpcResultWrap(r: Response) {
+    if (r.status === 200) {
+        const j: any = await r.json()
+        if (j.code === 0) {
+            return j
+        }
+        throw new Error(`调用失败：${j.code} ${j.message} ${JSON.stringify(j)}`);
+    }
+    throw new Error(`调用失败：${r.status} ${r.statusText} ${await r.text()}`);
 }
 
 function proxy(key: string, binding: ServiceBinding) {
