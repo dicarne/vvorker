@@ -112,7 +112,9 @@ func Endpoint(c *gin.Context) {
 								AllowWorkerUID: tokens[0],
 							}).First(&workerToken)
 							if d.Error != nil {
-								c.AbortWithStatus(http.StatusForbidden)
+								c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+									"error": "Need Internal Permission",
+								})
 								return
 							}
 						}
