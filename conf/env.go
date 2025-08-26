@@ -108,10 +108,12 @@ type AppConfig struct {
 	LocalTMPMySQLPort   int `env:"LOCAL_TMP_MYSQL_PORT" env-default:"13422"`
 
 	// sso
-	SSOAuthURL     string `env:"SSO_AUTH_URL"` // sso认证地址
-	SSOCookieName  string `env:"SSO_COOKIE_NAME" env-default:"vv-sso"`
-	SSORedirectURL string `env:"SSO_REDIRECT_URL"` // 登录页
-	SSOBaseURL     string `env:"SSO_BASE_URL"`     // sso基础地址，如 abc
+	SSOAuthURL          string `env:"SSO_AUTH_URL"` // sso认证地址
+	SSOCookieName       string `env:"SSO_COOKIE_NAME" env-default:"vv-sso"`
+	SSORedirectURL      string `env:"SSO_REDIRECT_URL"` // 登录页
+	SSOBaseURL          string `env:"SSO_BASE_URL"`     // sso基础地址，如 abc
+	SSOEnableQueryLogin bool   `env:"SSO_ENABLE_QUERY_LOGIN" env-default:"false"`
+	SSOQueryLoginURL    string `env:"SSO_QUERY_LOGIN_URL"`
 
 	// 维护用
 	MAN_ASSET_FILE_REPLACE bool `env:"MAN_ASSET_FILE_REPLACE" env-default:"false"` // 每次上传文件总是替换原有文件，即使已经上传过了

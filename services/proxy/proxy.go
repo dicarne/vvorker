@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -148,6 +149,45 @@ func Endpoint(c *gin.Context) {
 					}
 					defer resp.Body.Close()
 					if resp.StatusCode == 401 {
+						if conf.AppConfigInstance.SSOEnableQueryLogin && conf.AppConfigInstance.SSOQueryLoginURL != "" {
+							client := &http.Client{}
+							body := gin.H{
+								"url": c.Request.URL.RequestURI(),
+							}
+							// logrus.Infof("SSOQueryLoginURL: %v", body)
+							bbody, _ := json.Marshal(body)
+							req2, err := http.NewRequest("POST", conf.AppConfigInstance.SSOQueryLoginURL, bytes.NewBuffer(bbody))
+							if err == nil {
+								req2.Header.Set("Content-Type", "application/json")
+								req2.Header.Set(conf.AppConfigInstance.SSOCookieName+"-data", rule.Data)
+								req2.Header.Set(conf.AppConfigInstance.SSOCookieName+"-worker-uid", worker.UID)
+								resp2, err := client.Do(req2)
+								if err == nil {
+									defer resp2.Body.Close()
+									if resp2.StatusCode == http.StatusOK {
+										var authInfo SSOAuthInfo
+										if err := json.NewDecoder(resp2.Body).Decode(&authInfo); err != nil {
+											logrus.Errorf("SSOQueryLoginURL decode error %v", err)
+											c.AbortWithStatus(http.StatusForbidden)
+											return
+										}
+										c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-user-id", authInfo.UserID)
+										c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-token", authInfo.Token)
+										c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-real-name", authInfo.RealName)
+										authed = true
+										break
+									} else {
+										logrus.Errorf("SSOQueryLoginURL status code %v", resp2.StatusCode)
+									}
+								} else {
+									logrus.Errorf("SSOQueryLoginURL error1 %v", err)
+								}
+							} else {
+								logrus.Errorf("SSOQueryLoginURL error2 %v", err)
+							}
+
+						}
+
 						if conf.AppConfigInstance.SSORedirectURL != "" && strings.Contains(c.Request.Header.Get("Accept"), "text/html") {
 							// Add original URL as query parameter
 							rpath := c.Request.URL.Path
