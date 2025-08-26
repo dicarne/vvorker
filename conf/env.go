@@ -110,10 +110,15 @@ type AppConfig struct {
 	// sso
 	SSOAuthURL          string `env:"SSO_AUTH_URL"` // sso认证地址
 	SSOCookieName       string `env:"SSO_COOKIE_NAME" env-default:"vv-sso"`
+	SSOCookieAge        int    `env:"SSO_COOKIE_AGE" env-default:"86400"`
 	SSORedirectURL      string `env:"SSO_REDIRECT_URL"` // 登录页
 	SSOBaseURL          string `env:"SSO_BASE_URL"`     // sso基础地址，如 abc
 	SSOEnableQueryLogin bool   `env:"SSO_ENABLE_QUERY_LOGIN" env-default:"false"`
 	SSOQueryLoginURL    string `env:"SSO_QUERY_LOGIN_URL"`
+	SSOCookiePath       string `env:"SSO_COOKIE_PATH" env-default:"/"`
+	SSOCookieDomain     string `env:"SSO_COOKIE_DOMAIN" env-default:"vvorker.local"`
+	SSOCookieSecure     bool   `env:"SSO_COOKIE_SECURE" env-default:"false"`
+	SSOCookieHttpOnly   bool   `env:"SSO_COOKIE_HTTPONLY" env-default:"false"`
 
 	// 维护用
 	MAN_ASSET_FILE_REPLACE bool `env:"MAN_ASSET_FILE_REPLACE" env-default:"false"` // 每次上传文件总是替换原有文件，即使已经上传过了

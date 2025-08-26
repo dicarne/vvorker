@@ -175,7 +175,13 @@ func Endpoint(c *gin.Context) {
 										c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-token", authInfo.Token)
 										c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-real-name", authInfo.RealName)
 
-										c.SetCookie(conf.AppConfigInstance.SSOCookieName, authInfo.Token, 60*60*24*30, "/", "", false, true)
+										c.SetCookie(conf.AppConfigInstance.SSOCookieName,
+											authInfo.Token,
+											conf.AppConfigInstance.SSOCookieAge,
+											conf.AppConfigInstance.SSOCookiePath,
+											conf.AppConfigInstance.SSOCookieDomain,
+											conf.AppConfigInstance.SSOCookieSecure,
+											conf.AppConfigInstance.SSOCookieHttpOnly)
 										authed = true
 										break
 									} else {
