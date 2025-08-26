@@ -149,7 +149,10 @@ func Endpoint(c *gin.Context) {
 					}
 					defer resp.Body.Close()
 					if resp.StatusCode == 401 {
-						if conf.AppConfigInstance.SSOEnableQueryLogin && conf.AppConfigInstance.SSOQueryLoginURL != "" {
+						if conf.AppConfigInstance.SSOEnableQueryLogin &&
+							conf.AppConfigInstance.SSOQueryLoginURL != "" &&
+							strings.Contains(c.Request.Header.Get("Accept"), "text/html") {
+
 							client := &http.Client{}
 							body := gin.H{
 								"url": c.Request.URL.RequestURI(),
