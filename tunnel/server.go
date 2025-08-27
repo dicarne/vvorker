@@ -17,9 +17,7 @@ func Serve() {
 		BindPort:      int(conf.AppConfigInstance.TunnelAPIPort),
 		VhostHTTPPort: int(conf.AppConfigInstance.TunnelEntryPort),
 		SubDomainHost: strings.Trim(conf.AppConfigInstance.WorkerURLSuffix, "."),
-		Transport: v1.ServerTransportConfig{
-			TLS: v1.TLSServerConfig{Force: true},
-		},
+		Transport:     v1.ServerTransportConfig{},
 		Auth: v1.AuthServerConfig{
 			Method: "token", Token: conf.AppConfigInstance.TunnelToken,
 		},

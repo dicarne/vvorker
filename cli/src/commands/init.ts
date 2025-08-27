@@ -159,7 +159,7 @@ export default app;
   const jsonFilePath = `vvorker.${env}.json`;
   await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
 
-  const wranglerJsonPath = path.join(projectName, 'wrangler.json');
+  const wranglerJsonPath = path.join(projectName, 'wrangler.jsonc');
   const wranglerJson = json5.parse(await fs.readFile(wranglerJsonPath, 'utf-8'));
   wranglerJson.compatibility_flags = ["nodejs_compat"];
   wranglerJson.durable_objects = undefined;
