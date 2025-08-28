@@ -177,4 +177,4 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-replace github.com/fatedier/frp v0.64.0 => github.com/dicarne/frp v0.64.1
+replace github.com/fatedier/frp v0.64.0 => github.com/dicarne/frp v0.64.2
