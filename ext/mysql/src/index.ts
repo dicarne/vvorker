@@ -1,6 +1,6 @@
 // filepath: src/index.ts
 export * from "./binding"
-import { RpcTarget, WorkerEntrypoint, env } from 'cloudflare:workers'
+import { WorkerEntrypoint, env } from 'cloudflare:workers'
 
 const eenv = env as unknown as any
 

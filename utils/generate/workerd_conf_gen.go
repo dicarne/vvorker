@@ -186,7 +186,7 @@ func BuildCapfile(workers []*entities.Worker, workerQuery funcs.WorkerQuery) map
 	( name = "DATABASE", text = "`+ext.Database+`" ),
 	( name = "X_SECRET" , text = "`+conf.RPCToken+`" ),
 	( name = "X_NODENAME", text = "`+conf.AppConfigInstance.NodeName+`" ),
-	( name = "MASTER_ENDPOINT", text = "`+conf.AppConfigInstance.MasterEndpoint+`" ),`))
+	( name = "MASTER_ENDPOINT", text = "http://127.0.0.1:`+strconv.Itoa(conf.AppConfigInstance.APIPort)+`" ),`))
 					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
 					bindingsText = bindingsText + allowExtension.BindingTemplate
 
@@ -225,7 +225,7 @@ func BuildCapfile(workers []*entities.Worker, workerQuery funcs.WorkerQuery) map
 	( name = "DATABASE", text = "`+ext.Database+`" ),
 	( name = "X_SECRET" , text = "`+conf.RPCToken+`" ),
 	( name = "X_NODENAME", text = "`+conf.AppConfigInstance.NodeName+`" ),
-	( name = "MASTER_ENDPOINT", text = "`+conf.AppConfigInstance.MasterEndpoint+`" ),`))
+	( name = "MASTER_ENDPOINT", text = "http://127.0.0.1:`+strconv.Itoa(conf.AppConfigInstance.APIPort)+`" ),`))
 					workerTemplate = workerTemplate + allowExtension.ExtensionTemplate
 					bindingsText = bindingsText + allowExtension.BindingTemplate
 
