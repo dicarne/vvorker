@@ -185,6 +185,7 @@ type ExecuteSQLReq struct {
 type ExecuteSQLAffect struct {
 	InsertId     int64 `json:"insertId"`
 	AffectedRows int64 `json:"affectedRows"`
+	Data         any   `json:"data"`
 }
 
 type ExecuteSQLResp struct {
@@ -192,6 +193,7 @@ type ExecuteSQLResp struct {
 }
 
 type QuerySQLRespAll struct {
-	Rows  [][]string `json:"rows"`
-	Types []string   `json:"types"`
+	Rows    [][]string `json:"rows"`
+	Types   []string   `json:"types"`
+	Columns []string   `json:"columns"`
 }

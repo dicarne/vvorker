@@ -477,35 +477,97 @@ func CommonDBQuery(conns *defs.SyncMap[string, *sql.DB], c *gin.Context, sqltype
 	}
 
 	if req.Method == "execute" && sqltype == "mysql" {
-		result, err := dbConn.Exec(req.Sql, req.Params...)
-		if err != nil {
-			logrus.Info(err)
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
-				gin.H{"error": err.Error()})
-			return
-		}
-		insertId, err := result.LastInsertId()
-		if err != nil {
-			logrus.Info(err)
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
-				gin.H{"error": err.Error()})
-			return
-		}
-		affectedRows, err := result.RowsAffected()
-		if err != nil {
-			logrus.Info(err)
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
-				gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, entities.ExecuteSQLResp{
-			Rows: []entities.ExecuteSQLAffect{
-				{
-					InsertId:     insertId,
-					AffectedRows: affectedRows,
+		if strings.HasPrefix(req.Sql, "SELECT ") {
+			rows, err := dbConn.Query(req.Sql, req.Params...)
+			if err != nil {
+				logrus.Info(err)
+				common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
+					gin.H{"error": err.Error()})
+				return
+			}
+			defer rows.Close()
+			var rowsAll [][]string = [][]string{}
+			// First, get the column names
+			columns, err := rows.Columns()
+			if err != nil {
+				c.JSON(500, gin.H{"error": err.Error()})
+				return
+			}
+
+			_types, err := rows.ColumnTypes()
+			types := []string{}
+			if err != nil {
+				c.JSON(500, gin.H{"error": err.Error()})
+				return
+			}
+
+			for _, t := range _types {
+				types = append(types, t.DatabaseTypeName())
+			}
+
+			// Create a slice of interface{} to hold the scanned values
+			values := make([]interface{}, len(columns))
+			for i := range values {
+				values[i] = new(sql.RawBytes)
+			}
+
+			for rows.Next() {
+				// Scan the row into the values slice
+				if err := rows.Scan(values...); err != nil {
+					c.JSON(500, gin.H{"error": err.Error()})
+					return
+				}
+
+				// Convert each value to string
+				row := make([]string, len(columns))
+				for i, val := range values {
+					if rb, ok := val.(*sql.RawBytes); ok {
+						row[i] = string(*rb)
+					}
+				}
+				rowsAll = append(rowsAll, row)
+			}
+			c.JSON(http.StatusOK, entities.ExecuteSQLResp{
+				Rows: []entities.ExecuteSQLAffect{
+					{
+						InsertId:     0,
+						AffectedRows: 0,
+						Data:         entities.QuerySQLRespAll{Rows: rowsAll, Types: types, Columns: columns},
+					},
 				},
-			},
-		})
+			})
+		} else {
+			result, err := dbConn.Exec(req.Sql, req.Params...)
+			if err != nil {
+				logrus.Info(err)
+				common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
+					gin.H{"error": err.Error()})
+				return
+			}
+			insertId, err := result.LastInsertId()
+			if err != nil {
+				logrus.Info(err)
+				common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
+					gin.H{"error": err.Error()})
+				return
+			}
+			affectedRows, err := result.RowsAffected()
+			if err != nil {
+				logrus.Info(err)
+				common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
+					gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, entities.ExecuteSQLResp{
+				Rows: []entities.ExecuteSQLAffect{
+					{
+						InsertId:     insertId,
+						AffectedRows: affectedRows,
+					},
+				},
+			})
+		}
+
 	} else {
 		rows, err := dbConn.Query(req.Sql, req.Params...)
 		if err != nil {
