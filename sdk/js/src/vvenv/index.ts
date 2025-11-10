@@ -500,11 +500,46 @@ async function rpcResultWrap(r: Response) {
     throw new Error(`调用失败：${r.status} ${r.statusText} ${await r.text()}`);
 }
 
-function proxy(key: string, binding: ServiceBinding) {
+function proxy(key: string, binding: ServiceBinding, remote?: boolean) {
     if (isLocalDev()) {
-        return {
-            fetch: (url: string, init?: RequestInit) => fetch(url, init)
+        if (remote) {
+            return {
+                fetch: async (path: string, init?: RequestInit) => {
+                    if (!init) {
+                        init = {}
+                    }
+                    if (!init.headers) {
+                        init.headers = {}
+                    }
+                    init.headers = {
+                        ...init.headers,
+                        "vvorker-worker-uid": ((import.meta as any).env.VITE_APP_UID ?? "") as string
+                    }
+                    let r = await fetch(`${config().url}/__vvorker__debug`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${config().token}`
+                        },
+                        body: JSON.stringify({
+                            service: "proxy",
+                            binding: key,
+                            method: "fetch",
+                            params: {
+                                url: "http://vvorker.local" + (path.startsWith("/") ? path : "/" + path),
+                                init: init
+                            }
+                        })
+                    })
+                    return r
+                }
+            }
+        } else {
+            return {
+                fetch: (url: string, init?: RequestInit) => fetch(url, init)
+            }
         }
+
     }
 
     return binding
