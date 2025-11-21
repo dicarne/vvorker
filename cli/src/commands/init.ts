@@ -51,7 +51,7 @@ export default app;
   const jsonFilePath = `vvorker.${env}.json`;
   await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
 
-  const wranglerJsonPath = path.join(projectName, 'wrangler.json');
+  const wranglerJsonPath = path.join(projectName, 'wrangler.jsonc');
   const wranglerJson = json5.parse(await fs.readFile(wranglerJsonPath, 'utf-8'));
   wranglerJson.compatibility_flags = ["nodejs_compat"];
   wranglerJson.durable_objects = undefined;
@@ -178,7 +178,7 @@ export default app;
 
   try {
     await runCommand('pnpm', ['install'], projectName);
-    await runCommand('pnpm', ['install', "@types/node", "-D"], projectName);
+    await runCommand('pnpm', ['install', "@types/node", "drizzle-kit", "-D"], projectName);
     await runCommand('pnpm', ['install', "hono", "@dicarne/vvorker-sdk", "@hono/zod-validator", "zod"], projectName);
   } catch (error) {
     console.log(pc.red(`安装依赖失败，请手动安装`));
