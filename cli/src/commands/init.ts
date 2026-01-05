@@ -51,7 +51,12 @@ export default app;
   const jsonFilePath = `vvorker.${env}.json`;
   await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
 
-  const wranglerJsonPath = path.join(projectName, 'wrangler.jsonc');
+  let wconfigPath = 'wrangler.jsonc'
+  if (!fs.existsSync(wconfigPath)) {
+    wconfigPath = 'wrangler.json'
+  }
+
+  const wranglerJsonPath = path.join(projectName, wconfigPath);
   const wranglerJson = json5.parse(await fs.readFile(wranglerJsonPath, 'utf-8'));
   wranglerJson.compatibility_flags = ["nodejs_compat"];
   wranglerJson.durable_objects = undefined;
@@ -108,6 +113,11 @@ export default defineConfig({
 }
 
 async function createVueProject(projectName: string, jsonData: object) {
+  let wconfigPath = 'wrangler.jsonc'
+  if (!fs.existsSync(wconfigPath)) {
+    wconfigPath = 'wrangler.json'
+  }
+
   const vueJSCode = `
 import { Hono } from "hono";
 import { EnvBinding } from "./binding";
@@ -159,7 +169,7 @@ export default app;
   const jsonFilePath = `vvorker.${env}.json`;
   await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
 
-  const wranglerJsonPath = path.join(projectName, 'wrangler.jsonc');
+  const wranglerJsonPath = path.join(projectName, wconfigPath);
   const wranglerJson = json5.parse(await fs.readFile(wranglerJsonPath, 'utf-8'));
   wranglerJson.compatibility_flags = ["nodejs_compat"];
   wranglerJson.durable_objects = undefined;
@@ -171,7 +181,7 @@ export default app;
   packageJson.scripts.deploy = undefined;
   packageJson.scripts.db = "drizzle-kit generate";
   await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
-  
+
   await fs.writeFile(path.join(projectName, 'drizzle.config.ts'), drizzleDefaultConfig);
 
   console.log(pc.green(`项目 ${projectName} 初始化完成`));
