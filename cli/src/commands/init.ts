@@ -52,7 +52,7 @@ export default app;
   await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
 
   let wconfigPath = 'wrangler.jsonc'
-  if (!fs.existsSync(wconfigPath)) {
+  if (!fs.existsSync(path.join(projectName, wconfigPath))) {
     wconfigPath = 'wrangler.json'
   }
 
@@ -113,10 +113,6 @@ export default defineConfig({
 }
 
 async function createVueProject(projectName: string, jsonData: object) {
-  let wconfigPath = 'wrangler.jsonc'
-  if (!fs.existsSync(wconfigPath)) {
-    wconfigPath = 'wrangler.json'
-  }
 
   const vueJSCode = `
 import { Hono } from "hono";
@@ -154,6 +150,11 @@ export default app;
 `;
 
   await runCommand('pnpm', ['create', "cloudflare@latest", projectName, "--framework=vue", "--git", "--no-deploy", "--lang=ts"]);
+
+  let wconfigPath = 'wrangler.jsonc'
+  if (!fs.existsSync(path.join(projectName, wconfigPath))) {
+    wconfigPath = 'wrangler.json'
+  }
 
 
   const jsFilePath = path.join(projectName, 'server', 'index.ts');
