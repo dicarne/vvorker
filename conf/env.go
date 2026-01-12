@@ -122,6 +122,12 @@ type AppConfig struct {
 
 	// 维护用
 	MAN_ASSET_FILE_REPLACE bool `env:"MAN_ASSET_FILE_REPLACE" env-default:"false"` // 每次上传文件总是替换原有文件，即使已经上传过了
+
+	// 功能开关
+	EnableMySQL bool `env:"ENABLE_MYSQL" env-default:"false"`
+	EnablePgSQL bool `env:"ENABLE_PGSQL" env-default:"false"`
+	EnableRedis bool `env:"ENABLE_REDIS" env-default:"true"`
+	EnableMinIO bool `env:"ENABLE_MINIO" env-default:"false"`
 }
 
 type JwtConfig struct {

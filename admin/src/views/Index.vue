@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import type { MenuOption } from 'naive-ui'
 import { NLayout, NLayoutSider, NMenu } from 'naive-ui'
@@ -15,10 +15,14 @@ import {
 } from '@vicons/fluent'
 import TheHeader from '@/components/TheHeader.vue'
 import { renderIcon, renderMenuRouterLink } from '@/utils/render'
+import { getFeatures } from '@/api/features'
+import type { Feature } from '@/types/features'
 
 const collapsed = ref<boolean>(true)
 const activeKey = ref<string>('')
-const menuOptions: MenuOption[] = [
+const features = ref<Feature[]>([])
+
+const allMenuOptions: MenuOption[] = [
   {
     label: renderMenuRouterLink('Workers', 'Workers'),
     key: 'workers',
@@ -37,21 +41,25 @@ const menuOptions: MenuOption[] = [
   {
     label: renderMenuRouterLink('PGSQL', 'PGSQL'),
     key: 'pgsql',
+    feature: 'pgsql',
     icon: renderIcon(PGSQLIcon),
   },
   {
     label: renderMenuRouterLink('MySQL', 'MySQL'),
     key: 'mysql',
+    feature: 'mysql',
     icon: renderIcon(MYSQLIcon),
   },
   {
     label: renderMenuRouterLink('OSS', 'OSS'),
     key: 'oss',
+    feature: 'minio',
     icon: renderIcon(OSSIcon),
   },
   {
-    label: renderMenuRouterLink('KV', 'KV'),  
+    label: renderMenuRouterLink('KV', 'KV'),
     key: 'kv',
+    feature: 'redis',
     icon: renderIcon(KVIcon),
   },
   {
@@ -60,6 +68,25 @@ const menuOptions: MenuOption[] = [
     icon: renderIcon(UserIcon),
   },
 ]
+
+const menuOptions = computed<MenuOption[]>(() => {
+  const featureMap = new Map(features.value.map(f => [f.name, f.enable]))
+
+  return allMenuOptions.filter(option => {
+    if (!option.feature) {
+      return true
+    }
+    return featureMap.get(option.feature) === true
+  })
+})
+
+onMounted(async () => {
+  try {
+    features.value = await getFeatures()
+  } catch (error) {
+    console.error('Failed to load features:', error)
+  }
+})
 </script>
 
 <template>

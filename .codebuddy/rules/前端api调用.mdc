@@ -1,0 +1,9 @@
+---
+description: 
+alwaysApply: true
+enabled: true
+updatedAt: 2026-01-12T10:00:44.755Z
+provider: 
+---
+
+前端编写api调用时，路径不能以/api开头，而是以api开头，使用相对路径

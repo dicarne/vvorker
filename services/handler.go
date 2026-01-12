@@ -28,6 +28,7 @@ import (
 	"vvorker/services/appconf"
 	"vvorker/services/auth"
 	"vvorker/services/export"
+	"vvorker/services/features"
 	"vvorker/services/files"
 	"vvorker/services/litefs"
 	"vvorker/services/node"
@@ -192,6 +193,10 @@ func init() {
 			otpAPI.POST("/disable", authz.JWTMiddleware(), vvotp.DisableOTPEndpoint)
 			otpAPI.POST("/valid-add", authz.JWTMiddleware(), vvotp.ValidAddOTPEndpoint)
 			otpAPI.POST("/is-enable", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), vvotp.IsEnableOTPEndpoint)
+		}
+		featuresAPI := api.Group("/features")
+		{
+			featuresAPI.GET("/list", features.ListFeaturesEndpoint)
 		}
 		extAPI := api.Group("/ext")
 		{
