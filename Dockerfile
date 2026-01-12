@@ -27,7 +27,7 @@ RUN cd /app/ext/control && pnpm i && pnpm run build
 RUN cd /app/ext/mysql && pnpm i && pnpm run build
 
 ######################################################################################
-FROM golang:1.24-alpine AS go-builder
+FROM golang:1.25-alpine AS go-builder
 
 COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
 WORKDIR /app
