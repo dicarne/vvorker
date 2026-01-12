@@ -1,6 +1,7 @@
 export interface LoginRequest {
 	userName: string;
 	password: string;
+	otpcode?: string;
 }
 
 export interface LoginResponse {

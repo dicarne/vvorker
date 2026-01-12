@@ -12,7 +12,7 @@ const loginExpired = debounce(() => {
 instance.interceptors.response.use(
   (response) => {
     if (!!response.data.code) {
-      throw response.data.msg
+      throw new APIError(response.data.msg, response.data.code, response.data.data)
     }
     return response
   },
@@ -28,3 +28,13 @@ instance.interceptors.response.use(
 )
 
 export default instance
+
+export class APIError extends Error {
+  code: number
+  data?: any
+  constructor(message: string, code: number, data?: any) {
+    super(message)
+    this.code = code
+    this.data = data
+  }
+}

@@ -26,6 +26,7 @@ func (r *RegisterRequest) Validate() bool {
 type LoginRequest struct {
 	UserName string `json:"userName"`
 	Password string `json:"password"`
+	OTPCode  string `json:"otpCode,omitempty"`
 }
 
 type LoginResponse struct {

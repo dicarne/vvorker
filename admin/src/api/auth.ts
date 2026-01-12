@@ -8,8 +8,9 @@ import type {
 import api from './http'
 
 export const login = async (req: LoginRequest) => {
-  const res = await api.post('api/auth/login', req)
-  return res.data.data as LoginResponse
+  const url = 'api/auth/login'
+  const res = await api.post(url, req)
+  return res.data
 }
 
 export const register = async (req: RegisterRequest) => {

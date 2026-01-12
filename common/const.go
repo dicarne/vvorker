@@ -24,6 +24,7 @@ const (
 	RespCodeServiceNotFound
 	RespCodeNotFound
 	RespCodeInvalidParams
+	RespCodeOTPRequired
 )
 
 const (
@@ -38,6 +39,8 @@ const (
 	RespMsgMethodNotAllowed  = "Method Not Allowed"
 	RespMsgServiceNotFound   = "Service Not Found"
 	RespMsgInvalidParams     = "Invalid Params"
+	RespMsgOTPRequired       = "OTP Required"
+	RespMsgAuthBan           = "Auth Ban"
 )
 
 const (

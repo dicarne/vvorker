@@ -128,6 +128,8 @@ type AppConfig struct {
 	EnablePgSQL bool `env:"ENABLE_PGSQL" env-default:"false"`
 	EnableRedis bool `env:"ENABLE_REDIS" env-default:"true"`
 	EnableMinIO bool `env:"ENABLE_MINIO" env-default:"false"`
+
+	EnableLoginOPT bool `env:"ENABLE_LOGIN_OTP" env-default:"true"` // 是否启用登录OTP验证
 }
 
 type JwtConfig struct {

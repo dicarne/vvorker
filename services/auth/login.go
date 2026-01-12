@@ -2,15 +2,18 @@ package auth
 
 import (
 	"encoding/json"
+	"net/http"
 	"runtime/debug"
 	"vvorker/authz"
 	"vvorker/common"
+	"vvorker/conf"
 	"vvorker/entities"
 	"vvorker/ext/kv/src/sys_cache"
 	"vvorker/models"
 	"vvorker/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pquerna/otp/totp"
 	"github.com/sirupsen/logrus"
 )
 
@@ -45,7 +48,7 @@ func LoginEndpoint(c *gin.Context) {
 
 	if try_count.Count >= 5 {
 		common.RespErr(c, common.RespCodeAuthErr,
-			common.RespMsgAuthErr, nil)
+			common.RespMsgAuthBan, nil)
 		return
 	}
 
@@ -66,6 +69,31 @@ func LoginEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInternalError,
 			common.RespMsgInternalError, nil)
 		return
+	}
+
+	// 检查用户是否启用了OTP
+	if user.OtpSecret != "" && conf.AppConfigInstance.EnableLoginOPT {
+		// 启用了OTP，需要验证OTP
+		otpCode := req.OTPCode
+		if otpCode == "" {
+			// 返回需要OTP验证的状态
+			c.JSON(http.StatusOK, gin.H{
+				"code":    common.RespCodeOTPRequired,
+				"message": "OTP_REQUIRED",
+				"data": gin.H{
+					"status":     common.RespCodeOTPRequired,
+					"requireOTP": true,
+				},
+			})
+			return
+		}
+
+		// 验证OTP
+		valid := totp.Validate(otpCode, user.OtpSecret)
+		if !valid {
+			common.RespErr(c, common.RespCodeAuthErr, "Invalid OTP", nil)
+			return
+		}
 	}
 
 	token, err := utils.SignToken(user.ID)

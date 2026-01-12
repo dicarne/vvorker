@@ -183,7 +183,6 @@ const handleOptAddCodeConfirm = async () => {
   }
   try {
     const res = await validOtp(optAddCode.value)
-    console.log(res.data)
     if (res.data.code === 0) {
       otpEnabled.value = true
       otpUrl.value = ''
