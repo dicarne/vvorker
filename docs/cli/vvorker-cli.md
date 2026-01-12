@@ -73,3 +73,11 @@ vvcli config set url <url>
 vvcli config set token <token>
 ```
 
+### dev
+
+等价于`pnpm run dev`，便于统一命令行。
+
+```
+vvcli dev
+```
+

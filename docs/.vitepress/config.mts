@@ -31,6 +31,7 @@ export default withMermaid({
         items: [
           { text: '环境变量', link: '/config/env' },
           { text: '节点配置', link: '/config/node_config' },
+          { text: 'SSO配置', link: '/config/sso' }
         ]
       },
       {

@@ -1,6 +1,6 @@
 {
   "name": "@dicarne/vvcli",
-  "version": "1.2.7",
+  "version": "1.2.9",
   "description": "cli for vvorker",
   "bin": {
     "vvcli": "./dist/cli.js"
@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/cli.ts",
-    "preinstall": "npm run build",
+    "___preinstall": "npm run build",
     "prepublishOnly": "tsc",
     "tonpm": "npm publish --access=public"
   },
@@ -20,15 +20,15 @@
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.15.24",
-    "axios": "^1.9.0",
-    "commander": "^14.0.0",
-    "fs-extra": "^11.3.0",
-    "inquirer": "^12.6.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "dependencies": {
     "json5": "^2.2.3",
-    "picocolors": "^1.1.1"
+    "picocolors": "^1.1.1",
+    "axios": "^1.9.0",
+    "commander": "^14.0.0",
+    "fs-extra": "^11.3.0",
+    "inquirer": "^12.6.3"
   }
 }
