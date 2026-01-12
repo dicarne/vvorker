@@ -107,12 +107,14 @@ type AppConfig struct {
 	LocalTMPRedisPort   int `env:"LOCAL_TMP_REDIS_PORT" env-default:"13421"`
 	LocalTMPMySQLPort   int `env:"LOCAL_TMP_MYSQL_PORT" env-default:"13422"`
 
-	// sso
-	SSOAuthURL          string `env:"SSO_AUTH_URL"` // sso认证地址
-	SSOCookieName       string `env:"SSO_COOKIE_NAME" env-default:"vv-sso"`
-	SSOCookieAge        int    `env:"SSO_COOKIE_AGE" env-default:"86400"`
-	SSORedirectURL      string `env:"SSO_REDIRECT_URL"` // 登录页
-	SSOBaseURL          string `env:"SSO_BASE_URL"`     // sso基础地址，如 abc
+	// sso 认证地址，所有请求都会到这个地址进行鉴权
+	SSOAuthURL    string `env:"SSO_AUTH_URL"` // sso认证地址
+	SSOCookieName string `env:"SSO_COOKIE_NAME" env-default:"vv-sso"`
+	SSOCookieAge  int    `env:"SSO_COOKIE_AGE" env-default:"86400"`
+	// 登录页，通过重定向到该页面进行登录
+	SSORedirectURL string `env:"SSO_REDIRECT_URL"`
+	SSOBaseURL     string `env:"SSO_BASE_URL"` // sso基础地址，如 abc
+	// 支持某些场景使用url跳转进行鉴权
 	SSOEnableQueryLogin bool   `env:"SSO_ENABLE_QUERY_LOGIN" env-default:"false"`
 	SSOQueryLoginURL    string `env:"SSO_QUERY_LOGIN_URL"`
 	SSOCookiePath       string `env:"SSO_COOKIE_PATH" env-default:"/"`

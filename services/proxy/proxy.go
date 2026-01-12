@@ -24,6 +24,8 @@ type SSOAuthInfo struct {
 	UserID   string `json:"user_id"`
 	Token    string `json:"token"`
 	RealName string `json:"real_name"`
+	Ext      string `json:"ext"`
+	Redirect string `json:"redirect"`
 }
 
 func Endpoint(c *gin.Context) {
@@ -150,6 +152,7 @@ func Endpoint(c *gin.Context) {
 					}
 					defer resp.Body.Close()
 					if resp.StatusCode == 401 {
+						ssoRedirect := ""
 						if conf.AppConfigInstance.SSOEnableQueryLogin &&
 							conf.AppConfigInstance.SSOQueryLoginURL != "" &&
 							strings.Contains(c.Request.Header.Get("Accept"), "text/html") {
@@ -165,6 +168,7 @@ func Endpoint(c *gin.Context) {
 								req2.Header.Set("Content-Type", "application/json")
 								req2.Header.Set(conf.AppConfigInstance.SSOCookieName+"-data", rule.Data)
 								req2.Header.Set(conf.AppConfigInstance.SSOCookieName+"-worker-uid", worker.UID)
+								req2.Header.Set(conf.AppConfigInstance.SSOCookieName+"-channel", c.Request.Header.Get(conf.AppConfigInstance.SSOCookieName+"-channel"))
 								resp2, err := client.Do(req2)
 								if err == nil {
 									defer resp2.Body.Close()
@@ -178,6 +182,7 @@ func Endpoint(c *gin.Context) {
 										c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-user-id", authInfo.UserID)
 										c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-token", authInfo.Token)
 										c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-real-name", authInfo.RealName)
+										c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-ext", authInfo.Ext)
 
 										c.SetCookie(conf.AppConfigInstance.SSOCookieName,
 											authInfo.Token,
@@ -200,7 +205,13 @@ func Endpoint(c *gin.Context) {
 
 						}
 
-						if conf.AppConfigInstance.SSORedirectURL != "" && strings.Contains(c.Request.Header.Get("Accept"), "text/html") {
+						if strings.Contains(c.Request.Header.Get("Accept"), "text/html") {
+							if conf.AppConfigInstance.SSORedirectURL != "" {
+								if ssoRedirect == "" {
+									ssoRedirect = conf.AppConfigInstance.SSORedirectURL
+								}
+							}
+
 							// Add original URL as query parameter
 							rpath := c.Request.URL.Path
 
@@ -218,11 +229,12 @@ func Endpoint(c *gin.Context) {
 								rpath = fmt.Sprintf("%s://%s%s%s", conf.AppConfigInstance.Scheme, workerName, conf.AppConfigInstance.WorkerURLSuffix, rpath)
 							}
 
-							newUrl := fmt.Sprintf("%s?name=%s", conf.AppConfigInstance.SSORedirectURL, url.QueryEscape(rpath))
+							newUrl := fmt.Sprintf("%s?name=%s", ssoRedirect, url.QueryEscape(rpath))
 							c.Redirect(http.StatusFound, newUrl)
 							return
 						}
 					}
+
 					if resp.StatusCode != http.StatusOK {
 						logrus.Infof("sso auth failed, status code: %d, url: %s", resp.StatusCode, requestPath)
 						c.AbortWithStatus(resp.StatusCode)
@@ -237,6 +249,8 @@ func Endpoint(c *gin.Context) {
 					c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-user-id", authInfo.UserID)
 					c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-token", authInfo.Token)
 					c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-real-name", authInfo.RealName)
+					c.Request.Header.Set(conf.AppConfigInstance.SSOCookieName+"-channel", c.Request.Header.Get(conf.AppConfigInstance.SSOCookieName+"-channel"))
+
 					authed = true
 					break
 				}
