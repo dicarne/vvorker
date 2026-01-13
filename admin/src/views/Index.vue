@@ -22,7 +22,11 @@ const collapsed = ref<boolean>(true)
 const activeKey = ref<string>('')
 const features = ref<Feature[]>([])
 
-const allMenuOptions: MenuOption[] = [
+type MenuOptionWithFeature = MenuOption & {
+  feature?: string
+}
+
+const allMenuOptions: MenuOptionWithFeature[] = [
   {
     label: renderMenuRouterLink('Workers', 'Workers'),
     key: 'workers',
@@ -69,7 +73,7 @@ const allMenuOptions: MenuOption[] = [
   },
 ]
 
-const menuOptions = computed<MenuOption[]>(() => {
+const menuOptions = computed<MenuOptionWithFeature[]>(() => {
   const featureMap = new Map(features.value.map(f => [f.name, f.enable]))
 
   return allMenuOptions.filter(option => {
