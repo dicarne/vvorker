@@ -1,34 +1,37 @@
-
-let mode = "production"
+let mode = "production";
 
 export function init(env: any) {
-    if (env && env.vars && env.vars.MODE) {
-        mode = env.vars.MODE
-    } else {
-        if (import.meta && (import.meta as any).env && (import.meta as any).env.MODE) {
-            mode = (import.meta as any).env.MODE
-        }
+  if (env && env.vars && env.vars.MODE) {
+    mode = env.vars.MODE;
+  } else {
+    if (
+      import.meta &&
+      (import.meta as any).env &&
+      (import.meta as any).env.MODE
+    ) {
+      mode = (import.meta as any).env.MODE;
     }
+  }
 }
 
 export function isDev() {
-    return mode === "development"
+  return mode === "development";
 }
 
-const localDev = (import.meta as any)?.env?.DEV
+const localDev = (import.meta as any)?.env?.DEV;
 export function isLocalDev() {
-    return localDev && isDev()
+  return localDev && isDev();
 }
 
 export function config() {
-    let url = (import.meta as any).env.VITE_VVORKER_BASE_URL
-    // Remove trailing slash if exists
-    if (url.endsWith('/')) {
-        url = url.slice(0, -1);
-    }
-    const token = (import.meta as any).env.VITE_VVORKER_TOKEN
-    return {
-        url,
-        token
-    }
+  let url = (import.meta as any).env.VITE_VVORKER_BASE_URL;
+  // Remove trailing slash if exists
+  if (url.endsWith("/")) {
+    url = url.slice(0, -1);
+  }
+  const token = (import.meta as any).env.VITE_VVORKER_TOKEN;
+  return {
+    url,
+    token,
+  };
 }
