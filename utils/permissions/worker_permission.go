@@ -88,7 +88,7 @@ func CanManageWorkerMembers(c *gin.Context, uid uint64, worker_uid string) (*mod
 	canManage, err := models.CanManageMembers(worker_uid, uid)
 	if err != nil || !canManage {
 		common.RespErr(c, common.RespCodeNotAuthed, "forbidden", nil)
-		return nil, err
+		return nil, fmt.Errorf("forbidden: only owner can manage members")
 	}
 
 	db := database.GetDB()

@@ -1,12 +1,13 @@
 package workerd
 
 import (
-	"fmt"
 	"runtime/debug"
 	"vvorker/common"
 	"vvorker/conf"
+	"vvorker/entities"
 	"vvorker/exec"
 	"vvorker/models"
+	"vvorker/utils/database"
 	permissions "vvorker/utils/permissions"
 
 	"github.com/gin-gonic/gin"
@@ -30,6 +31,7 @@ func DeleteEndpoint(c *gin.Context) {
 	// 只有拥有者可以删除 worker
 	_, err := permissions.CanManageWorkerMembers(c, uint64(userID), UID)
 	if err != nil {
+		// CanManageWorkerMembers 内部已经调用了 RespErr
 		return
 	}
 
@@ -44,18 +46,18 @@ func DeleteEndpoint(c *gin.Context) {
 }
 
 func Delete(userID uint, UID string) error {
-	worker, err := models.GetWorkerByUID(userID, UID)
-	if err != nil {
+	// 权限已经在 DeleteEndpoint 中检查过了
+	// 这里直接查询 worker，不进行权限检查
+	db := database.GetDB()
+	var worker models.Worker
+	if err := db.Where(&models.Worker{Worker: &entities.Worker{UID: UID}}).First(&worker).Error; err != nil {
 		return err
-	}
-	if worker == nil {
-		return fmt.Errorf("worker not found")
 	}
 
 	if worker.NodeName == conf.AppConfigInstance.NodeName {
 		exec.ExecManager.ExitCmd(worker.GetUID())
 	}
-	if err = worker.Delete(); err != nil {
+	if err := worker.Delete(); err != nil {
 		return err
 	}
 
