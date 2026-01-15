@@ -82,10 +82,8 @@ onMounted(() => {
               添加于: {{ new Date(member.joined_at).toLocaleString() }}
             </NText>
           </div>
-          <NText v-if="canManage" type="info" style="font-size: 12px; margin-right: 8px;">
-            由 {{ member.added_by_name }} 添加
-          </NText>
-          <NPopconfirm v-if="canManage" @positive-click="() => handleRemoveMember(member)" positive-text="删除" negative-text="取消">
+          <NPopconfirm v-if="canManage" @positive-click="() => handleRemoveMember(member)" positive-text="删除"
+            negative-text="取消">
             <template #trigger>
               <NButton quaternary type="error">
                 <NIcon>

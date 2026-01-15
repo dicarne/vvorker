@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 	"vvorker/entities"
 	"vvorker/utils/database"
@@ -13,7 +14,7 @@ type WorkerMember struct {
 	WorkerUID   string    `json:"worker_uid" gorm:"index:idx_worker_uid"`
 	UserID      uint64    `json:"user_id" gorm:"index:idx_user_id"`
 	UserName    string    `json:"user_name"`
-	AddedBy     uint64    `json:"added_by"`     // 添加者的用户ID
+	AddedBy     uint64    `json:"added_by"`      // 添加者的用户ID
 	AddedByName string    `json:"added_by_name"` // 添加者的用户名
 	JoinedAt    time.Time `json:"joined_at"`
 }
@@ -34,6 +35,15 @@ func (w *WorkerMember) TableName() string {
 // AddMember 添加协作者
 func AddWorkerMember(workerUID string, userID uint64, userName string, addedBy uint64, addedByName string) error {
 	db := database.GetDB()
+
+	c := int64(0)
+	db.Model(&WorkerMember{}).Where(&WorkerMember{
+		WorkerUID: workerUID,
+		UserID:    userID,
+	}).Count(&c)
+	if c != 0 {
+		return errors.New("用户已存在")
+	}
 	member := &WorkerMember{
 		WorkerUID:   workerUID,
 		UserID:      userID,

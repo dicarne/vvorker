@@ -168,9 +168,9 @@ func GetWorkerCollaboratorsEndpoint(c *gin.Context) {
 	userID := c.GetUint(common.UIDKey)
 
 	type CollaboratorInfo struct {
-		IsOwner   bool                  `json:"is_owner"`
-		CanManage bool                  `json:"can_manage"`
-		Worker    *GetWorkerRespose     `json:"worker"`
+		IsOwner   bool                   `json:"is_owner"`
+		CanManage bool                   `json:"can_manage"`
+		Worker    *GetWorkerRespose      `json:"worker"`
 		Members   []*models.WorkerMember `json:"members"`
 	}
 
@@ -210,7 +210,7 @@ func GetWorkerCollaboratorsEndpoint(c *gin.Context) {
 	}
 
 	info := &CollaboratorInfo{
-		IsOwner: isOwner,
+		IsOwner:   isOwner,
 		CanManage: canManage,
 		Worker: &GetWorkerRespose{
 			UID:         worker.UID,
