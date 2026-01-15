@@ -54,10 +54,6 @@ const handleSaveWorkerClick = async () => {
     message.error('Worker 不存在')
     return
   }
-  if (!canManageMembers.value) {
-    message.error('只有 Worker 拥有者可以保存')
-    return
-  }
   try {
     await updateWorker(worker.value)
     message.success('保存 Worker 成功')
@@ -140,7 +136,7 @@ const handleOpenWorkerClick = async () => {
         <NButton class="v-item" type="primary" secondary @click="navigate('/workers')">
           返回
         </NButton>
-        <NButton class="v-item" type="primary" secondary :disabled="!canManageMembers" @click="handleSaveWorkerClick">
+        <NButton class="v-item" type="primary" secondary @click="handleSaveWorkerClick">
           保存 </NButton>
         <NButton type="primary" secondary @click="handleOpenWorkerClick"> 打开 </NButton>
       </div>
@@ -168,33 +164,30 @@ const handleOpenWorkerClick = async () => {
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 名称 </NLayoutSider>
           <NLayoutContent>
-            <NInput :disabled="!canManageMembers" style="min-width: 200px; max-width: 400px;"
-              v-model:value="worker.Name" />
+            <NInput style="min-width: 200px; max-width: 400px;" v-model:value="worker.Name" />
           </NLayoutContent>
         </NLayout>
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 节点 </NLayoutSider>
           <NLayoutContent>
-            <NSelect :disabled="!canManageMembers" style="min-width: 200px; max-width: 400px;"
-              v-model:value="worker.NodeName" :options="nodes.map((node) => ({
-                label: node.Name,
-                value: node.Name,
-              }))
-                " />
+            <NSelect style="min-width: 200px; max-width: 400px;" v-model:value="worker.NodeName" :options="nodes.map((node) => ({
+              label: node.Name,
+              value: node.Name,
+            }))
+              " />
           </NLayoutContent>
         </NLayout>
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 实例 </NLayoutSider>
           <NLayoutContent>
-            <NInputNumber :disabled="!canManageMembers" min="1" max="20" style="min-width: 200px; max-width: 400px;"
+            <NInputNumber min="1" max="20" style="min-width: 200px; max-width: 400px;"
               v-model:value="worker.MaxCount" />
           </NLayoutContent>
         </NLayout>
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 描述 </NLayoutSider>
           <NLayoutContent>
-            <NInput type="textarea" :disabled="!canManageMembers" v-model:value="worker.Description"
-              style="max-width: 400px;" placeholder="请输入描述" />
+            <NInput type="textarea" v-model:value="worker.Description" style="max-width: 400px;" placeholder="请输入描述" />
           </NLayoutContent>
         </NLayout>
       </NTabPane>

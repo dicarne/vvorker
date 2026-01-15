@@ -111,7 +111,7 @@ func UpdateEndpointJSON(c *gin.Context) {
 		}
 	}
 
-	if err := UpdateWorker(userID, UID, worker.Worker, worker.Description); err != nil {
+	if err := UpdateWorker(uint(oldworker.UserID), UID, worker.Worker, worker.Description); err != nil {
 		logrus.WithError(err).Errorf("update worker error, worker is: [%+v]", worker.Worker)
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
