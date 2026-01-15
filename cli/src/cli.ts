@@ -7,6 +7,7 @@ import { typesCommand } from "./commands/types";
 import { envCommand } from "./commands/env";
 import { devCommand } from "./commands/dev";
 import { versionCommand } from "./commands/version";
+import { createCommand } from "./commands/create";
 
 const program = new Command();
 
@@ -17,5 +18,6 @@ program.addCommand(typesCommand);
 program.addCommand(envCommand);
 program.addCommand(devCommand);
 program.addCommand(versionCommand);
+program.addCommand(createCommand);
 
 program.parse(process.argv);
