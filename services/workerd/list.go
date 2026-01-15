@@ -203,6 +203,7 @@ func GetWorkerEndpointJSON(c *gin.Context) {
 		return
 	}
 	worker.Worker.Code = nil
+	worker.Worker.Template = ""
 	common.RespOK(c, "get workers success", models.Trans2Entities([]*models.Worker{worker}))
 }
 

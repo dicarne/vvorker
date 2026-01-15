@@ -74,8 +74,6 @@ onMounted(async () => {
       NodeName: fullWorker.NodeName,
       MaxCount: fullWorker.MaxCount,
       Description: fullWorker.Description,
-      Code: fullWorker.Code,
-      Template: fullWorker.Template,
       AccessControl: fullWorker.AccessControl,
     } as WorkerItem
 

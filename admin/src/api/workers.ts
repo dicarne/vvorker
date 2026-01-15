@@ -193,12 +193,3 @@ export const listWorkerMembers = (workerUID: string) => {
 export const getWorkerCollaboratorInfo = (uid: string) => {
   return api.get<{ data: WorkerCollaboratorInfo }>(`api/worker/collaborator/${uid}`).then(res => res.data.data)
 }
-
-
-// export const getWorkerCount = (uid: string) => {
-//   return api.post<{ data: number }>(`api/worker/v2/get-worker-count`, { uid })
-// }
-
-// export const updateWorkerCount = (uid: string, max_count: number) => {
-//   return api.post(`api/worker/v2/update-worker-count`, { uid, max_count })
-// }
