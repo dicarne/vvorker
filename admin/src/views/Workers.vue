@@ -215,7 +215,7 @@ onMounted(async () => {
               <NIcon class="v-item" v-if="item.AccessControl">
                 <LockIcon />
               </NIcon>
-              <NTag size="small" type="success" v-if="item.IsCollab">协作</NTag>
+              <NTag size="small" type="success" v-if="item.IsCollab" style="margin-right: 10px;">协作</NTag>
               <NTag size="small" :style="{ color: CH.hex(item.NodeName || '') }">
                 {{ item.NodeName }}
               </NTag>

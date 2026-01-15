@@ -52,7 +52,7 @@ const handleAddMember = async () => {
 
 const handleRemoveMember = async (member: WorkerMember) => {
   try {
-    await removeWorkerMember(props.uid, member.UserName)
+    await removeWorkerMember(props.uid, member.user_name)
     message.success('移除成员成功')
     await loadMembers()
   } catch (error: any) {
@@ -69,11 +69,7 @@ onMounted(() => {
 <template>
   <NCard title="协作者管理">
     <div v-if="canManage" class="v-flex-center-start v-item-column" style="margin-bottom: 16px;">
-      <NInput
-        v-model:value="newMemberName"
-        placeholder="输入用户名添加成员"
-        style="width: 300px; margin-right: 8px;"
-      />
+      <NInput v-model:value="newMemberName" placeholder="输入用户名添加成员" style="width: 300px; margin-right: 8px;" />
       <NButton type="primary" @click="handleAddMember">添加</NButton>
     </div>
 
@@ -81,15 +77,15 @@ onMounted(() => {
       <NListItem v-for="member in members" :key="member.ID">
         <div class="v-flex-between-center">
           <div>
-            <NText style="margin-right: 8px; font-weight: 500;">{{ member.UserName }}</NText>
+            <NText style="margin-right: 8px; font-weight: 500;">{{ member.user_name }}</NText>
             <NText type="info" style="font-size: 12px;">
-              添加于: {{ new Date(member.JoinedAt).toLocaleString() }}
+              添加于: {{ new Date(member.joined_at).toLocaleString() }}
             </NText>
           </div>
           <NText v-if="canManage" type="info" style="font-size: 12px; margin-right: 8px;">
-            由 {{ member.AddedByName }} 添加
+            由 {{ member.added_by_name }} 添加
           </NText>
-          <NPopconfirm v-if="canManage" @positive-click="() => handleRemoveMember(member)">
+          <NPopconfirm v-if="canManage" @positive-click="() => handleRemoveMember(member)" positive-text="删除" negative-text="取消">
             <template #trigger>
               <NButton quaternary type="error">
                 <NIcon>
@@ -97,7 +93,7 @@ onMounted(() => {
                 </NIcon>
               </NButton>
             </template>
-            确定要移除 {{ member.UserName }} 吗？
+            确定要移除 {{ member.user_name }} 吗？
           </NPopconfirm>
         </div>
       </NListItem>

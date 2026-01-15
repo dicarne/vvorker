@@ -16,12 +16,12 @@ export interface WorkerItem {
 
 export interface WorkerMember {
   ID: number
-  WorkerUID: string
-  UserID: number
-  UserName: string
-  AddedBy: number
-  AddedByName: string
-  JoinedAt: string
+  worker_uid: string
+  user_id: number
+  user_name: string
+  add_by: number
+  added_by_name: string
+  joined_at: string
 }
 
 export interface WorkerCollaboratorInfo {
