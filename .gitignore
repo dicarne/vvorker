@@ -19,3 +19,5 @@ bin/test.zip
 *.tar
 *.local
 *.tar.gz
+
+*.local.bat

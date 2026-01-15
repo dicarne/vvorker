@@ -4,3 +4,4 @@
 *.tar.gz
 **/.next/*
 **/dist/*
+*.local.bat
