@@ -78,7 +78,7 @@ func init() {
 				workerApi.GET("/flush/:uid", workerd.FlushEndpoint)
 				workerApi.GET("/run/:uid", workerd.RunWorkerEndpoint)
 				workerApi.POST("/create", workerd.CreateEndpoint)
-				workerApi.POST("/version/:workerId/:fileId", workerd.NewVersionEndpoint)
+				// workerApi.POST("/version/:workerId/:fileId", workerd.NewVersionEndpoint)
 				workerApi.DELETE("/:uid", workerd.DeleteEndpoint)
 
 				workerApi.GET("/information/:id", workerd.GetWorkerInformationByIDEndpoint)

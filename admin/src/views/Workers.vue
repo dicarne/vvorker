@@ -13,6 +13,8 @@ import {
   NModal,
   NIcon,
   NNotificationProvider,
+  NText,
+  NEllipsis
 } from 'naive-ui'
 import {
   MoreHorizontal24Regular as DropdownIcon,
@@ -175,53 +177,59 @@ onMounted(async () => {
           <template #suffix>
             <div class="v-flex-center">
               <NButton quaternary type="primary" @click="navigate(`/workeredit?uid=${item.UID}`)">
-                <NIcon><EditIcon /></NIcon>编辑
+                <NIcon>
+                  <EditIcon />
+                </NIcon>编辑
               </NButton>
               <!-- 使用 WorkerRun 组件 -->
               <NNotificationProvider placement="bottom-right">
                 <WorkerRun :uid="item.UID" />
               </NNotificationProvider>
               <NButton quaternary type="primary" @click="handleOpenWorkerClick(item)">
-                <NIcon><LinkIcon /></NIcon>打开
+                <NIcon>
+                  <LinkIcon />
+                </NIcon>打开
               </NButton>
-              <NDropdown
-                trigger="hover"
-                :options="dropdownOptions"
-                @select="(key) => handleDropdownSelect(item, key)"
-              >
+              <NDropdown trigger="hover" :options="dropdownOptions" @select="(key) => handleDropdownSelect(item, key)">
                 <NButton quaternary>
-                  <NIcon><DropdownIcon /></NIcon>
+                  <NIcon>
+                    <DropdownIcon />
+                  </NIcon>
                 </NButton>
               </NDropdown>
             </div>
           </template>
           <div class="v-flex-center-start-column">
             <div class="v-item">
-              {{ item.Name }}
-              <NIcon class="v-item" v-if="item.AccessControl"><LockIcon /></NIcon>
-            </div>
-            <div class="v-item">
-              Node:
+              <NText class="title-text">{{ item.Name }}</NText>
+              <NIcon class="v-item" v-if="item.AccessControl">
+                <LockIcon />
+              </NIcon>
               <NTag size="small" :style="{ color: CH.hex(item.NodeName || '') }">
                 {{ item.NodeName }}
               </NTag>
+            </div>
+            <div class="v-item desc-text">
+              <NEllipsis style="max-width: 500px;" expand-trigger="click" line-clamp="1" :tooltip="false">{{ item.Description }}</NEllipsis>
             </div>
           </div>
         </NListItem>
       </NList>
     </NCard>
-    <NModal
-      v-model:show="showDeleteWorkerModal"
-      preset="dialog"
-      title="删除 Worker"
-      positive-text="确认"
-      negative-text="取消"
-      :loading="IsDeletingWorker"
-      :mask-closable="false"
-      @positive-click="handleDeleteWorkerConfirm"
-      @negative-click="handleDeleteWorkerClose"
-    >
+    <NModal v-model:show="showDeleteWorkerModal" preset="dialog" title="删除 Worker" positive-text="确认" negative-text="取消"
+      :loading="IsDeletingWorker" :mask-closable="false" @positive-click="handleDeleteWorkerConfirm"
+      @negative-click="handleDeleteWorkerClose">
       <div>确认要删除 {{ workerToDelete?.Name }}（ID: {{ workerToDelete?.UID }}）？</div>
     </NModal>
   </div>
 </template>
+<style lang="css" scoped>
+.title-text {
+  font-weight: 500;
+  margin-right: 10px;
+}
+
+.desc-text {
+  color: rgb(131, 131, 131);
+}
+</style>

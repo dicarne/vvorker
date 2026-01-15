@@ -149,6 +149,12 @@ const handleOpenWorkerClick = async () => {
               v-model:value="worker.MaxCount" />
           </NLayoutContent>
         </NLayout>
+        <NLayout has-sider class="v-item-column">
+          <NLayoutSider> 描述 </NLayoutSider>
+          <NLayoutContent>
+            <NInput type="textarea" v-model:value="worker.Description" style="max-width: 400px;" placeholder="请输入描述" />
+          </NLayoutContent>
+        </NLayout>
       </NTabPane>
       <NTabPane name="logs" tab="日志">
         <WorkerLogs :uid="worker.UID" />

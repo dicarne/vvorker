@@ -61,6 +61,7 @@ type SimpleWorker struct {
 	Name          string `json:"Name"`
 	NodeName      string `json:"NodeName"`
 	AccessControl bool   `json:"AccessControl"`
+	Description   string `json:"Description"`
 }
 
 func GetAllWorkersEndpoint(c *gin.Context) {
@@ -84,6 +85,7 @@ func GetAllWorkersEndpoint(c *gin.Context) {
 			Name:          worker.Name,
 			NodeName:      worker.NodeName,
 			AccessControl: worker.EnableAccessControl,
+			Description:   worker.Description,
 		})
 	}
 
@@ -91,11 +93,12 @@ func GetAllWorkersEndpoint(c *gin.Context) {
 }
 
 type GetWorkerRespose struct {
-	UID      string `json:"UID"`
-	NodeName string `json:"NodeName"`
-	Name     string `json:"Name"`
-	Version  string `json:"Version"`
-	MaxCount int32  `json:"MaxCount"`
+	UID         string `json:"UID"`
+	NodeName    string `json:"NodeName"`
+	Name        string `json:"Name"`
+	Version     string `json:"Version"`
+	MaxCount    int32  `json:"MaxCount"`
+	Description string `json:"Description"`
 }
 
 func GetWorkerEndpoint(c *gin.Context) {
@@ -119,11 +122,12 @@ func GetWorkerEndpoint(c *gin.Context) {
 	worker.Worker.Code = nil
 	common.RespOK(c, "get workers success", []GetWorkerRespose{
 		{
-			UID:      worker.UID,
-			NodeName: worker.NodeName,
-			Name:     worker.Name,
-			Version:  worker.Version,
-			MaxCount: worker.MaxCount,
+			UID:         worker.UID,
+			NodeName:    worker.NodeName,
+			Name:        worker.Name,
+			Version:     worker.Version,
+			MaxCount:    worker.MaxCount,
+			Description: worker.Description,
 		},
 	})
 }

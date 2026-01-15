@@ -38,7 +38,8 @@ import (
 type Worker struct {
 	gorm.Model
 	*entities.Worker
-	EnableAccessControl bool `json:"EnableAccessControl"`
+	EnableAccessControl bool   `json:"EnableAccessControl"`
+	Description         string `json:"Description"`
 }
 
 func init() {

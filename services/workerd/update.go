@@ -21,9 +21,10 @@ import (
 
 type UpdateWorkerReq struct {
 	*entities.Worker
+	Description string `json:"Description"`
 }
 
-func UpdateWorker(userID uint, UID string, worker *entities.Worker) error {
+func UpdateWorker(userID uint, UID string, worker *entities.Worker, desc string) error {
 	FillWorkerValue(worker, true, UID, userID)
 
 	workerRecord, err := models.GetWorkerByUID(userID, UID)
@@ -44,7 +45,10 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker) error {
 	}
 
 	// 创建新的worker
-	newWorker := &models.Worker{Worker: worker, EnableAccessControl: workerRecord.EnableAccessControl}
+	newWorker := &models.Worker{Worker: worker,
+		EnableAccessControl: workerRecord.EnableAccessControl,
+		Description:         desc,
+	}
 	newWorker.Version = utils.GenerateUID()
 	code := newWorker.Code
 	if conf.AppConfigInstance.FileStorageUseOSS {
@@ -107,7 +111,7 @@ func UpdateEndpointJSON(c *gin.Context) {
 		}
 	}
 
-	if err := UpdateWorker(userID, UID, worker.Worker); err != nil {
+	if err := UpdateWorker(userID, UID, worker.Worker, worker.Description); err != nil {
 		logrus.WithError(err).Errorf("update worker error, worker is: [%+v]", worker.Worker)
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
