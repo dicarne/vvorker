@@ -5,6 +5,7 @@ import (
 	"vvorker/common"
 	"vvorker/entities"
 	"vvorker/models"
+	permissions "vvorker/utils/permissions"
 	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
@@ -37,19 +38,15 @@ func CreateInternalWhiteListEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
 		return
 	}
-	db := database.GetDB()
-	worker := models.Worker{}
 
-	if err := db.Where(&models.Worker{
-		Worker: &entities.Worker{
-			UID:    request.WorkerUID,
-			UserID: uid,
-		},
-	}).First(&worker).Error; err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	// 检查用户是否有写权限（拥有者或协作者）
+	_, err := permissions.CanWriteWorker(c, uid, request.WorkerUID)
+	if err != nil {
+		// CanWriteWorker 内部已经调用了 RespErr
 		return
 	}
 
+	db := database.GetDB()
 	// 查找 allow name 对应的 worker 的 uid
 	var allowWorker models.Worker
 	if err := db.Where(&models.Worker{
@@ -100,18 +97,15 @@ func ListInternalWhiteListEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
 		return
 	}
-	db := database.GetDB()
-	worker := models.Worker{}
 
-	if err := db.Where(&models.Worker{
-		Worker: &entities.Worker{
-			UID:    request.WorkerUID,
-			UserID: uid,
-		},
-	}).First(&worker).Error; err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	// 检查用户是否有读权限（拥有者或协作者）
+	_, err := permissions.CanReadWorker(c, uid, request.WorkerUID)
+	if err != nil {
+		// CanReadWorker 内部已经调用了 RespErr
 		return
 	}
+
+	db := database.GetDB()
 	var total int64
 	if err := db.Model(&models.InternalServerWhiteList{}).Where(&models.InternalServerWhiteList{WorkerUID: request.WorkerUID}).Count(&total).Error; err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
@@ -167,19 +161,15 @@ func UpdateInternalWhiteListEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
 		return
 	}
-	db := database.GetDB()
-	worker := models.Worker{}
 
-	if err := db.Where(&models.Worker{
-		Worker: &entities.Worker{
-			UID:    request.WorkerUID,
-			UserID: uid,
-		},
-	}).First(&worker).Error; err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	// 检查用户是否有写权限（拥有者或协作者）
+	_, err := permissions.CanWriteWorker(c, uid, request.WorkerUID)
+	if err != nil {
+		// CanWriteWorker 内部已经调用了 RespErr
 		return
 	}
 
+	db := database.GetDB()
 	updateData := map[string]interface{}{
 		"description": request.Description,
 	}
@@ -214,18 +204,15 @@ func DeleteInternalWhiteListEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
 		return
 	}
-	db := database.GetDB()
-	worker := models.Worker{}
 
-	if err := db.Where(&models.Worker{
-		Worker: &entities.Worker{
-			UID:    request.WorkerUID,
-			UserID: uid,
-		},
-	}).First(&worker).Error; err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	// 检查用户是否有写权限（拥有者或协作者）
+	_, err := permissions.CanWriteWorker(c, uid, request.WorkerUID)
+	if err != nil {
+		// CanWriteWorker 内部已经调用了 RespErr
 		return
 	}
+
+	db := database.GetDB()
 	if err := db.Where(&models.InternalServerWhiteList{WorkerUID: request.WorkerUID, Model: gorm.Model{
 		ID: request.ID,
 	}}).Delete(&models.InternalServerWhiteList{}).Error; err != nil {

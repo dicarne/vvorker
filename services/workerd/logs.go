@@ -4,7 +4,7 @@ import (
 	"runtime/debug"
 	"vvorker/common"
 	"vvorker/exec"
-	"vvorker/models"
+	permissions "vvorker/utils/permissions"
 	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
@@ -55,8 +55,10 @@ func GetWorkerLogsEndpoint(c *gin.Context) {
 	}
 
 	userID := c.GetUint(common.UIDKey)
-	if !models.HasWorker(userID, UID) {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	// 检查用户是否有权限访问 Worker（拥有者或协作者）
+	_, err := permissions.CanReadWorker(c, uint64(userID), UID)
+	if err != nil {
+		// CanReadWorker 内部已经调用了 RespErr
 		return
 	}
 

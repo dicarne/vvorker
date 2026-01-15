@@ -8,6 +8,7 @@ import (
 	"vvorker/models"
 	"vvorker/utils"
 	"vvorker/utils/database"
+	permissions "vvorker/utils/permissions"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -36,10 +37,17 @@ func UpdateEnableAccessControlEndpoint(c *gin.Context) {
 		return
 	}
 
+	// 检查用户是否有写权限（拥有者或协作者）
+	_, err := permissions.CanWriteWorker(c, uid, request.WorkerUID)
+	if err != nil {
+		// CanWriteWorker 内部已经调用了 RespErr
+		return
+	}
+
 	db := database.GetDB()
 	var user models.Worker
-	if err := db.Where(&models.Worker{Worker: &entities.Worker{UID: request.WorkerUID, UserID: uid}}).First(&user).Error; err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	if err := db.Where(&models.Worker{Worker: &entities.Worker{UID: request.WorkerUID}}).First(&user).Error; err != nil {
+		common.RespErr(c, common.RespCodeInternalError, "worker not found", nil)
 		return
 	}
 	user.EnableAccessControl = request.Enable
@@ -73,10 +81,17 @@ func GetAccessControlEndpoint(c *gin.Context) {
 		return
 	}
 
+	// 检查用户是否有读权限（拥有者或协作者）
+	_, err := permissions.CanReadWorker(c, uid, request.WorkerUID)
+	if err != nil {
+		// CanReadWorker 内部已经调用了 RespErr
+		return
+	}
+
 	db := database.GetDB()
 	var user models.Worker
-	if err := db.Where(&models.Worker{Worker: &entities.Worker{UID: request.WorkerUID, UserID: uid}}).First(&user).Error; err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	if err := db.Where(&models.Worker{Worker: &entities.Worker{UID: request.WorkerUID}}).First(&user).Error; err != nil {
+		common.RespErr(c, common.RespCodeInternalError, "worker not found", nil)
 		return
 	}
 	common.RespOK(c, common.RespMsgOK, gin.H{
@@ -104,13 +119,14 @@ func AddAccessRuleEndpoint(c *gin.Context) {
 	request.Length = len(request.Path)
 	request.RuleUID = utils.GenerateUID()
 
-	db := database.GetDB()
-	var user models.Worker
-	if err := db.Where(&models.Worker{Worker: &entities.Worker{UID: request.WorkerUID, UserID: uid}}).First(&user).Error; err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	// 检查用户是否有写权限（拥有者或协作者）
+	_, err := permissions.CanWriteWorker(c, uid, request.WorkerUID)
+	if err != nil {
+		// CanWriteWorker 内部已经调用了 RespErr
 		return
 	}
-	if err := db.Create(&request).Error; err != nil {
+
+	if err := database.GetDB().Create(&request).Error; err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}
@@ -136,12 +152,14 @@ func UpdateAccessRuleEndpoint(c *gin.Context) {
 	}
 	request.Length = len(request.Path)
 
-	db := database.GetDB()
-	var user models.Worker
-	if err := db.Where(&models.Worker{Worker: &entities.Worker{UID: request.WorkerUID, UserID: uid}}).First(&user).Error; err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	// 检查用户是否有写权限（拥有者或协作者）
+	_, err := permissions.CanWriteWorker(c, uid, request.WorkerUID)
+	if err != nil {
+		// CanWriteWorker 内部已经调用了 RespErr
 		return
 	}
+
+	db := database.GetDB()
 	if err := db.Unscoped().Where(&models.AccessRule{RuleUID: request.RuleUID, WorkerUID: request.WorkerUID}).Delete(&models.AccessRule{}).Error; err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest, "rule not found", nil)
 		return
@@ -186,12 +204,14 @@ func DeleteAccessRuleEndpoint(c *gin.Context) {
 		return
 	}
 
-	db := database.GetDB()
-	var user models.Worker
-	if err := db.Where(&models.Worker{Worker: &entities.Worker{UID: request.WorkerUID, UserID: uid}}).First(&user).Error; err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	// 检查用户是否有写权限（拥有者或协作者）
+	_, err := permissions.CanWriteWorker(c, uid, request.WorkerUID)
+	if err != nil {
+		// CanWriteWorker 内部已经调用了 RespErr
 		return
 	}
+
+	db := database.GetDB()
 	if err := db.Delete(&models.AccessRule{}, &models.AccessRule{
 		RuleUID:   request.RuleUID,
 		WorkerUID: request.WorkerUID,
@@ -226,12 +246,14 @@ func ListAccessRuleEndpoint(c *gin.Context) {
 		return
 	}
 
-	db := database.GetDB()
-	var user models.Worker
-	if err := db.Where(&models.Worker{Worker: &entities.Worker{UID: request.WorkerUID, UserID: uid}}).First(&user).Error; err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	// 检查用户是否有读权限（拥有者或协作者）
+	_, err := permissions.CanReadWorker(c, uid, request.WorkerUID)
+	if err != nil {
+		// CanReadWorker 内部已经调用了 RespErr
 		return
 	}
+
+	db := database.GetDB()
 	var total int64
 	if err := db.Model(&models.AccessRule{}).Where(&models.AccessRule{WorkerUID: request.WorkerUID}).Count(&total).Error; err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
@@ -269,6 +291,13 @@ func SwitchAccessRuleEndpoint(c *gin.Context) {
 	request := SwitchAccessRuleRequest{}
 	if err := c.BindJSON(&request); err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
+		return
+	}
+
+	// 检查用户是否有写权限（拥有者或协作者）
+	_, err := permissions.CanWriteWorker(c, uid, request.WorkerUID)
+	if err != nil {
+		// CanWriteWorker 内部已经调用了 RespErr
 		return
 	}
 

@@ -3,10 +3,10 @@ package access
 import (
 	"runtime/debug"
 	"vvorker/common"
-	"vvorker/entities"
 	"vvorker/models"
 	"vvorker/utils"
 	"vvorker/utils/database"
+	"vvorker/utils/permissions"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -37,19 +37,13 @@ func CreateAccessTokenEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
 		return
 	}
-	db := database.GetDB()
-	worker := models.Worker{}
 
-	if err := db.Where(&models.Worker{
-		Worker: &entities.Worker{
-			UID:    request.WorkerUID,
-			UserID: uid,
-		},
-	}).First(&worker).Error; err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	_, err := permissions.CanWriteWorker(c, uid, request.WorkerUID)
+	if err != nil {
 		return
 	}
 
+	db := database.GetDB()
 	accessToken := models.ExternalServerToken{
 		WorkerUID:      request.WorkerUID,
 		Description:    request.Description,
@@ -89,18 +83,13 @@ func ListAccessTokenEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
 		return
 	}
-	db := database.GetDB()
-	worker := models.Worker{}
 
-	if err := db.Where(&models.Worker{
-		Worker: &entities.Worker{
-			UID:    request.WorkerUID,
-			UserID: uid,
-		},
-	}).First(&worker).Error; err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	_, err := permissions.CanReadWorker(c, uid, request.WorkerUID)
+	if err != nil {
 		return
 	}
+
+	db := database.GetDB()
 	var total int64
 	if err := db.Model(&models.ExternalServerToken{}).Where(&models.ExternalServerToken{WorkerUID: request.WorkerUID}).Count(&total).Error; err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
@@ -143,18 +132,13 @@ func DeleteAccessTokenEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
 		return
 	}
-	db := database.GetDB()
-	worker := models.Worker{}
 
-	if err := db.Where(&models.Worker{
-		Worker: &entities.Worker{
-			UID:    request.WorkerUID,
-			UserID: uid,
-		},
-	}).First(&worker).Error; err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker not found", nil)
+	_, err := permissions.CanWriteWorker(c, uid, request.WorkerUID)
+	if err != nil {
 		return
 	}
+
+	db := database.GetDB()
 	if err := db.Where(&models.ExternalServerToken{WorkerUID: request.WorkerUID, Model: gorm.Model{
 		ID: request.ID,
 	}}).Delete(&models.ExternalServerToken{}).Error; err != nil {
