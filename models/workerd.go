@@ -198,6 +198,20 @@ func GetWorkersByNames(userID uint, names []string) ([]*Worker, error) {
 	return workers, nil
 }
 
+func GetWorkersByUserID(userID uint64) ([]*Worker, error) {
+	var workers []*Worker
+	db := database.GetDB()
+
+	if err := db.Where(&Worker{
+		Worker: &entities.Worker{
+			UserID: userID,
+		},
+	}).Order("updated_at desc").Find(&workers).Error; err != nil {
+		return nil, err
+	}
+	return workers, nil
+}
+
 func GetWorkersByUIDs(userID uint, uids []string) ([]*Worker, error) {
 	var workers []*Worker
 	db := database.GetDB()
@@ -234,19 +248,28 @@ func GetAllWorkers(userID uint) ([]*Worker, error) {
 		return nil, err
 	}
 
+	// 创建一个 map 来快速查找用户拥有的 worker UIDs
+	ownedWorkerUIDs := make(map[string]bool)
+	for _, worker := range workers {
+		ownedWorkerUIDs[worker.UID] = true
+	}
+
 	// 获取用户参与协作的 Workers
 	collabWorkerUIDs, err := GetUserCollaboratedWorkers(uint64(userID))
 	if err != nil {
-		return nil, err
+		return workers, nil // 协作者列表获取失败不影响返回拥有的 workers
 	}
 
+	// 将协作 workers 添加到列表，但不修改 Description
 	for _, uid := range collabWorkerUIDs {
+		// 跳过已经是拥有的 workers
+		if ownedWorkerUIDs[uid] {
+			continue
+		}
 		var worker Worker
 		if err := db.Where(&Worker{Worker: &entities.Worker{UID: uid}}).First(&worker).Error; err != nil {
 			continue
 		}
-		// 标记为协作
-		worker.Description = "[COLLAB]" + worker.Description
 		workers = append(workers, &worker)
 	}
 

@@ -73,28 +73,61 @@ func GetAllWorkersEndpoint(c *gin.Context) {
 		}
 	}()
 	userID := c.GetUint(common.UIDKey)
-	workers, err := models.GetAllWorkers(userID)
+
+	// 获取用户拥有的 Workers
+	ownedWorkers, err := models.GetWorkersByUserID(uint64(userID))
 	if err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}
 
-	var simpleWorkers []*SimpleWorker
-	for _, worker := range workers {
-		description := worker.Description
-		isCollab := false
-		// 检查是否是协作标记
-		if len(description) >= 7 && description[:7] == "[COLLAB]" {
-			description = description[7:]
-			isCollab = true
+	// 获取用户参与协作的 Workers
+	collabWorkerUIDs, err := models.GetUserCollaboratedWorkers(uint64(userID))
+	if err != nil {
+		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
+		return
+	}
+
+	// 创建一个 map 来快速查找拥有的 worker UIDs
+	ownedWorkerUIDs := make(map[string]bool)
+	for _, worker := range ownedWorkers {
+		ownedWorkerUIDs[worker.UID] = true
+	}
+
+	// 获取所有协作 workers 的详细信息
+	var collabWorkers []*models.Worker
+	for _, uid := range collabWorkerUIDs {
+		// 跳过已经是拥有的 workers
+		if ownedWorkerUIDs[uid] {
+			continue
 		}
+		var worker models.Worker
+		if err := database.GetDB().Where(&models.Worker{Worker: &entities.Worker{UID: uid}}).First(&worker).Error; err != nil {
+			continue
+		}
+		collabWorkers = append(collabWorkers, &worker)
+	}
+
+	// 合并拥有的和协作的 workers
+	var simpleWorkers []*SimpleWorker
+	for _, worker := range ownedWorkers {
 		simpleWorkers = append(simpleWorkers, &SimpleWorker{
 			UID:           worker.UID,
 			Name:          worker.Name,
 			NodeName:      worker.NodeName,
 			AccessControl: worker.EnableAccessControl,
-			Description:   description,
-			IsCollab:      isCollab,
+			Description:   worker.Description,
+			IsCollab:      false,
+		})
+	}
+	for _, worker := range collabWorkers {
+		simpleWorkers = append(simpleWorkers, &SimpleWorker{
+			UID:           worker.UID,
+			Name:          worker.Name,
+			NodeName:      worker.NodeName,
+			AccessControl: worker.EnableAccessControl,
+			Description:   worker.Description,
+			IsCollab:      true,
 		})
 	}
 
