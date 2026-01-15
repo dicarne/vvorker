@@ -11,6 +11,31 @@ export interface WorkerItem {
   MaxCount: number
   AccessControl: boolean
   Description: string
+  IsCollab?: boolean
+}
+
+export interface WorkerMember {
+  ID: number
+  WorkerUID: string
+  UserID: number
+  UserName: string
+  AddedBy: number
+  AddedByName: string
+  JoinedAt: string
+}
+
+export interface WorkerCollaboratorInfo {
+  is_owner: boolean
+  can_manage: boolean
+  worker: {
+    UID: string
+    NodeName: string
+    Name: string
+    Version: string
+    MaxCount: number
+    Description: string
+  }
+  Members: WorkerMember[]
 }
 
 export interface WorkerItemProperties {

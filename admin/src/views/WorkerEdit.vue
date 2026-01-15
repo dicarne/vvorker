@@ -23,13 +23,14 @@ import WorkerRun from '@/components/WorkerRun.vue'
 import WorkerLogs from '@/components/WorkerLogs.vue'
 import WorkerRules from '@/components/WorkerRules.vue'
 import WorkerAuth from '@/components/WorkerAuth.vue'
+import WorkerCollaboration from '@/components/WorkerCollaboration.vue'
 import {
   DEFAULT_WORKER_ITEM,
   type VorkerSettingsProperties,
   type WorkerItem,
 } from '@/types/workers'
 import type { Node } from '@/types/nodes'
-import { getWorker, updateWorker } from '@/api/workers'
+import { getWorker, updateWorker, getWorkerCollaboratorInfo } from '@/api/workers'
 import { getNodes } from '@/api/nodes'
 import { useNavigate } from '@/composables/useNavigate'
 import { useCopyContent } from '@/composables/useUtils'
@@ -42,6 +43,8 @@ const message = useMessage()
 const { copyContent } = useCopyContent()
 const appConfig = inject<Ref<VorkerSettingsProperties>>('appConfig')!
 const worker = ref<WorkerItem>(DEFAULT_WORKER_ITEM)
+const canManageMembers = ref(false)
+const isOwner = ref(false)
 const workerURL = computed(() => {
   return genWorkerUrl(appConfig.value, worker.value.Name)
 })
@@ -49,6 +52,10 @@ const workerURL = computed(() => {
 const handleSaveWorkerClick = async () => {
   if (!worker.value) {
     message.error('Worker 不存在')
+    return
+  }
+  if (!canManageMembers.value) {
+    message.error('只有 Worker 拥有者可以保存')
     return
   }
   try {
@@ -63,7 +70,38 @@ const handleSaveWorkerClick = async () => {
 const nodes = ref<Node[]>([])
 onMounted(async () => {
   try {
-    worker.value = await getWorker(uid)
+    // 首先获取完整的 worker 信息（包括 Code 和 Template）
+    const fullWorker = await getWorker(uid)
+    worker.value = {
+      UID: fullWorker.UID,
+      Name: fullWorker.Name,
+      NodeName: fullWorker.NodeName,
+      MaxCount: fullWorker.MaxCount,
+      Description: fullWorker.Description,
+      Code: fullWorker.Code,
+      Template: fullWorker.Template,
+      AccessControl: fullWorker.AccessControl,
+    } as WorkerItem
+
+    try {
+      const collaboratorInfo = await getWorkerCollaboratorInfo(uid)
+      if (collaboratorInfo) {
+        canManageMembers.value = collaboratorInfo.can_manage
+        isOwner.value = collaboratorInfo.is_owner
+        // 更新来自 collaboratorInfo 的信息
+        worker.value.UID = collaboratorInfo.worker.UID
+        worker.value.Name = collaboratorInfo.worker.Name
+        worker.value.NodeName = collaboratorInfo.worker.NodeName
+        worker.value.MaxCount = collaboratorInfo.worker.MaxCount
+        worker.value.Description = collaboratorInfo.worker.Description
+      }
+    } catch (collabError: any) {
+      console.error('getWorkerCollaboratorInfo Error', collabError)
+      message.error(collabError.message || '获取协作信息失败')
+      // 如果获取协作信息失败，默认为拥有者
+      canManageMembers.value = true
+      isOwner.value = true
+    }
   } catch (error) {
     console.error('getWorker Error', error)
     message.error('获取 Worker 失败')
@@ -102,7 +140,8 @@ const handleOpenWorkerClick = async () => {
         <NButton class="v-item" type="primary" secondary @click="navigate('/workers')">
           返回
         </NButton>
-        <NButton class="v-item" type="primary" secondary @click="handleSaveWorkerClick"> 保存 </NButton>
+        <NButton class="v-item" type="primary" secondary :disabled="!canManageMembers" @click="handleSaveWorkerClick">
+          保存 </NButton>
         <NButton type="primary" secondary @click="handleOpenWorkerClick"> 打开 </NButton>
       </div>
     </div>
@@ -129,30 +168,33 @@ const handleOpenWorkerClick = async () => {
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 名称 </NLayoutSider>
           <NLayoutContent>
-            <NInput style="min-width: 200px; max-width: 400px;" v-model:value="worker.Name" />
+            <NInput :disabled="!canManageMembers" style="min-width: 200px; max-width: 400px;"
+              v-model:value="worker.Name" />
           </NLayoutContent>
         </NLayout>
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 节点 </NLayoutSider>
           <NLayoutContent>
-            <NSelect style="min-width: 200px; max-width: 400px;" v-model:value="worker.NodeName" :options="nodes.map((node) => ({
-              label: node.Name,
-              value: node.Name,
-            }))
-              " />
+            <NSelect :disabled="!canManageMembers" style="min-width: 200px; max-width: 400px;"
+              v-model:value="worker.NodeName" :options="nodes.map((node) => ({
+                label: node.Name,
+                value: node.Name,
+              }))
+                " />
           </NLayoutContent>
         </NLayout>
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 实例 </NLayoutSider>
           <NLayoutContent>
-            <NInputNumber min="1" max="20" style="min-width: 200px; max-width: 400px;"
+            <NInputNumber :disabled="!canManageMembers" min="1" max="20" style="min-width: 200px; max-width: 400px;"
               v-model:value="worker.MaxCount" />
           </NLayoutContent>
         </NLayout>
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 描述 </NLayoutSider>
           <NLayoutContent>
-            <NInput type="textarea" v-model:value="worker.Description" style="max-width: 400px;" placeholder="请输入描述" />
+            <NInput type="textarea" :disabled="!canManageMembers" v-model:value="worker.Description"
+              style="max-width: 400px;" placeholder="请输入描述" />
           </NLayoutContent>
         </NLayout>
       </NTabPane>
@@ -164,6 +206,9 @@ const handleOpenWorkerClick = async () => {
       </NTabPane>
       <NTabPane name="auth" tab="鉴权">
         <WorkerAuth :uid="worker.UID" />
+      </NTabPane>
+      <NTabPane name="collaboration" tab="协作">
+        <WorkerCollaboration :uid="worker.UID" :canManage="canManageMembers" />
       </NTabPane>
       <template #suffix>
         <!-- 使用 WorkerRun 组件 -->

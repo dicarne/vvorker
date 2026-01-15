@@ -1,5 +1,5 @@
 import api from './http'
-import type { Task, TaskLog, VorkerSettingsProperties, WorkerItem, WorkerLog } from '@/types/workers'
+import type { Task, TaskLog, VorkerSettingsProperties, WorkerItem, WorkerLog, WorkerMember, WorkerCollaboratorInfo } from '@/types/workers'
 import type {
   AccessTokenCreateRequest,
   AccessTokenListRequest,
@@ -21,7 +21,7 @@ import type {
 
 export const getWorker = (uid: string) => {
   return api
-    .get<{ data: WorkerItem[] }>(`api/worker/${uid}`)
+    .post<{ data: WorkerItem[] }>('api/worker/v2/get-worker', { uid })
     .then((res) => res.data.data?.[0])
 }
 
@@ -175,6 +175,23 @@ export const interruptTask = (trace_id: string, worker_uid: string) => {
 
 export const getWorkerLogs = (uid: string, page: number, page_size: number) => {
   return api.post<{ data: { total: number, logs: WorkerLog[] } }>(`api/worker/logs/${uid}`, { page, page_size })
+}
+
+// 协作成员管理相关 API
+export const addWorkerMember = (workerUID: string, userName: string) => {
+  return api.post('api/members/add', { worker_uid: workerUID, user_name: userName }).then(res => res.data)
+}
+
+export const removeWorkerMember = (workerUID: string, userName: string) => {
+  return api.post('api/members/remove', { worker_uid: workerUID, user_name: userName }).then(res => res.data)
+}
+
+export const listWorkerMembers = (workerUID: string) => {
+  return api.get<{ data: WorkerMember[] }>(`api/members/${workerUID}`).then(res => res.data.data)
+}
+
+export const getWorkerCollaboratorInfo = (uid: string) => {
+  return api.get<{ data: WorkerCollaboratorInfo }>(`api/worker/collaborator/${uid}`).then(res => res.data.data)
 }
 
 

@@ -7,6 +7,7 @@ import (
 	"vvorker/conf"
 	"vvorker/exec"
 	"vvorker/models"
+	permissions "vvorker/utils/permissions"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -26,6 +27,12 @@ func DeleteEndpoint(c *gin.Context) {
 	}
 
 	userID := c.GetUint(common.UIDKey)
+	// 只有拥有者可以删除 worker
+	_, err := permissions.CanManageWorkerMembers(c, uint64(userID), UID)
+	if err != nil {
+		return
+	}
+
 	if err := Delete(userID, UID); err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return

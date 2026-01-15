@@ -118,9 +118,13 @@ const handleDeleteWorkerConfirm = async () => {
     await loadWorkers()
     message.success('删除 Worker 成功')
     handleDeleteWorkerClose()
-  } catch (error) {
+  } catch (error: any) {
     console.error('deleteWorker Error', error)
-    message.error('删除 Worker 失败')
+    if (error.response?.status === 403 || error.code === 403) {
+      message.error('只有 Worker 拥有者可以删除 Worker')
+    } else {
+      message.error(error.message || '删除 Worker 失败')
+    }
   } finally {
     IsDeletingWorker.value = false
   }
@@ -131,16 +135,22 @@ const handleDeleteWorkerClose = () => {
 }
 
 // Worker 下拉菜单
-const dropdownOptions = [
-  {
-    label: '同步',
-    key: 'sync',
-  },
-  {
-    label: '删除',
-    key: 'delete',
-  },
-]
+const getDropdownOptions = (item: WorkerItem) => {
+  const options = [
+    {
+      label: '同步',
+      key: 'sync',
+    },
+  ]
+  // 只有拥有的 worker 才可以删除
+  if (!item.IsCollab) {
+    options.push({
+      label: '删除',
+      key: 'delete',
+    })
+  }
+  return options
+}
 
 const handleDropdownSelect = (worker: WorkerItem, key: string) => {
   if (key === 'sync') {
@@ -190,7 +200,7 @@ onMounted(async () => {
                   <LinkIcon />
                 </NIcon>打开
               </NButton>
-              <NDropdown trigger="hover" :options="dropdownOptions" @select="(key) => handleDropdownSelect(item, key)">
+              <NDropdown trigger="hover" :options="getDropdownOptions(item)" @select="(key) => handleDropdownSelect(item, key)">
                 <NButton quaternary>
                   <NIcon>
                     <DropdownIcon />
@@ -205,6 +215,7 @@ onMounted(async () => {
               <NIcon class="v-item" v-if="item.AccessControl">
                 <LockIcon />
               </NIcon>
+              <NTag size="small" type="success" v-if="item.IsCollab">协作</NTag>
               <NTag size="small" :style="{ color: CH.hex(item.NodeName || '') }">
                 {{ item.NodeName }}
               </NTag>

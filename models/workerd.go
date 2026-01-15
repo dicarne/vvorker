@@ -100,6 +100,13 @@ func GetWorkerByUID(userID uint, uid string) (*Worker, error) {
 			},
 		},
 	).First(&worker).Error; err != nil {
+		// 如果不是拥有者，检查是否是协作者
+		if IsWorkerMember(uid, uint64(userID)) {
+			if err := db.Where(&Worker{Worker: &entities.Worker{UID: uid}}).First(&worker).Error; err != nil {
+				return nil, err
+			}
+			return &worker, nil
+		}
 		return nil, err
 	}
 	return &worker, nil
@@ -218,6 +225,7 @@ func GetAllWorkers(userID uint) ([]*Worker, error) {
 	var workers []*Worker
 	db := database.GetDB()
 
+	// 获取用户拥有的 Workers
 	if err := db.Where(&Worker{
 		Worker: &entities.Worker{
 			UserID: uint64(userID),
@@ -225,6 +233,23 @@ func GetAllWorkers(userID uint) ([]*Worker, error) {
 	}).Order("updated_at desc").Find(&workers).Error; err != nil {
 		return nil, err
 	}
+
+	// 获取用户参与协作的 Workers
+	collabWorkerUIDs, err := GetUserCollaboratedWorkers(uint64(userID))
+	if err != nil {
+		return nil, err
+	}
+
+	for _, uid := range collabWorkerUIDs {
+		var worker Worker
+		if err := db.Where(&Worker{Worker: &entities.Worker{UID: uid}}).First(&worker).Error; err != nil {
+			continue
+		}
+		// 标记为协作
+		worker.Description = "[COLLAB]" + worker.Description
+		workers = append(workers, &worker)
+	}
+
 	return workers, nil
 }
 

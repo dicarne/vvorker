@@ -90,6 +90,8 @@ func init() {
 				workerApi.GET("/analyse/group-by-time", proxyService.GetWorkerRequestStatsByTime)
 				workerApi.GET("/analyse/by-time", proxyService.GetWorkerRequestStats)
 
+				workerApi.GET("/collaborator/:uid", workerd.GetWorkerCollaboratorsEndpoint)
+
 				accessApi := workerApi.Group("/access")
 				{
 					// 访问令牌子路由
@@ -138,6 +140,13 @@ func init() {
 			{
 				workersApi.GET("/flush", workerd.FlushAllEndpoint)
 				workersApi.GET("/:offset/:limit", workerd.GetWorkersEndpoint)
+			}
+
+			memberApi := api.Group("/members", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
+			{
+				memberApi.POST("/add", workerd.AddMemberEndpoint)
+				memberApi.POST("/remove", workerd.RemoveMemberEndpoint)
+				memberApi.GET("/:worker_uid", workerd.ListMembersEndpoint)
 			}
 			userApi := api.Group("/user", authz.AccessKeyMiddleware(), authz.JWTMiddleware())
 			{

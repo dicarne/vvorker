@@ -62,6 +62,7 @@ type SimpleWorker struct {
 	NodeName      string `json:"NodeName"`
 	AccessControl bool   `json:"AccessControl"`
 	Description   string `json:"Description"`
+	IsCollab      bool   `json:"IsCollab"`
 }
 
 func GetAllWorkersEndpoint(c *gin.Context) {
@@ -80,12 +81,20 @@ func GetAllWorkersEndpoint(c *gin.Context) {
 
 	var simpleWorkers []*SimpleWorker
 	for _, worker := range workers {
+		description := worker.Description
+		isCollab := false
+		// 检查是否是协作标记
+		if len(description) >= 7 && description[:7] == "[COLLAB]" {
+			description = description[7:]
+			isCollab = true
+		}
 		simpleWorkers = append(simpleWorkers, &SimpleWorker{
 			UID:           worker.UID,
 			Name:          worker.Name,
 			NodeName:      worker.NodeName,
 			AccessControl: worker.EnableAccessControl,
-			Description:   worker.Description,
+			Description:   description,
+			IsCollab:      isCollab,
 		})
 	}
 
