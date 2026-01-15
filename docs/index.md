@@ -8,6 +8,9 @@ hero:
   tagline: Fast develop, fast online.
   actions:
     - theme: brand
+      text: START
+      link: /design/basic
+    - theme: alt
       text: SDK
       link: /sdk/vvorker-sdk
     - theme: alt
@@ -16,9 +19,7 @@ hero:
     - theme: alt
       text: CONFIG
       link: /config/env
-    - theme: alt
-      text: DESIGN
-      link: /design/must
+    
 
 features:
   - title: 快速上线

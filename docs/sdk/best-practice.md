@@ -11,47 +11,32 @@ vvcli init myproject
 
 新项目默认使用`hono`作为后端，`vue3`作为前端。
 
-## 二、配置tsconfig
+## 二、配置 tsconfig
 
-我们需要使用`hono`rpc模式共享前后端类型，因此需要配置tsconfig。
+我们需要使用`hono`rpc 模式共享前后端类型，因此需要配置 tsconfig。
 
 首先，需要启用`strict`模式，这样`hono`前端才能获得正确的`input`类型。
 
-其次，需要在前端访问后端的类型代码，设置include或references等选项达成此目的。
+其次，需要在前端访问后端的类型代码，设置 include 或 references 等选项达成此目的。
 
-一个典型的前端tsconfig配置如下：
+一个典型的前端 tsconfig 配置如下：
+
 > [!warning]
 > 格外注意其中的`path`字段与`strict`字段。
-
 
 ```json
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": [
-    "env.d.ts",
-    "src/**/*",
-    "src/**/*.vue",
-    "types/*"
-  ],
-  "exclude": [
-    "src/**/__tests__/*"
-  ],
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "types/*"],
+  "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "allowJs": true,
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "server/*": [
-        "./server/*"
-      ]
+      "@/*": ["./src/*"],
+      "server/*": ["./server/*"]
     },
-    "types": [
-      "./worker-configuration.d.ts",
-      "vite/client",
-      "node"
-    ],
+    "types": ["./worker-configuration.d.ts", "vite/client", "node"],
     "strict": true
   }
 }
@@ -59,54 +44,59 @@ vvcli init myproject
 
 ## 三、编写后端代码
 
-首先我们可以创建一个上下文类，用于存储所需的请求信息，如用户ID、数据库等。
+首先我们可以创建一个上下文类，用于存储所需的请求信息，如用户 ID、数据库等。
 
 ```typescript
 import type { Context } from "hono";
 import type { EnvBinding } from "../binding";
 import { vvbind } from "@dicarne/vvorker-sdk";
-import { drizzle } from 'drizzle-orm/mysql-proxy';
-import { ForbiddenError } from "./error"
+import { drizzle } from "drizzle-orm/mysql-proxy";
+import { ForbiddenError } from "./error";
 
 export class VContext {
-    private db: ReturnType<typeof drizzle> | undefined
-    private user: string | undefined
-    env: EnvBinding
+  private db: ReturnType<typeof drizzle> | undefined;
+  private user: string | undefined;
+  env: EnvBinding;
 
-    constructor(private c?: Context) {
-        this.user = this.c?.req.header("vv-sso-user-id") || import.meta.env.VITE_TEST_USER_ID
-        this.env = this.c?.env
-    }
+  constructor(private c?: Context) {
+    this.user =
+      this.c?.req.header("vv-sso-user-id") || import.meta.env.VITE_TEST_USER_ID;
+    this.env = this.c?.env;
+  }
 
-    getUser() {
-        if (!this.user || this.user === "") {
-            throw new ForbiddenError()
-        }
-        const n = Number(this.user)
-        if (isNaN(n) || n === 0) {
-            throw new ForbiddenError()
-        }
-        return n
+  getUser() {
+    if (!this.user || this.user === "") {
+      throw new ForbiddenError();
     }
-    async getDb() {
-        if (this.db) return this.db
-        const mdb = vvbind({ env: this.env }).mysql("mysql")
-        this.db = drizzle(async (sql, params, method) => {
-            try {
-                const rows: any = await mdb.query(sql, params.map(a => typeof a === "number" ? String(a) : a), method)
-                if (rows.code) {
-                    console.log({ sql, params, method })
-                    console.error(rows.data.error)
-                    throw new Error(rows.data.error)
-                }
-                return rows;
-            } catch (e: any) {
-                console.error('来自 mysql 代理服务器的错误：', e)
-                return { rows: [] };
-            }
-        });
-        return this.db
+    const n = Number(this.user);
+    if (isNaN(n) || n === 0) {
+      throw new ForbiddenError();
     }
+    return n;
+  }
+  async getDb() {
+    if (this.db) return this.db;
+    const mdb = vvbind({ env: this.env }).mysql("mysql");
+    this.db = drizzle(async (sql, params, method) => {
+      try {
+        const rows: any = await mdb.query(
+          sql,
+          params.map((a) => (typeof a === "number" ? String(a) : a)),
+          method
+        );
+        if (rows.code) {
+          console.log({ sql, params, method });
+          console.error(rows.data.error);
+          throw new Error(rows.data.error);
+        }
+        return rows;
+      } catch (e: any) {
+        console.error("来自 mysql 代理服务器的错误：", e);
+        return { rows: [] };
+      }
+    });
+    return this.db;
+  }
 }
 ```
 
@@ -114,29 +104,30 @@ export class VContext {
 
 ```typescript
 export function createHono() {
-    const app = new Hono<{
-        Bindings: EnvBinding, Variables: {
-            ctx: VContext
-        }
-    }>();
-    return app
+  const app = new Hono<{
+    Bindings: EnvBinding;
+    Variables: {
+      ctx: VContext;
+    };
+  }>();
+  return app;
 }
 ```
 
 并创建一个中间件用于自动创建上下文。
 
 ```typescript
-
-app.use(createMiddleware<{
-	Bindings: EnvBinding,
-	Variables: {
-		ctx: VContext
-	}
-}>(async (c, next) => {
-	c.set("ctx", new VContext(c))
-	await next()
-}))
-
+app.use(
+  createMiddleware<{
+    Bindings: EnvBinding;
+    Variables: {
+      ctx: VContext;
+    };
+  }>(async (c, next) => {
+    c.set("ctx", new VContext(c));
+    await next();
+  })
+);
 ```
 
 使用`zValidator`对入参进行验证（必须），并返回你的结果。
@@ -174,41 +165,41 @@ const app = createHono()
 
 ## 四、导出后端类型
 
-直接导出app的**类型**即可。
+直接导出 app 的**类型**即可。
 
 ```typescript
-export type WebAPI = typeof app
+export type WebAPI = typeof app;
 ```
 
-## 五、前端RPC调用
+## 五、前端 RPC 调用
 
 利用`hc`创建客户端。
 
 ```typescript
-import type WebAPI from 'server/api/webapi';
-import { hc } from 'hono/client';
+import type WebAPI from "server/api/webapi";
+import { hc } from "hono/client";
 
-export const client = hc<WebAPI>("./api")
+export const client = hc<WebAPI>("./api");
 ```
 
-
-可以以对象的形式类型安全的直接调用后端API：
+可以以对象的形式类型安全的直接调用后端 API：
 
 ```typescript
 export async function listApps() {
-    return (await client.appmgr.listApps.$post({
-        query: {
-            offset: "0",
-            limit: "10",
-        }
-    })).json()
+  return (
+    await client.appmgr.listApps.$post({
+      query: {
+        offset: "0",
+        limit: "10",
+      },
+    })
+  ).json();
 }
 
 export async function createApp(info: CreateAppRequest) {
-    return (await client.appmgr.createApp.$post({ json: info })).json();
+  return (await client.appmgr.createApp.$post({ json: info })).json();
 }
 ```
 
 > [!warning]
-> 注意，tsconfig需要开启strict模式，否则类型推导会失败。
-
+> 注意，tsconfig 需要开启 strict 模式，否则类型推导会失败。
