@@ -36,3 +36,9 @@ export const changePassword = (userId: number, password: string) => {
         password
     })
 }
+
+export const updateUserRole = (userId: number, role: string) => {
+    return http.post(`api/admin/users/${userId}`, {
+        role
+    })
+}

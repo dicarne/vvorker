@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, inject, type Ref } from 'vue'
 import { RouterView } from 'vue-router'
 import type { MenuOption } from 'naive-ui'
 import { NLayout, NLayoutSider, NMenu } from 'naive-ui'
@@ -12,11 +12,15 @@ import {
   Cloud24Regular as OSSIcon,
   Braces24Filled as KVIcon,
   Person24Regular as UserIcon,
+  PeopleTeam24Regular as UserManagementIcon,
 } from '@vicons/fluent'
 import TheHeader from '@/components/TheHeader.vue'
 import { renderIcon, renderMenuRouterLink } from '@/utils/render'
 import { getFeatures } from '@/api/features'
 import type { Feature } from '@/types/features'
+import type { UserInfo } from '@/types/auth'
+
+const userInfo = inject<Ref<UserInfo>>('userInfo')!
 
 const collapsed = ref<boolean>(true)
 const activeKey = ref<string>('')
@@ -24,6 +28,7 @@ const features = ref<Feature[]>([])
 
 type MenuOptionWithFeature = MenuOption & {
   feature?: string
+  adminOnly?: boolean
 }
 
 const allMenuOptions: MenuOptionWithFeature[] = [
@@ -71,12 +76,21 @@ const allMenuOptions: MenuOptionWithFeature[] = [
     key: 'user',
     icon: renderIcon(UserIcon),
   },
+  {
+    label: renderMenuRouterLink('用户管理', 'UserManagement'),
+    key: 'user-management',
+    icon: renderIcon(UserManagementIcon),
+    adminOnly: true,
+  },
 ]
 
 const menuOptions = computed<MenuOptionWithFeature[]>(() => {
   const featureMap = new Map(features.value.map(f => [f.name, f.enable]))
 
   return allMenuOptions.filter(option => {
+    if (option.adminOnly && userInfo.value.role !== 'admin') {
+      return false
+    }
     if (!option.feature) {
       return true
     }

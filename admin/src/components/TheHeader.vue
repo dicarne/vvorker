@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { inject, onMounted, ref, type Ref } from 'vue'
 import { CH } from '@/lib/color'
 import { NAvatar, NButton, NIcon, useMessage } from 'naive-ui'
-import FuncIcon from '@/components/icons/FuncIcon.vue'
 import type { UserInfo } from '@/types/auth'
 import { getUserInfo, logout } from '@/api/auth'
 import { useNavigate } from '@/composables/useNavigate'
@@ -19,9 +18,13 @@ const handleLogout = async () => {
     message.error('退出登录失败')
   }
 }
+
+const userInfoInj = inject<Ref<UserInfo>>('userInfo')!
+
 onMounted(async () => {
   try {
     userInfo.value = await getUserInfo()
+    userInfoInj.value = userInfo.value
   } catch (error) {
     console.error('getUserInfo Error', error)
     message.error('获取用户信息失败')
