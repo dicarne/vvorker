@@ -31,7 +31,6 @@ interface User {
 
 const userInfo = inject<Ref<UserInfo>>('userInfo')!
 const message = useMessage()
-console.log(userInfo)
 
 const users = ref<User[]>([])
 const loading = ref(false)
@@ -216,13 +215,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
-    <NCard title="用户管理">
-      <NSpace justify="end" style="margin-bottom: 16px;">
+  <div class="v-main">
+    <NCard title="用户管理" :bordered="false">
+      <template #header-extra>
         <NButton type="primary" @click="showCreateModal = true">
           新建用户
         </NButton>
-      </NSpace>
+      </template>
       <NDataTable
         :columns="columns"
         :data="users"

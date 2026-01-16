@@ -182,8 +182,8 @@ export const addWorkerMember = (workerUID: string, userName: string) => {
   return api.post('api/members/add', { worker_uid: workerUID, user_name: userName }).then(res => res.data)
 }
 
-export const removeWorkerMember = (workerUID: string, userName: string) => {
-  return api.post('api/members/remove', { worker_uid: workerUID, user_name: userName }).then(res => res.data)
+export const removeWorkerMember = (workerUID: string, userid: number) => {
+  return api.post('api/members/remove', { worker_uid: workerUID, user_id: userid }).then(res => res.data)
 }
 
 export const listWorkerMembers = (workerUID: string) => {

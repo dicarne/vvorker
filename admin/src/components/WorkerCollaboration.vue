@@ -52,7 +52,7 @@ const handleAddMember = async () => {
 
 const handleRemoveMember = async (member: WorkerMember) => {
   try {
-    await removeWorkerMember(props.uid, member.user_name)
+    await removeWorkerMember(props.uid, member.user_id)
     message.success('移除成员成功')
     await loadMembers()
   } catch (error: any) {

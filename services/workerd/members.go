@@ -17,7 +17,7 @@ type AddMemberRequest struct {
 
 type RemoveMemberRequest struct {
 	WorkerUID string `json:"worker_uid"`
-	UserName  string `json:"user_name"`
+	UserID    uint64 `json:"user_id"`
 }
 
 // AddMemberEndpoint 添加协作者
@@ -87,7 +87,7 @@ func RemoveMemberEndpoint(c *gin.Context) {
 		return
 	}
 
-	if req.WorkerUID == "" || req.UserName == "" {
+	if req.WorkerUID == "" || req.UserID == 0 {
 		common.RespErr(c, common.RespCodeInvalidRequest, "worker_uid and user_name are required", nil)
 		return
 	}
@@ -100,15 +100,15 @@ func RemoveMemberEndpoint(c *gin.Context) {
 		return
 	}
 
-	// 获取要移除的用户
-	targetUser, err := models.GetUserByUserName(req.UserName)
-	if err != nil {
-		common.RespErr(c, common.RespCodeNotFound, "user not found", nil)
-		return
-	}
+	// 获取要移除的用户 用户可能不存在
+	// targetUser, err := models.GetUserByUserName(req.UserName)
+	// if err != nil {
+	// 	common.RespErr(c, common.RespCodeNotFound, "user not found", nil)
+	// 	return
+	// }
 
 	// 移除成员
-	err = models.RemoveWorkerMember(req.WorkerUID, uint64(targetUser.ID))
+	err = models.RemoveWorkerMember(req.WorkerUID, uint64(req.UserID))
 	if err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
