@@ -30,4 +30,9 @@ func MigrateNormalModel() {
 		logrus.WithError(err).Errorf("auto migrate models error, sleep 5s and retry")
 		time.Sleep(5 * time.Second)
 	}
+
+	// 确保至少存在一个管理员
+	if err := EnsureAdminExists(); err != nil {
+		logrus.WithError(err).Errorf("failed to ensure admin exists")
+	}
 }

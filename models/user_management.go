@@ -6,6 +6,7 @@ import (
 	"vvorker/utils/database"
 	"vvorker/utils/secret"
 
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -132,5 +133,34 @@ func AdminBatchUpdateUserStatus(userIDs []uint, status int) error {
 	if result.RowsAffected == 0 {
 		return errors.New("no users found")
 	}
+	return nil
+}
+
+// EnsureAdminExists 确保至少存在一个管理员用户
+func EnsureAdminExists() error {
+	// 检查是否存在管理员
+	var adminCount int64
+	if err := database.GetDB().Model(&User{}).Where("role = ?", common.UserRoleAdmin).Count(&adminCount).Error; err != nil {
+		return err
+	}
+	if adminCount > 0 {
+		return nil // 已经有管理员
+	}
+
+	// 没有管理员，找到ID最小的用户并设为管理员
+	var user User
+	if err := database.GetDB().Order("id ASC").First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil // 没有用户，无需操作
+		}
+		return err
+	}
+
+	// 更新用户角色为管理员
+	if err := database.GetDB().Model(&user).Update("role", common.UserRoleAdmin).Error; err != nil {
+		return err
+	}
+
+	logrus.Infof("User %s (ID: %d) has been promoted to admin role", user.UserName, user.ID)
 	return nil
 }
