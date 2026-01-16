@@ -10,7 +10,7 @@ import (
 type CreateUserRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
-	Email    string `json:"email" binding:"required"`
+	// Email    string `json:"email" binding:"required"`
 }
 
 // CreateUserEndpoint 创建新用户
@@ -28,7 +28,7 @@ func CreateUserEndpoint(c *gin.Context) {
 		return
 	}
 
-	if req.Username == "" || req.Password == "" || req.Email == "" {
+	if req.Username == "" || req.Password == "" {
 		common.RespErr(c, common.RespCodeInvalidRequest, "invalid request", nil)
 		return
 	}
@@ -41,7 +41,7 @@ func CreateUserEndpoint(c *gin.Context) {
 	}
 
 	// 创建用户
-	newUser, err := models.AdminCreateUser(req.Username, req.Password, req.Email)
+	newUser, err := models.AdminCreateUser(req.Username, req.Password)
 	if err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return

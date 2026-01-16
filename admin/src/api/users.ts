@@ -2,7 +2,6 @@ import http from './http'
 
 interface CreateUserData {
     username: string
-    email: string
     password: string
 }
 

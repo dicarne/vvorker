@@ -21,7 +21,7 @@ func AdminGetUserByUsername(username string) (*User, error) {
 }
 
 // AdminCreateUser 创建新用户（管理员操作）
-func AdminCreateUser(username, password, email string) (*User, error) {
+func AdminCreateUser(username, password string) (*User, error) {
 	// 检查用户名是否已存在
 	existingUser, err := GetUserByUserName(username)
 	if err == nil && existingUser != nil {
@@ -50,9 +50,9 @@ func AdminCreateUser(username, password, email string) (*User, error) {
 	user := &User{
 		UserName: username,
 		Password: hashedPass,
-		Email:    email,
-		Role:     role,
-		Status:   common.UserStatusNormal,
+		// Email:    email,
+		Role:   role,
+		Status: common.UserStatusNormal,
 	}
 
 	if err := database.GetDB().Create(user).Error; err != nil {
