@@ -97,7 +97,7 @@ func UpdateUser(userID uint, user *User) error {
 func DeleteUser(userID uint) error {
 	db := database.GetDB()
 
-	return db.Delete(&User{
+	return db.Unscoped().Delete(&User{
 		Model: gorm.Model{ID: userID},
 	}).Error
 }

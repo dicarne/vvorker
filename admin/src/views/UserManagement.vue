@@ -12,11 +12,14 @@ import {
   NForm,
   NFormItem,
   NInput,
+  NDropdown,
+  NIcon,
 } from 'naive-ui'
 import type { FormInst, FormRules } from 'naive-ui'
 import { passwordRules } from '@/constant/formrules'
 import type { UserInfo } from '@/types/auth'
-import { getUsers, updateUserRole, createUser } from '@/api/users'
+import { getUsers, updateUserRole, createUser, deleteUser, changePassword } from '@/api/users'
+import { MoreHorizontal24Regular as DropdownIcon } from '@vicons/fluent'
 
 interface User {
   ID: number
@@ -92,6 +95,68 @@ const handleCreateUser = async () => {
   }
 }
 
+const handleDropdownSelect = (user: User, key: string) => {
+  if (key === 'changePassword') {
+    handleChangePasswordClick(user)
+  } else if (key === 'delete') {
+    handleDeleteUserClick(user)
+  }
+}
+
+// 修改密码相关
+const showChangePasswordModal = ref(false)
+const changePasswordForm = ref({
+  password: '',
+})
+const changePasswordFormRef = ref<FormInst | null>(null)
+const changePasswordRules: FormRules = {
+  password: passwordRules,
+}
+const userToChangePassword = ref<User | null>(null)
+
+const handleChangePasswordClick = (user: User) => {
+  userToChangePassword.value = user
+  showChangePasswordModal.value = true
+}
+
+const handleChangePasswordConfirm = async () => {
+  if (!changePasswordFormRef.value || !userToChangePassword.value) return
+  try {
+    await changePasswordFormRef.value.validate()
+    await changePassword(userToChangePassword.value.ID, changePasswordForm.value.password)
+    message.success('密码修改成功')
+    showChangePasswordModal.value = false
+    changePasswordForm.value = { password: '' }
+    userToChangePassword.value = null
+  } catch (error) {
+    console.error('changePassword Error', error)
+    message.error('密码修改失败')
+  }
+}
+
+// 删除用户相关
+const showDeleteUserModal = ref(false)
+const userToDelete = ref<User | null>(null)
+
+const handleDeleteUserClick = (user: User) => {
+  userToDelete.value = user
+  showDeleteUserModal.value = true
+}
+
+const handleDeleteUserConfirm = async () => {
+  if (!userToDelete.value) return
+  try {
+    await deleteUser(userToDelete.value.ID)
+    message.success('用户删除成功')
+    showDeleteUserModal.value = false
+    userToDelete.value = null
+    loadUsers()
+  } catch (error) {
+    console.error('deleteUser Error', error)
+    message.error('用户删除失败')
+  }
+}
+
 const columns = [
   {
     title: '用户名',
@@ -123,6 +188,24 @@ const columns = [
       }
       const status = statusMap[row.status as keyof typeof statusMap] || statusMap[0]
       return h(NTag, { type: status.type as any }, { default: () => status.text })
+    },
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    render: (row: User) => {
+      return h(NDropdown, {
+        trigger: 'click',
+        options: [
+          { label: '修改密码', key: 'changePassword' },
+          { label: '删除用户', key: 'delete' },
+        ],
+        onSelect: (key: string) => handleDropdownSelect(row, key),
+      }, {
+        default: () => h(NButton, { quaternary: true }, {
+          default: () => h(NIcon, {}, { default: () => h(DropdownIcon) })
+        })
+      })
     },
   },
 ]
@@ -179,6 +262,48 @@ onMounted(() => {
           <NButton type="primary" @click="handleCreateUser">创建</NButton>
         </NSpace>
       </template>
+    </NModal>
+
+    <NModal
+      v-model:show="showChangePasswordModal"
+      preset="card"
+      title="修改密码"
+      size="huge"
+      :bordered="false"
+      :segmented="false"
+    >
+      <NForm
+        ref="changePasswordFormRef"
+        :model="changePasswordForm"
+        :rules="changePasswordRules"
+        label-placement="top"
+      >
+        <NFormItem label="新密码" path="password">
+          <NInput
+            v-model:value="changePasswordForm.password"
+            type="password"
+            placeholder="请输入新密码"
+          />
+        </NFormItem>
+      </NForm>
+      <template #footer>
+        <NSpace justify="end">
+          <NButton @click="showChangePasswordModal = false">取消</NButton>
+          <NButton type="primary" @click="handleChangePasswordConfirm">修改</NButton>
+        </NSpace>
+      </template>
+    </NModal>
+
+    <NModal
+      v-model:show="showDeleteUserModal"
+      preset="dialog"
+      title="删除用户"
+      positive-text="确认"
+      negative-text="取消"
+      @positive-click="handleDeleteUserConfirm"
+      @negative-click="() => showDeleteUserModal = false"
+    >
+      <div>确认要删除用户 {{ userToDelete?.user_name }}？</div>
     </NModal>
   </div>
 </template>

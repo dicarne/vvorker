@@ -10,7 +10,6 @@ import { useNavigate } from '@/composables/useNavigate'
 // 初始化表单数据
 const form = ref<RegisterRequest>({
   userName: '',
-  email: '',
   password: '',
 })
 
@@ -63,9 +62,6 @@ const handleRegister = async () => {
         </NFormItem>
         <NFormItem label="密码" path="password">
           <NInput v-model:value="form.password" type="password" placeholder="请输入密码" />
-        </NFormItem>
-        <NFormItem label="邮箱" path="email">
-          <NInput v-model:value="form.email" placeholder="请输入邮箱" />
         </NFormItem>
         <NFormItem>
           <NButton type="primary" native-type="submit" block @click="handleRegister">
