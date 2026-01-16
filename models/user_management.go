@@ -35,12 +35,22 @@ func AdminCreateUser(username, password, email string) (*User, error) {
 		return nil, err
 	}
 
+	// 检查是否是第一个用户，如果是则设为管理员
+	var tempUser User
+	err = database.GetDB().Model(&User{}).First(&tempUser).Error
+	role := common.UserRoleNormal
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		role = common.UserRoleAdmin
+	} else if err != nil {
+		return nil, err
+	}
+
 	// 创建新用户
 	user := &User{
 		UserName: username,
 		Password: hashedPass,
 		Email:    email,
-		Role:     common.UserRoleNormal,
+		Role:     role,
 		Status:   common.UserStatusNormal,
 	}
 

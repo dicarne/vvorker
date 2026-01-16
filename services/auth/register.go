@@ -1,11 +1,13 @@
 package auth
 
 import (
+	"errors"
 	"runtime/debug"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/entities"
 	"vvorker/models"
+	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -47,12 +49,22 @@ func RegisterEndpoint(c *gin.Context) {
 	}
 
 	// create user
+	var tempUser models.User
+	err = database.GetDB().Model(&models.User{}).First(&tempUser).Error
+	role := common.UserRoleNormal
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		role = common.UserRoleAdmin
+	} else if err != nil {
+		common.RespErr(c, common.RespCodeInternalError,
+			common.RespMsgInternalError, nil)
+		return
+	}
 	user := &models.User{
 		UserName: req.UserName,
 		Password: req.Password,
 		Email:    req.Email,
 		Status:   common.UserStatusNormal,
-		Role:     common.UserRoleNormal,
+		Role:     role,
 	}
 	if err := models.CreateUser(user); err != nil {
 		common.RespErr(c, common.RespCodeInternalError,
