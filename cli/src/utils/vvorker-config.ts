@@ -16,10 +16,5 @@ export function loadVVorkerConfig() {
 
 export function saveVVorkerConfig(vvorkerJson: any) {
   let current_env = config.current_env
-  if (fs.existsSync(`${process.cwd()}/vvorker.${current_env}.json`)) {
-    fs.writeFileSync(`${process.cwd()}/vvorker.${current_env}.json`, json5.stringify(vvorkerJson, null, 2))
-  } else {
-    fs.writeFileSync(`${process.cwd()}/vvorker.${current_env}.json`, json5.stringify(vvorkerJson, null, 2))
-    return
-  }
+  fs.writeJsonSync(`${process.cwd()}/vvorker.${current_env}.json`, vvorkerJson, { spaces: 2 });
 }

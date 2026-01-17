@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { config, getToken, getUrl, setUrl } from '../utils/config';
-import { loadVVorkerConfig } from '../utils/vvorker-config';
+import { loadVVorkerConfig, saveVVorkerConfig } from '../utils/vvorker-config';
 import { runCommand } from '../utils/system';
 import { apiClient, requireOTP } from '../utils/api';
 import pc from "picocolors"
@@ -20,6 +20,7 @@ export const deployCommand = new Command('deploy')
     }
     console.log(`环境：${pc.yellow(config.current_env)}`)
     await requireOTP()
+
     // 读取当前目录下的 vvorker.json 文件
     const vvorkerJson = loadVVorkerConfig();
     const packageJson = await fs.readJson('package.json');
@@ -27,6 +28,18 @@ export const deployCommand = new Command('deploy')
     if (!serviceName) {
       console.error('服务名称不能为空');
       return;
+    }
+
+    // 读取 VERSION.txt 中的版本号
+    const versionFile = path.join(process.cwd(), 'VERSION.txt');
+    if (fs.existsSync(versionFile)) {
+      const version = fs.readFileSync(versionFile, 'utf-8').trim();
+      // 读取当前目录下的 vvorker.json 文件
+      // 更新 version 字段
+      vvorkerJson.version = version;
+      // 保存回配置文件
+      saveVVorkerConfig(vvorkerJson);
+      console.log(pc.green(`✓ 版本号已更新: ${version}`));
     }
 
     const uid = vvorkerJson.project?.uid ?? vvorkerJson.uid;
