@@ -13,6 +13,7 @@ import (
 )
 
 var EnvPath = flag.String("e", ".env", "env file path")
+var Version string
 
 type AppConfig struct {
 	MasterEndpoint string `env:"MASTER_ENDPOINT" env-default:"http://127.0.0.1:8888"` // needed for agent，agent需要通过该url来注册节点

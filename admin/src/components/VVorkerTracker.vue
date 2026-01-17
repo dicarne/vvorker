@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { NTooltip } from 'naive-ui'
-import { defineProps } from 'vue'
 
 const props = defineProps<{
   data: {

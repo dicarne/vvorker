@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"fmt"
+	"vvorker/conf"
 	"vvorker/exec"
 	kv "vvorker/ext/kv/src"
 	"vvorker/services"
@@ -46,6 +47,6 @@ func main() {
 	logrus.Info("vvorker version: %s", Version)
 	defer exec.ExecManager.ExitAllCmd()
 	defer kv.Close()
-
+	conf.Version = Version
 	services.Run(fs)
 }

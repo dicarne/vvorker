@@ -73,6 +73,7 @@ export interface VorkerSettingsProperties {
   UrlType: string
   ApiUrl: string
   UrlPrefix: string
+  Version: string
 }
 
 export interface Task {

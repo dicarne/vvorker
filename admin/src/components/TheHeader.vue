@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { inject, onMounted, ref, type Ref } from 'vue'
 import { CH } from '@/lib/color'
-import { NAvatar, NButton, NIcon, useMessage } from 'naive-ui'
+import { NAvatar, NButton, NIcon, useMessage, NTag } from 'naive-ui'
 import type { UserInfo } from '@/types/auth'
 import { getUserInfo, logout } from '@/api/auth'
+import { getAppConfig } from '@/api/workers'
 import { useNavigate } from '@/composables/useNavigate'
+import type { VorkerSettingsProperties } from '@/types/workers'
 const userInfo = ref<UserInfo>()
+const appConfig = inject<Ref<VorkerSettingsProperties>>("appConfig")
 const message = useMessage()
 const { navigate } = useNavigate()
 const handleLogout = async () => {
@@ -37,12 +40,10 @@ onMounted(async () => {
     <div class="v-flex-center">
       <img class="v-item" style="height: 30px" src="@/assets/logo.png" alt="" />
       <span class="v-item" style="font-size: 24px">VVorker</span>
+      <NTag v-if="appConfig?.Version" class="v-item" size="small">{{ appConfig.Version }}</NTag>
     </div>
     <div class="v-flex-center">
-      <NAvatar
-        class="v-avatar"
-        :style="{ background: userInfo?.userName ? CH.hex(userInfo.userName) : '#cccccc' }"
-      >
+      <NAvatar class="v-avatar" :style="{ background: userInfo?.userName ? CH.hex(userInfo.userName) : '#cccccc' }">
         {{ userInfo?.userName.slice(0, 2).toUpperCase() }}
       </NAvatar>
       <NButton secondary type="primary" class="v-item" @click="handleLogout">登出</NButton>

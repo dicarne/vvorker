@@ -43,6 +43,7 @@ func GetEndpoint(c *gin.Context) {
 			"UrlType":         conf.AppConfigInstance.WorkerHostMode,
 			"ApiUrl":          conf.AppConfigInstance.APIWebBaseURL,
 			"UrlPrefix":       urlPrefix,
+			"Version":         conf.Version,
 		},
 	})
 }
