@@ -35,7 +35,7 @@ func printBanner() {
 ║                                                                                         ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════╝
 `
-	fmt.Printf(banner, Version)
+	fmt.Printf(banner)
 	fmt.Println()
 }
 
