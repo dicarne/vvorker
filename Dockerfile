@@ -9,10 +9,6 @@ WORKDIR /app
 RUN npm config set registry https://registry.npmmirror.com/ && \
     npm install -g pnpm
 
-COPY admin/package.json /app/admin/package.json
-COPY admin/pnpm-lock.yaml /app/admin/pnpm-lock.yaml
-RUN cd /app/admin && pnpm i
-
 COPY ext/ai/package.json /app/ext/ai/package.json
 COPY ext/ai/pnpm-lock.yaml /app/ext/ai/pnpm-lock.yaml
 RUN cd /app/ext/ai && pnpm i
@@ -45,6 +41,9 @@ COPY ext/mysql/package.json /app/ext/mysql/package.json
 COPY ext/mysql/pnpm-lock.yaml /app/ext/mysql/pnpm-lock.yaml
 RUN cd /app/ext/mysql && pnpm i
 
+COPY admin/package.json /app/admin/package.json
+COPY admin/pnpm-lock.yaml /app/admin/pnpm-lock.yaml
+RUN cd /app/admin && pnpm i
 
 FROM dependencies AS node-builder
 
@@ -55,7 +54,6 @@ WORKDIR /app
 COPY admin /app/admin
 COPY ext /app/ext
 
-RUN cd /app/admin && pnpm run build
 RUN cd /app/ext/ai && pnpm run build
 RUN cd /app/ext/kv && pnpm run build
 RUN cd /app/ext/oss && pnpm run build
@@ -64,6 +62,7 @@ RUN cd /app/ext/assets && pnpm run build
 RUN cd /app/ext/task && pnpm run build
 RUN cd /app/ext/control && pnpm run build
 RUN cd /app/ext/mysql && pnpm run build
+RUN cd /app/admin && pnpm run build
 
 ######################################################################################
 FROM golang:1.25-alpine AS go-builder
