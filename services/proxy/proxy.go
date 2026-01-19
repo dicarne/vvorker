@@ -147,6 +147,7 @@ func Endpoint(c *gin.Context) {
 					req.Header.Set(conf.AppConfigInstance.SSOCookieName+"-data", rule.Data)
 					req.Header.Set(conf.AppConfigInstance.SSOCookieName+"-worker-uid", worker.UID)
 					req.Header.Set(conf.AppConfigInstance.SSOCookieName+"-request-url", c.Request.URL.RequestURI())
+					req.Header.Set(conf.AppConfigInstance.SSOCookieName+"-worker-name", workerName)
 					req.Header.Set(conf.AppConfigInstance.SSOCookieName+"-channel", c.Request.Header.Get(conf.AppConfigInstance.SSOCookieName+"-channel"))
 					resp, err := client.Do(req)
 					if err != nil {
