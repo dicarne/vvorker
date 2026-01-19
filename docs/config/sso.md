@@ -15,10 +15,11 @@
 
 POST 方法，默认接受header参数。
 
-| 参数名             | 参数类型 | 参数说明               |
+| 参数名             | 参数类型 | 参数说明                 |
 | ------------------ | -------- | ---------------------- |
-| vv-sso-data        | string   | 认证信息（由路由配置） |
-| vv-sso-worker-uid  | string   | 工作节点UID            |
+| vv-sso-data        | string   | 认证信息（由路由配置）   |
+| vv-sso-worker-uid  | string   | worker UID             |
+| vv-sso-worker-name | string   | worker名称             |
 | vv-sso-request-url | string   | 请求url                |
 | vv-sso-channel     | string?  | 渠道                   |
 
