@@ -229,7 +229,7 @@ export const initCommand = new Command('init')
         "uid": uid,
         "type": projtype
       },
-      "version": "1.0.0",
+      "version": "0.0.0",
       "services": [],
       "vars": {},
       "ai": [],

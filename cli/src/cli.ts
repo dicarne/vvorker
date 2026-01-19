@@ -8,6 +8,7 @@ import { envCommand } from "./commands/env";
 import { devCommand } from "./commands/dev";
 import { versionCommand } from "./commands/version";
 import { createCommand } from "./commands/create";
+import { upgradeCommand } from "./commands/upgrade";
 
 const program = new Command();
 
@@ -19,5 +20,6 @@ program.addCommand(envCommand);
 program.addCommand(devCommand);
 program.addCommand(versionCommand);
 program.addCommand(createCommand);
+program.addCommand(upgradeCommand);
 
 program.parse(process.argv);

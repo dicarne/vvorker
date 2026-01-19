@@ -50,7 +50,7 @@ export const DEFAULT_WORKER_ITEM: WorkerItem = {
   Template: `
 {
     "name": "worker",
-    "version": "1.0.0",
+    "version": "0.0.0",
     "extensions": [],
     "services": [],
     "vars": {},
