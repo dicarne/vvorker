@@ -2,6 +2,7 @@ package workerd
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"runtime/debug"
 	"vvorker/common"
@@ -110,6 +111,15 @@ func UpdateEndpointJSON(c *gin.Context) {
 			worker.Worker.MaxCount = 1
 		}
 	}
+
+	config := &conf.WorkerConfig{}
+	err = json.Unmarshal([]byte(worker.Template), config)
+	if err != nil {
+		logrus.WithError(err).Errorf("update worker error, worker is: [%+v], error config json.", worker.Worker)
+		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
+		return
+	}
+	worker.Worker.SemVersion = config.Version
 
 	if err := UpdateWorker(uint(oldworker.UserID), UID, worker.Worker, worker.Description); err != nil {
 		logrus.WithError(err).Errorf("update worker error, worker is: [%+v]", worker.Worker)

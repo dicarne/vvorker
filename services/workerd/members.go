@@ -170,7 +170,6 @@ func GetWorkerCollaboratorsEndpoint(c *gin.Context) {
 	type CollaboratorInfo struct {
 		IsOwner   bool                   `json:"is_owner"`
 		CanManage bool                   `json:"can_manage"`
-		Worker    *GetWorkerRespose      `json:"worker"`
 		Members   []*models.WorkerMember `json:"members"`
 	}
 
@@ -212,15 +211,7 @@ func GetWorkerCollaboratorsEndpoint(c *gin.Context) {
 	info := &CollaboratorInfo{
 		IsOwner:   isOwner,
 		CanManage: canManage,
-		Worker: &GetWorkerRespose{
-			UID:         worker.UID,
-			NodeName:    worker.NodeName,
-			Name:        worker.Name,
-			Version:     worker.Version,
-			MaxCount:    worker.MaxCount,
-			Description: worker.Description,
-		},
-		Members: members,
+		Members:   members,
 	}
 
 	common.RespOK(c, "get collaborator info success", info)

@@ -12,6 +12,7 @@ export interface WorkerItem {
   AccessControl: boolean
   Description: string
   IsCollab?: boolean
+  SemVersion: string
 }
 
 export interface WorkerMember {

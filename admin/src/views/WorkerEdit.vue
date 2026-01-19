@@ -75,6 +75,7 @@ onMounted(async () => {
       MaxCount: fullWorker.MaxCount,
       Description: fullWorker.Description,
       AccessControl: fullWorker.AccessControl,
+      SemVersion: fullWorker.SemVersion,
     } as WorkerItem
 
     try {
@@ -82,12 +83,6 @@ onMounted(async () => {
       if (collaboratorInfo) {
         canManageMembers.value = collaboratorInfo.can_manage
         isOwner.value = collaboratorInfo.is_owner
-        // 更新来自 collaboratorInfo 的信息
-        worker.value.UID = collaboratorInfo.worker.UID
-        worker.value.Name = collaboratorInfo.worker.Name
-        worker.value.NodeName = collaboratorInfo.worker.NodeName
-        worker.value.MaxCount = collaboratorInfo.worker.MaxCount
-        worker.value.Description = collaboratorInfo.worker.Description
       }
     } catch (collabError: any) {
       console.error('getWorkerCollaboratorInfo Error', collabError)
@@ -163,6 +158,12 @@ const handleOpenWorkerClick = async () => {
           <NLayoutSider> 名称 </NLayoutSider>
           <NLayoutContent>
             <NInput style="min-width: 200px; max-width: 400px;" v-model:value="worker.Name" />
+          </NLayoutContent>
+        </NLayout>
+        <NLayout has-sider class="v-item-column">
+          <NLayoutSider> 版本 </NLayoutSider>
+          <NLayoutContent>
+            <NInput style="min-width: 200px; max-width: 400px;" v-model:value="worker.SemVersion" :disabled="true" placeholder="0.0.0"/>
           </NLayoutContent>
         </NLayout>
         <NLayout has-sider class="v-item-column">

@@ -19,6 +19,7 @@ message Worker {
 	string Version = 14; // worker's version
 	int32 LocalID = 15; // worker's local id, just available in one node
 	int32 MaxCount = 16; // worker's max count
+	string SemVersion = 17; // worker's Sem version
 }
 
 // one WorkerList for one workerd instance
