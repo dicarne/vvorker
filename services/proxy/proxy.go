@@ -20,12 +20,13 @@ import (
 )
 
 type SSOAuthInfo struct {
-	UserID    string `json:"user_id"`
-	Token     string `json:"token"`
-	RealName  string `json:"real_name"`
-	Ext       string `json:"ext"`
-	Redirect  string `json:"redirect"`
-	SetCookie bool   `json:"set_cookie"`
+	UserID                 string `json:"user_id"`
+	Token                  string `json:"token"`
+	RealName               string `json:"real_name"`
+	Ext                    string `json:"ext"`
+	Redirect               string `json:"redirect"`
+	SetCookie              bool   `json:"set_cookie"`
+	PreventDefaultRedirect bool   `json:"prevent_default_redirect"`
 }
 
 func Endpoint(c *gin.Context) {
@@ -189,7 +190,12 @@ func Endpoint(c *gin.Context) {
 							rpath = fmt.Sprintf("%s://%s%s%s", conf.AppConfigInstance.Scheme, workerName, conf.AppConfigInstance.WorkerURLSuffix, rpath)
 						}
 
-						newUrl := fmt.Sprintf("%s?name=%s", ssoRedirect, url.QueryEscape(rpath))
+						newUrl := ""
+						if !authInfo.PreventDefaultRedirect {
+							fmt.Sprintf("%s?name=%s", ssoRedirect, url.QueryEscape(rpath))
+						} else {
+							newUrl = ssoRedirect
+						}
 						c.Redirect(http.StatusFound, newUrl)
 						return
 

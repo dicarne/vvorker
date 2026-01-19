@@ -36,7 +36,10 @@ interface ret {
     // 是否设置cookie，默认不设置
     // 只有在其他字段正确返回时才应该设置本字段，注意此时 http code 应为 200
     set_cookie?: boolean    
-    
+    // 阻止默认重定向逻辑
+    // 因为默认会将服务名作为query的name
+    // 某些对接第三方sso系统时需要自定义的重定向路径
+    prevent_default_redirect?: boolean
 }
 ```
 
