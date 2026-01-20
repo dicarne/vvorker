@@ -493,6 +493,12 @@ func modifyProxyRequestHeaders(c *gin.Context) bool {
 				} else {
 					c.Request.URL.Path = "/"
 				}
+			} else if len(parts) == 1 && parts[0] != "" {
+				// 处理单段路径的情况，如 /worker_name
+				host := parts[0] + conf.AppConfigInstance.WorkerURLSuffix
+				c.Request.Header.Set("Host", host)
+				c.Request.Host = host
+				c.Request.URL.Path = "/"
 			} else {
 				// c.Redirect(http.StatusFound, "/"+url+"/")
 				return true
@@ -509,6 +515,12 @@ func modifyProxyRequestHeaders(c *gin.Context) bool {
 				} else {
 					c.Request.URL.Path = "/"
 				}
+			} else if len(parts) == 2 && parts[0] != "" && parts[1] != "" {
+				// 处理单段路径的情况，如 /path/worker_name
+				host := parts[1] + conf.AppConfigInstance.WorkerURLSuffix
+				c.Request.Header.Set("Host", host)
+				c.Request.Host = host
+				c.Request.URL.Path = "/"
 			} else {
 				// c.Redirect(http.StatusFound, "/"+url+"/")
 				return true
