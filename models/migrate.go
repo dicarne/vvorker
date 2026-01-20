@@ -25,7 +25,7 @@ func MigrateNormalModel() {
 		utils.WaitForPort("localhost", conf.AppConfigInstance.LitefsPrimaryPort)
 	}
 	db := database.GetDB()
-	db.Exec("DROP INDEX IF EXISTS uni_users_email ON users;")
+	// db.Exec("DROP INDEX IF EXISTS uni_users_email ON users;")
 	for err := db.AutoMigrate(normalModels...); err != nil; err = db.AutoMigrate(
 		normalModels...) {
 		logrus.WithError(err).Errorf("auto migrate models error, sleep 5s and retry")
