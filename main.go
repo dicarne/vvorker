@@ -35,7 +35,7 @@ func printBanner() {
 ║                                                                                         ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════╝
 `
-	fmt.Printf(banner)
+	fmt.Printf(banner, Version)
 	fmt.Println()
 }
 
@@ -44,7 +44,6 @@ func main() {
 	logrus.SetReportCaller(true)
 	logrus.SetLevel(logrus.DebugLevel)
 	printBanner()
-	logrus.Info("vvorker version: %s", Version)
 	defer exec.ExecManager.ExitAllCmd()
 	defer kv.Close()
 	conf.Version = Version
