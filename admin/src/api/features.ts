@@ -6,6 +6,6 @@ export interface Feature {
 }
 
 export async function getFeatures() {
-  const res = await http.get('/api/features/list')
+  const res = await http.get('api/features/list')
   return res.data.data as Feature[]
 }
