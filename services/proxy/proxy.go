@@ -193,7 +193,7 @@ func Endpoint(c *gin.Context) {
 
 						newUrl := ""
 						if !authInfo.PreventDefaultRedirect {
-							fmt.Sprintf("%s?name=%s", ssoRedirect, url.QueryEscape(rpath))
+							newUrl = fmt.Sprintf("%s?name=%s", ssoRedirect, url.QueryEscape(rpath))
 						} else {
 							newUrl = ssoRedirect
 						}
