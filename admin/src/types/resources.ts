@@ -16,19 +16,19 @@
 // }
 
 export interface ResourceData {
-    uid: string
-    name: string
-    type: string
-    error_msg?: string[] | null
+  uid: string
+  name: string
+  type: string
+  error_msg?: string[] | null
 }
 export interface ListResourceResponse {
-    total: number
-    data: ResourceData[]
+  total: number
+  data: ResourceData[]
 }
 export interface ListResourceRequest {
-    page: number
-    page_size: number
-    type: string
+  page: number
+  page_size: number
+  type: string
 }
 
 // type CreateNewResourcesRequest struct {
@@ -50,23 +50,22 @@ export interface ListResourceRequest {
 // 	Type   string `json:"type"`
 // }
 
-
 export interface CreateNewResourcesRequest {
-    name: string
+  name: string
 }
 
 export interface DeleteResourcesReq {
-    uid: string
+  uid: string
 }
 
 export interface DeleteResourcesResp {
-    // 0: success, 1: failed
-    status: number
+  // 0: success, 1: failed
+  status: number
 }
 
 export interface CreateNewResourcesResponse {
-    uid: string
-    status: number
-    name: string
-    type: string
+  uid: string
+  status: number
+  name: string
+  type: string
 }

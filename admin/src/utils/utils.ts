@@ -1,4 +1,4 @@
-import type { VorkerSettingsProperties } from "@/types/workers"
+import type { VorkerSettingsProperties } from '@/types/workers'
 
 export const decodeBase64 = (base64String: string | undefined) => {
   if (!base64String) {

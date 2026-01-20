@@ -4,8 +4,8 @@ import (
 	"runtime/debug"
 	"vvorker/common"
 	"vvorker/exec"
-	permissions "vvorker/utils/permissions"
 	"vvorker/utils/database"
+	permissions "vvorker/utils/permissions"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

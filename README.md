@@ -72,6 +72,40 @@ wrangler deploy --dry-run --outdir dist
 `dist/index.js`应该包含所有你的代码，将其拷贝到 VVorker 中的代码编辑区即可，点击保存后自动生效。
 
 
+## 构建和开发
+
+本项目提供了跨平台的构建工具，支持 Windows、macOS 和 Linux。
+
+### 快速开始
+
+#### Windows 用户
+```bash
+# 查看所有可用命令
+make.bat help
+
+# 构建所有组件
+make.bat build-all
+
+# 构建主程序
+make.bat build
+```
+
+#### macOS/Linux 用户
+```bash
+# 查看所有可用命令
+make help
+
+# 构建所有组件
+make build-all
+
+# 构建主程序
+make build
+```
+
+### 详细文档
+- [构建指南](BUILD.md) - 详细的构建和开发说明
+- [Makefile 指南](Makefile.md) - Makefile 使用详解
+
 ## 其他
 
 感谢 [Vorker](https://github.com/VaalaCat/vorker) 项目提供的良好基础！是一个我看得懂的好项目。

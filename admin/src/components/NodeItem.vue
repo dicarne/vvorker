@@ -64,8 +64,20 @@ const handleDeleteNodeClick = async (nodeName: string) => {
   <div class="node-item">
     <NCard :title="node.Name">
       <template #header-extra>
-        <NButton v-if="node.Name !== 'default'" type="primary" secondary @click="handleSyncNodeClick(node.Name)">同步</NButton>
-        <NButton v-if="node.Name !== 'default'" type="primary" secondary @click="handleDeleteNodeClick(node.Name)">删除</NButton>
+        <NButton
+          v-if="node.Name !== 'default'"
+          type="primary"
+          secondary
+          @click="handleSyncNodeClick(node.Name)"
+          >同步</NButton
+        >
+        <NButton
+          v-if="node.Name !== 'default'"
+          type="primary"
+          secondary
+          @click="handleDeleteNodeClick(node.Name)"
+          >删除</NButton
+        >
       </template>
       <div class="v-item-column">{{ node.UID }}</div>
       <div class="v-item-column" style="text-align: right">

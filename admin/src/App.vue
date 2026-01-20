@@ -6,8 +6,8 @@ import nordTheme from '@/assets/nord.json'
 
 <template>
   <NConfigProvider :theme-overrides="nordTheme">
-  <NMessageProvider>
-    <RouterView />
-  </NMessageProvider>
+    <NMessageProvider>
+      <RouterView />
+    </NMessageProvider>
   </NConfigProvider>
 </template>

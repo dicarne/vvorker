@@ -5,7 +5,7 @@ import router from '@/router'
 
 const instance = axios.create({})
 const loginExpired = debounce(() => {
-  console.log("loginExpired")
+  console.log('loginExpired')
   router.push('/login')
 }, 500)
 
@@ -20,7 +20,7 @@ instance.interceptors.response.use(
     console.log(error)
     if (error.response.status === 403) {
       loginExpired()
-      return Promise.reject("登录过期，请重新登录")
+      return Promise.reject('登录过期，请重新登录')
     } else {
       return Promise.reject(error)
     }

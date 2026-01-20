@@ -68,8 +68,12 @@ onMounted(() => {
 
 <template>
   <NCard title="协作者管理">
-    <div v-if="canManage" class="v-flex-center-start v-item-column" style="margin-bottom: 16px;">
-      <NInput v-model:value="newMemberName" placeholder="输入用户名添加成员" style="width: 300px; margin-right: 8px;" />
+    <div v-if="canManage" class="v-flex-center-start v-item-column" style="margin-bottom: 16px">
+      <NInput
+        v-model:value="newMemberName"
+        placeholder="输入用户名添加成员"
+        style="width: 300px; margin-right: 8px"
+      />
       <NButton type="primary" @click="handleAddMember">添加</NButton>
     </div>
 
@@ -77,13 +81,17 @@ onMounted(() => {
       <NListItem v-for="member in members" :key="member.ID">
         <div class="v-flex-between-center">
           <div>
-            <NText style="margin-right: 8px; font-weight: 500;">{{ member.user_name }}</NText>
-            <NText type="info" style="font-size: 12px;">
+            <NText style="margin-right: 8px; font-weight: 500">{{ member.user_name }}</NText>
+            <NText type="info" style="font-size: 12px">
               添加于: {{ new Date(member.joined_at).toLocaleString() }}
             </NText>
           </div>
-          <NPopconfirm v-if="canManage" @positive-click="() => handleRemoveMember(member)" positive-text="删除"
-            negative-text="取消">
+          <NPopconfirm
+            v-if="canManage"
+            @positive-click="() => handleRemoveMember(member)"
+            positive-text="删除"
+            negative-text="取消"
+          >
             <template #trigger>
               <NButton quaternary type="error">
                 <NIcon>

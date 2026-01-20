@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { inject, ref, type Ref } from 'vue'
-import { useMessage, NCard, NForm, NFormItem, NInput, NButton, NModal, NInputOtp, NSpace } from 'naive-ui'
+import {
+  useMessage,
+  NCard,
+  NForm,
+  NFormItem,
+  NInput,
+  NButton,
+  NModal,
+  NInputOtp,
+  NSpace,
+} from 'naive-ui'
 import type { FormInst, FormRules } from 'naive-ui' // 导入 FormInst 类型
 import type { LoginRequest, UserInfo } from '@/types/auth'
 import type { VorkerSettingsProperties } from '@/types/workers'
@@ -74,7 +84,7 @@ const handleLogin = async () => {
     if (error instanceof APIError) {
       console.error('login Error', error.code)
       if (error.code === 6) {
-        message.error("登陆失败")
+        message.error('登陆失败')
       } else if (error.code === 12) {
         // 需要OTP验证
         showOtpModal.value = true
@@ -108,7 +118,6 @@ const handleOtpLogin = async (value: string[]) => {
     loading.value = false
   }
 }
-
 </script>
 <template>
   <div class="v-base-page v-flex-center">
@@ -124,7 +133,15 @@ const handleOtpLogin = async (value: string[]) => {
           <NInput v-model:value="form.password" type="password" placeholder="请输入密码" />
         </NFormItem>
         <NFormItem>
-          <NButton type="primary" native-type="submit" block :loading="loading" @click="handleLogin"> 登录 </NButton>
+          <NButton
+            type="primary"
+            native-type="submit"
+            block
+            :loading="loading"
+            @click="handleLogin"
+          >
+            登录
+          </NButton>
         </NFormItem>
       </NForm>
       <div v-if="appConfig.EnableRegister" class="v-flex-center">
@@ -134,7 +151,13 @@ const handleOtpLogin = async (value: string[]) => {
     </NCard>
 
     <!-- OTP验证弹窗 -->
-    <NModal v-model:show="showOtpModal" preset="dialog" title="OTP验证" :mask-closable="false" :loading="loading">
+    <NModal
+      v-model:show="showOtpModal"
+      preset="dialog"
+      title="OTP验证"
+      :mask-closable="false"
+      :loading="loading"
+    >
       <NSpace justify="center">
         <div style="padding: 16px 0">
           <p style="margin-bottom: 16px">您的账号已启用OTP双因素认证</p>

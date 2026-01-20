@@ -29,7 +29,7 @@ export const logout = () => {
 
 export const createAccessKey = (name: string) => {
   return api.post('api/user/create-access-key', {
-    name: name
+    name: name,
   })
 }
 
@@ -39,10 +39,9 @@ export const getAccessKeys = () => {
 
 export const deleteAccessKey = (access_key: string) => {
   return api.post('api/user/delete-access-key', {
-    key: access_key
+    key: access_key,
   })
 }
-
 
 export const enableOtp = () => {
   return api.post('api/otp/enable')

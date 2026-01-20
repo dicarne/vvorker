@@ -85,9 +85,9 @@ const allMenuOptions: MenuOptionWithFeature[] = [
 ]
 
 const menuOptions = computed<MenuOptionWithFeature[]>(() => {
-  const featureMap = new Map(features.value.map(f => [f.name, f.enable]))
+  const featureMap = new Map(features.value.map((f) => [f.name, f.enable]))
 
-  return allMenuOptions.filter(option => {
+  return allMenuOptions.filter((option) => {
     if (option.adminOnly && userInfo.value.role !== 'admin') {
       return false
     }

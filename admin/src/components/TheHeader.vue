@@ -8,7 +8,7 @@ import { getAppConfig } from '@/api/workers'
 import { useNavigate } from '@/composables/useNavigate'
 import type { VorkerSettingsProperties } from '@/types/workers'
 const userInfo = ref<UserInfo>()
-const appConfig = inject<Ref<VorkerSettingsProperties>>("appConfig")
+const appConfig = inject<Ref<VorkerSettingsProperties>>('appConfig')
 const message = useMessage()
 const { navigate } = useNavigate()
 const handleLogout = async () => {
@@ -43,7 +43,10 @@ onMounted(async () => {
       <NTag v-if="appConfig?.Version" class="v-item" size="small">{{ appConfig.Version }}</NTag>
     </div>
     <div class="v-flex-center">
-      <NAvatar class="v-avatar" :style="{ background: userInfo?.userName ? CH.hex(userInfo.userName) : '#cccccc' }">
+      <NAvatar
+        class="v-avatar"
+        :style="{ background: userInfo?.userName ? CH.hex(userInfo.userName) : '#cccccc' }"
+      >
         {{ userInfo?.userName.slice(0, 2).toUpperCase() }}
       </NAvatar>
       <NButton secondary type="primary" class="v-item" @click="handleLogout">登出</NButton>

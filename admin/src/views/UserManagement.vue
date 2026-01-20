@@ -54,7 +54,7 @@ const handleRoleChange = async (userId: number, newRole: string) => {
     await updateUserRole(userId, newRole)
     message.success('角色更新成功')
     // 更新本地数据
-    const user = users.value.find(u => u.ID === userId)
+    const user = users.value.find((u) => u.ID === userId)
     if (user) {
       user.role = newRole
     }
@@ -193,18 +193,27 @@ const columns = [
     title: '操作',
     key: 'actions',
     render: (row: User) => {
-      return h(NDropdown, {
-        trigger: 'click',
-        options: [
-          { label: '修改密码', key: 'changePassword' },
-          { label: '删除用户', key: 'delete' },
-        ],
-        onSelect: (key: string) => handleDropdownSelect(row, key),
-      }, {
-        default: () => h(NButton, { quaternary: true }, {
-          default: () => h(NIcon, {}, { default: () => h(DropdownIcon) })
-        })
-      })
+      return h(
+        NDropdown,
+        {
+          trigger: 'click',
+          options: [
+            { label: '修改密码', key: 'changePassword' },
+            { label: '删除用户', key: 'delete' },
+          ],
+          onSelect: (key: string) => handleDropdownSelect(row, key),
+        },
+        {
+          default: () =>
+            h(
+              NButton,
+              { quaternary: true },
+              {
+                default: () => h(NIcon, {}, { default: () => h(DropdownIcon) }),
+              },
+            ),
+        },
+      )
     },
   },
 ]
@@ -218,16 +227,9 @@ onMounted(() => {
   <div class="v-main">
     <NCard title="用户管理" :bordered="false">
       <template #header-extra>
-        <NButton type="primary" @click="showCreateModal = true">
-          新建用户
-        </NButton>
+        <NButton type="primary" @click="showCreateModal = true"> 新建用户 </NButton>
       </template>
-      <NDataTable
-        :columns="columns"
-        :data="users"
-        :loading="loading"
-        :pagination="false"
-      />
+      <NDataTable :columns="columns" :data="users" :loading="loading" :pagination="false" />
     </NCard>
 
     <NModal
@@ -238,21 +240,12 @@ onMounted(() => {
       :bordered="false"
       :segmented="false"
     >
-      <NForm
-        ref="createFormRef"
-        :model="createForm"
-        :rules="createRules"
-        label-placement="top"
-      >
+      <NForm ref="createFormRef" :model="createForm" :rules="createRules" label-placement="top">
         <NFormItem label="用户名" path="username">
           <NInput v-model:value="createForm.username" placeholder="请输入用户名" />
         </NFormItem>
         <NFormItem label="密码" path="password">
-          <NInput
-            v-model:value="createForm.password"
-            type="password"
-            placeholder="请输入密码"
-          />
+          <NInput v-model:value="createForm.password" type="password" placeholder="请输入密码" />
         </NFormItem>
       </NForm>
       <template #footer>
@@ -300,7 +293,7 @@ onMounted(() => {
       positive-text="确认"
       negative-text="取消"
       @positive-click="handleDeleteUserConfirm"
-      @negative-click="() => showDeleteUserModal = false"
+      @negative-click="() => (showDeleteUserModal = false)"
     >
       <div>确认要删除用户 {{ userToDelete?.user_name }}？</div>
     </NModal>

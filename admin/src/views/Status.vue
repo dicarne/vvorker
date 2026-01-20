@@ -50,7 +50,7 @@ onUnmounted(() => {
 </script>
 <template>
   <div class="v-main v-flex-start-center" style="flex-wrap: wrap; gap: 16px">
-    <NodeItem v-for="node in nodes" :key="node.UID" :node="node" :ping="pingMapList[node.Name]"/>
+    <NodeItem v-for="node in nodes" :key="node.UID" :node="node" :ping="pingMapList[node.Name]" />
   </div>
 </template>
 <style scoped></style>

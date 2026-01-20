@@ -1,7 +1,4 @@
-
-
 export interface AccessKey {
-    name: string,
-    key: string,
-
+  name: string
+  key: string
 }

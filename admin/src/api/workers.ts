@@ -1,5 +1,13 @@
 import api from './http'
-import type { Task, TaskLog, VorkerSettingsProperties, WorkerItem, WorkerLog, WorkerMember, WorkerCollaboratorInfo } from '@/types/workers'
+import type {
+  Task,
+  TaskLog,
+  VorkerSettingsProperties,
+  WorkerItem,
+  WorkerLog,
+  WorkerMember,
+  WorkerCollaboratorInfo,
+} from '@/types/workers'
 import type {
   AccessTokenCreateRequest,
   AccessTokenListRequest,
@@ -15,8 +23,8 @@ import type {
   SwitchAccessRuleRequest,
   DeleteAccessRuleRequest,
   AccessControlRequest,
-  EnableAccessControlRequest
-} from '@/types/access'; // 假设存在对应的类型定义
+  EnableAccessControlRequest,
+} from '@/types/access' // 假设存在对应的类型定义
 // 假设存在对应的类型定义
 
 export const getWorker = (uid: string) => {
@@ -32,9 +40,7 @@ export const getWorkerCursor = (offset: number, limit: number) => {
 }
 
 export const getAllWorkers = () => {
-  return api
-    .get<{ data: WorkerItem[] }>('api/allworkers')
-    .then((res) => res.data.data)
+  return api.get<{ data: WorkerItem[] }>('api/allworkers').then((res) => res.data.data)
 }
 
 export const createWorker = (worker: WorkerItem) => {
@@ -68,11 +74,8 @@ export const runWorker = (uid: string) => {
 }
 
 export const getWorkersStatus = (uids: string[]) => {
-  return api
-    .post(`api/workers/status`, { uids })
-    .then((res) => res.data.data)
+  return api.post(`api/workers/status`, { uids }).then((res) => res.data.data)
 }
-
 
 // 访问令牌相关 API
 export const createAccessToken = (request: AccessTokenCreateRequest) => {
@@ -80,7 +83,12 @@ export const createAccessToken = (request: AccessTokenCreateRequest) => {
 }
 
 export const listAccessTokens = async (request: AccessTokenListRequest) => {
-  return (await api.post<CommonResponse<{ access_tokens: ExternalServerToken[] }>>('api/worker/access/token/list', request)).data
+  return (
+    await api.post<CommonResponse<{ access_tokens: ExternalServerToken[] }>>(
+      'api/worker/access/token/list',
+      request,
+    )
+  ).data
 }
 
 export const deleteAccessToken = (request: AccessTokenDeleteRequest) => {
@@ -89,81 +97,101 @@ export const deleteAccessToken = (request: AccessTokenDeleteRequest) => {
 
 // 定义通用响应类型
 interface CommonResponse<T> {
-  code: number;
-  msg: string;
-  data: T;
+  code: number
+  msg: string
+  data: T
 }
 
 // 内部白名单相关 API
 export const createInternalWhiteList = async (request: InternalWhiteListCreateRequest) => {
-  const res = await api.post<CommonResponse<{ internal_white_list: InternalServerWhiteList }>>('api/worker/access/whitelist/create', request);
-  return res.data;
-};
+  const res = await api.post<CommonResponse<{ internal_white_list: InternalServerWhiteList }>>(
+    'api/worker/access/whitelist/create',
+    request,
+  )
+  return res.data
+}
 
 export const listInternalWhiteLists = async (request: InternalWhiteListListRequest) => {
-  const res = await api.post<CommonResponse<{ internal_white_lists: InternalServerWhiteList[] }>>('api/worker/access/whitelist/list', request);
-  return res.data;
-};
+  const res = await api.post<CommonResponse<{ internal_white_lists: InternalServerWhiteList[] }>>(
+    'api/worker/access/whitelist/list',
+    request,
+  )
+  return res.data
+}
 
 export const updateInternalWhiteList = async (request: InternalWhiteListUpdateRequest) => {
-  const res = await api.post<CommonResponse<null>>('api/worker/access/whitelist/update', request);
-  return res.data;
-};
+  const res = await api.post<CommonResponse<null>>('api/worker/access/whitelist/update', request)
+  return res.data
+}
 
 export const deleteInternalWhiteList = async (request: InternalWhiteListDeleteRequest) => {
-  const res = await api.post<CommonResponse<null>>('api/worker/access/whitelist/delete', request);
-  return res.data;
-};
+  const res = await api.post<CommonResponse<null>>('api/worker/access/whitelist/delete', request)
+  return res.data
+}
 
 // 访问控制相关 API
 export const updateEnableAccessControl = async (request: EnableAccessControlRequest) => {
-  const res = await api.post<CommonResponse<null>>('api/worker/access/control/update-control', request);
-  return res.data;
-};
+  const res = await api.post<CommonResponse<null>>(
+    'api/worker/access/control/update-control',
+    request,
+  )
+  return res.data
+}
 
 export const getAccessControl = async (request: AccessControlRequest) => {
-  const res = await api.post<CommonResponse<{ EnableAccessControl: boolean }>>('api/worker/access/control/get-control', request);
-  return res.data;
-};
+  const res = await api.post<CommonResponse<{ EnableAccessControl: boolean }>>(
+    'api/worker/access/control/get-control',
+    request,
+  )
+  return res.data
+}
 
 export const addAccessRule = async (request: AccessRule) => {
-  const res = await api.post<CommonResponse<null>>('api/worker/access/control/create-rule', request);
-  return res.data;
-};
+  const res = await api.post<CommonResponse<null>>('api/worker/access/control/create-rule', request)
+  return res.data
+}
 
 export const switchAccessRule = async (request: SwitchAccessRuleRequest) => {
-  const res = await api.post<CommonResponse<null>>('api/worker/access/control/switch-rule', request);
-  return res.data;
-};
+  const res = await api.post<CommonResponse<null>>('api/worker/access/control/switch-rule', request)
+  return res.data
+}
 
 export const updateAccessRule = async (request: AccessRule) => {
-  const res = await api.post<CommonResponse<null>>('api/worker/access/control/update-rule', request);
-  return res.data;
-};
+  const res = await api.post<CommonResponse<null>>('api/worker/access/control/update-rule', request)
+  return res.data
+}
 
 export const deleteAccessRule = async (request: DeleteAccessRuleRequest) => {
-  const res = await api.post<CommonResponse<null>>('api/worker/access/control/delete-rule', request);
-  return res.data;
-};
+  const res = await api.post<CommonResponse<null>>('api/worker/access/control/delete-rule', request)
+  return res.data
+}
 
 export const listAccessRules = async (request: ListAccessRuleRequest) => {
-  const res = await api.post<CommonResponse<{ total: number, access_rules: AccessRule[] }>>('api/worker/access/control/list-rules', request);
-  return res.data;
-};
+  const res = await api.post<CommonResponse<{ total: number; access_rules: AccessRule[] }>>(
+    'api/worker/access/control/list-rules',
+    request,
+  )
+  return res.data
+}
 
 export const listTasks = (page: number, page_size: number) => {
   return api.post<{
     data: {
-      total: number,
+      total: number
       tasks: Task[]
     }
   }>('api/ext/task/list', { page, page_size })
 }
 
-export const getTaskLogs = (worker_uid: string, trace_id: string, page: number, page_size: number) => {
+export const getTaskLogs = (
+  worker_uid: string,
+  trace_id: string,
+  page: number,
+  page_size: number,
+) => {
   return api.post<{
     data: {
-      total: number,
+      total: number
       logs: TaskLog[]
     }
   }>('api/ext/task/logs', { trace_id, page, page_size, worker_uid })
@@ -174,22 +202,31 @@ export const interruptTask = (trace_id: string, worker_uid: string) => {
 }
 
 export const getWorkerLogs = (uid: string, page: number, page_size: number) => {
-  return api.post<{ data: { total: number, logs: WorkerLog[] } }>(`api/worker/logs/${uid}`, { page, page_size })
+  return api.post<{ data: { total: number; logs: WorkerLog[] } }>(`api/worker/logs/${uid}`, {
+    page,
+    page_size,
+  })
 }
 
 // 协作成员管理相关 API
 export const addWorkerMember = (workerUID: string, userName: string) => {
-  return api.post('api/members/add', { worker_uid: workerUID, user_name: userName }).then(res => res.data)
+  return api
+    .post('api/members/add', { worker_uid: workerUID, user_name: userName })
+    .then((res) => res.data)
 }
 
 export const removeWorkerMember = (workerUID: string, userid: number) => {
-  return api.post('api/members/remove', { worker_uid: workerUID, user_id: userid }).then(res => res.data)
+  return api
+    .post('api/members/remove', { worker_uid: workerUID, user_id: userid })
+    .then((res) => res.data)
 }
 
 export const listWorkerMembers = (workerUID: string) => {
-  return api.get<{ data: WorkerMember[] }>(`api/members/${workerUID}`).then(res => res.data.data)
+  return api.get<{ data: WorkerMember[] }>(`api/members/${workerUID}`).then((res) => res.data.data)
 }
 
 export const getWorkerCollaboratorInfo = (uid: string) => {
-  return api.get<{ data: WorkerCollaboratorInfo }>(`api/worker/collaborator/${uid}`).then(res => res.data.data)
+  return api
+    .get<{ data: WorkerCollaboratorInfo }>(`api/worker/collaborator/${uid}`)
+    .then((res) => res.data.data)
 }

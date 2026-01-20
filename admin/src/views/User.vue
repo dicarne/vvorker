@@ -19,7 +19,15 @@ import { passwordRules } from '@/constant/formrules'
 import type { UserInfo } from '@/types/auth'
 import type { AccessKey } from '@/types/user'
 import { changePassword } from '@/api/users'
-import { createAccessKey, deleteAccessKey, disableOtp, enableOtp, getAccessKeys, isEnableOtp, validOtp } from '@/api/auth'
+import {
+  createAccessKey,
+  deleteAccessKey,
+  disableOtp,
+  enableOtp,
+  getAccessKeys,
+  isEnableOtp,
+  validOtp,
+} from '@/api/auth'
 
 const userInfo = inject<Ref<UserInfo>>('userInfo')!
 const message = useMessage()
@@ -150,7 +158,6 @@ onMounted(async () => {
   otpEnabled.value = res.data.data.enabled
 })
 
-
 const otpUrl = ref<string>('')
 const otpEnabled = ref<boolean>(false)
 const handleOtpSwitchChange = async (value: boolean) => {
@@ -203,12 +210,24 @@ const handleOptAddCodeConfirm = async () => {
       <div class="v-flex-between-center">
         <div>用户密码</div>
         <NButton secondary type="primary" @click="showChangePasswordModal = true">修改密码</NButton>
-        <NModal v-model:show="showChangePasswordModal" preset="dialog" title="修改密码" positive-text="确认"
-          negative-text="取消" :mask-closable="false" :loading="isChangingPassword"
-          @positive-click="handleChangePasswordConfirm" @negative-click="handleChangePasswordClose">
+        <NModal
+          v-model:show="showChangePasswordModal"
+          preset="dialog"
+          title="修改密码"
+          positive-text="确认"
+          negative-text="取消"
+          :mask-closable="false"
+          :loading="isChangingPassword"
+          @positive-click="handleChangePasswordConfirm"
+          @negative-click="handleChangePasswordClose"
+        >
           <NForm :model="pswdForm" :rules="pswdRules" ref="pswdFormRef">
             <NFormItem label="新密码" path="password">
-              <NInput v-model:value="pswdForm.password" type="password" placeholder="请输入新密码" />
+              <NInput
+                v-model:value="pswdForm.password"
+                type="password"
+                placeholder="请输入新密码"
+              />
             </NFormItem>
           </NForm>
         </NModal>
@@ -217,12 +236,27 @@ const handleOptAddCodeConfirm = async () => {
     <NCard title="Access Key" style="margin-top: 16px">
       <template #header-extra>
         <NButton type="primary" secondary @click="showCreateAccessKeyModal = true">创建</NButton>
-        <NModal v-model:show="showCreateAccessKeyModal" preset="dialog" title="创建 Access Key" positive-text="确认"
-          negative-text="取消" :loading="IsCreatingAccessKey" :mask-closable="false"
-          @positive-click="handleCreateAccessKeyConfirm" @negative-click="handleCreateAccessKeyClose">
-          <NForm :model="createAccessKeyForm" :rules="createAccessKeyRules" ref="createAccessKeyFormRef">
+        <NModal
+          v-model:show="showCreateAccessKeyModal"
+          preset="dialog"
+          title="创建 Access Key"
+          positive-text="确认"
+          negative-text="取消"
+          :loading="IsCreatingAccessKey"
+          :mask-closable="false"
+          @positive-click="handleCreateAccessKeyConfirm"
+          @negative-click="handleCreateAccessKeyClose"
+        >
+          <NForm
+            :model="createAccessKeyForm"
+            :rules="createAccessKeyRules"
+            ref="createAccessKeyFormRef"
+          >
             <NFormItem label="Access Key 名称" path="accessKeyName">
-              <NInput v-model:value="createAccessKeyForm.accessKeyName" placeholder="请输入 Access Key 名称" />
+              <NInput
+                v-model:value="createAccessKeyForm.accessKeyName"
+                placeholder="请输入 Access Key 名称"
+              />
             </NFormItem>
           </NForm>
         </NModal>
@@ -233,7 +267,9 @@ const handleOptAddCodeConfirm = async () => {
             <div style="min-width: 400px">Key Name: {{ item.name }}</div>
           </template>
           <template #suffix>
-            <NButton type="error" secondary @click="handleDeleteAccessKeyClick(item.key)">删除</NButton>
+            <NButton type="error" secondary @click="handleDeleteAccessKeyClick(item.key)"
+              >删除</NButton
+            >
           </template>
           <div class="v-item" style="min-width: 400px">Key ID: {{ item.key }}</div>
         </NListItem>
@@ -247,12 +283,22 @@ const handleOptAddCodeConfirm = async () => {
       <NSpace v-if="otpUrl">
         <NQrCode :value="otpUrl" />
         <NInput v-model:value="optAddCode" placeholder="请输入 OTP 代码" />
-        <NButton type="primary" secondary @click="handleOptAddCodeConfirm">验证并添加认证器</NButton>
+        <NButton type="primary" secondary @click="handleOptAddCodeConfirm"
+          >验证并添加认证器</NButton
+        >
       </NSpace>
     </NCard>
-    <NModal v-model:show="showDeleteAccessKeyModal" preset="dialog" title="删除 Access Key" positive-text="确认"
-      negative-text="取消" :loading="IsDeletingAccessKey" :mask-closable="false"
-      @positive-click="handleDeleteAccessKeyConfirm" @negative-click="handleDeleteAccessKeyClose">
+    <NModal
+      v-model:show="showDeleteAccessKeyModal"
+      preset="dialog"
+      title="删除 Access Key"
+      positive-text="确认"
+      negative-text="取消"
+      :loading="IsDeletingAccessKey"
+      :mask-closable="false"
+      @positive-click="handleDeleteAccessKeyConfirm"
+      @negative-click="handleDeleteAccessKeyClose"
+    >
       <div>确认要删除这个 Access Key ？</div>
     </NModal>
   </div>

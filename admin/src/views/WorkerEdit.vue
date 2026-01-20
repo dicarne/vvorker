@@ -130,7 +130,8 @@ const handleOpenWorkerClick = async () => {
           返回
         </NButton>
         <NButton class="v-item" type="primary" secondary @click="handleSaveWorkerClick">
-          保存 </NButton>
+          保存
+        </NButton>
         <NButton type="primary" secondary @click="handleOpenWorkerClick"> 打开 </NButton>
       </div>
     </div>
@@ -157,36 +158,55 @@ const handleOpenWorkerClick = async () => {
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 名称 </NLayoutSider>
           <NLayoutContent>
-            <NInput style="min-width: 200px; max-width: 400px;" v-model:value="worker.Name" />
+            <NInput style="min-width: 200px; max-width: 400px" v-model:value="worker.Name" />
           </NLayoutContent>
         </NLayout>
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 版本 </NLayoutSider>
           <NLayoutContent>
-            <NInput style="min-width: 200px; max-width: 400px;" v-model:value="worker.SemVersion" :disabled="true" placeholder="0.0.0"/>
+            <NInput
+              style="min-width: 200px; max-width: 400px"
+              v-model:value="worker.SemVersion"
+              :disabled="true"
+              placeholder="0.0.0"
+            />
           </NLayoutContent>
         </NLayout>
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 节点 </NLayoutSider>
           <NLayoutContent>
-            <NSelect style="min-width: 200px; max-width: 400px;" v-model:value="worker.NodeName" :options="nodes.map((node) => ({
-              label: node.Name,
-              value: node.Name,
-            }))
-              " />
+            <NSelect
+              style="min-width: 200px; max-width: 400px"
+              v-model:value="worker.NodeName"
+              :options="
+                nodes.map((node) => ({
+                  label: node.Name,
+                  value: node.Name,
+                }))
+              "
+            />
           </NLayoutContent>
         </NLayout>
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 实例 </NLayoutSider>
           <NLayoutContent>
-            <NInputNumber min="1" max="20" style="min-width: 200px; max-width: 400px;"
-              v-model:value="worker.MaxCount" />
+            <NInputNumber
+              min="1"
+              max="20"
+              style="min-width: 200px; max-width: 400px"
+              v-model:value="worker.MaxCount"
+            />
           </NLayoutContent>
         </NLayout>
         <NLayout has-sider class="v-item-column">
           <NLayoutSider> 描述 </NLayoutSider>
           <NLayoutContent>
-            <NInput type="textarea" v-model:value="worker.Description" style="max-width: 400px;" placeholder="请输入描述" />
+            <NInput
+              type="textarea"
+              v-model:value="worker.Description"
+              style="max-width: 400px"
+              placeholder="请输入描述"
+            />
           </NLayoutContent>
         </NLayout>
       </NTabPane>

@@ -5,8 +5,8 @@ import (
 	"vvorker/common"
 	"vvorker/entities"
 	"vvorker/models"
-	permissions "vvorker/utils/permissions"
 	"vvorker/utils/database"
+	permissions "vvorker/utils/permissions"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

@@ -1,1 +1,1 @@
-export const noAuthPathNameList = ['Login', 'Register'];
+export const noAuthPathNameList = ['Login', 'Register']
