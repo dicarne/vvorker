@@ -43,7 +43,7 @@ async function createWorkerProject(projectName: string, jsonData: object, gitRep
     console.log(pc.red(`生成类型提示失败，请手动运行 vvcli types 生成`));
   } finally {
     await runCommand('git', ['add', "*"], projectName);
-    await runCommand('git', ['commit', "-m", "init: Create with vvcli."], projectName);
+    await runCommand('git', ['commit', "-m", "\"init: Create with vvcli.\""], projectName);
   }
 }
 
@@ -89,7 +89,7 @@ async function createVueProject(projectName: string, jsonData: object, gitRepo: 
     console.log(pc.red(`生成类型提示失败，请手动运行 vvcli types 生成`));
   } finally {
     await runCommand('git', ['add', "*"], projectName);
-    await runCommand('git', ['commit', "-m", "init: Create with vvcli."], projectName);
+    await runCommand('git', ['commit', "-m", "\"init: Create with vvcli.\""], projectName);
   }
 }
 
