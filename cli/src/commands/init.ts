@@ -36,10 +36,14 @@ async function createWorkerProject(projectName: string, jsonData: object, gitRep
     console.log(pc.red(`安装依赖失败，请手动安装`));
   }
   try {
+    await runCommand('git', ['init'], projectName);
     await runCommand('vvcli', ['types'], projectName);
     await runCommand('pnpm', ['run', 'cf-typegen'], projectName);
   } catch (error) {
     console.log(pc.red(`生成类型提示失败，请手动运行 vvcli types 生成`));
+  } finally {
+    await runCommand('git', ['add', "*"], projectName);
+    await runCommand('git', ['commit', "-m", "init: Create with vvcli."], projectName);
   }
 }
 
@@ -78,10 +82,14 @@ async function createVueProject(projectName: string, jsonData: object, gitRepo: 
     console.log(pc.red(`安装依赖失败，请手动安装`));
   }
   try {
+    await runCommand('git', ['init'], projectName);
     await runCommand('vvcli', ['types'], projectName);
     await runCommand('pnpm', ['run', 'cf-typegen'], projectName);
   } catch (error) {
     console.log(pc.red(`生成类型提示失败，请手动运行 vvcli types 生成`));
+  } finally {
+    await runCommand('git', ['add', "*"], projectName);
+    await runCommand('git', ['commit', "-m", "init: Create with vvcli."], projectName);
   }
 }
 
