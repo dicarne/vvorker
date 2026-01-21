@@ -1,6 +1,7 @@
 package models
 
 import (
+	"vvorker/entities"
 	"vvorker/utils/database"
 	"vvorker/utils/secret"
 
@@ -97,9 +98,43 @@ func UpdateUser(userID uint, user *User) error {
 func DeleteUser(userID uint) error {
 	db := database.GetDB()
 
-	return db.Unscoped().Delete(&User{
+	// 开始事务
+	tx := db.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	// 1. 删除用户参与协作的 WorkerMember 记录
+	if err := tx.Unscoped().Where(&WorkerMember{UserID: uint64(userID)}).Delete(&WorkerMember{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// 2. 获取用户拥有的 workers
+	var workers []*Worker
+	if err := tx.Where(&Worker{Worker: &entities.Worker{UserID: uint64(userID)}}).Find(&workers).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// 3. 删除用户拥有的 workers
+	for _, worker := range workers {
+		// 删除 worker 本身（会自动删除相关的 WorkerCopy、WorkerVersion、File、Task、AccessRule、ResponseLog 等记录）
+		if err := worker.Delete(); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	// 4. 删除用户
+	if err := tx.Unscoped().Delete(&User{
 		Model: gorm.Model{ID: userID},
-	}).Error
+	}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }
 
 func ListUsers(page, pageSize int) ([]*User, error) {

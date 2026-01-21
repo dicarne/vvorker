@@ -461,6 +461,8 @@ func (w *Worker) Delete() error {
 			tunnel.GetClient().Delete(w.GetWorkerClientID() + "-control")
 		}
 		db.Model(&workercopy.WorkerCopy{}).Unscoped().Where(&workercopy.WorkerCopy{WorkerUID: w.UID}).Delete(&workercopy.WorkerCopy{})
+		db.Model(&WorkerMember{}).Unscoped().Where(&WorkerMember{WorkerUID: w.UID}).Delete(&WorkerMember{})
+		db.Model(&WorkerInformation{}).Unscoped().Where(&WorkerInformation{WorkerInformationBase: &WorkerInformationBase{UID: w.UID}}).Delete(&WorkerInformation{})
 	} else {
 		n, err := GetNodeByNodeName(w.NodeName)
 		if err != nil {
