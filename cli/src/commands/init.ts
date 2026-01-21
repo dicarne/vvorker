@@ -6,101 +6,32 @@ import json5 from 'json5';
 import { runCommand } from '../utils/system';
 import pc from "picocolors"
 import { config, getEnv } from '../utils/config';
+import { execSync } from 'child_process';
 
-const drizzleDefaultConfig = `
-import 'dotenv/config';
-import { defineConfig } from 'drizzle-kit';
+async function createWorkerProject(projectName: string, jsonData: object, gitRepo: string) {
+  try {
+    execSync(`git clone ${gitRepo} ${projectName}`, { stdio: 'inherit' });
+    // 删除 .git 目录
+    await fs.remove(path.join(projectName, '.git'));
+  } catch (error) {
+    console.log(pc.red(`克隆 Git 仓库失败: ${error}`));
+    throw error;
+  }
 
-export default defineConfig({
-  out: './server/db/drizzle',
-  schema: './server/db/schemamysql.ts',
-  dialect: 'mysql',
-});
-`
-
-async function createWorkerProject(projectName: string, jsonData: object) {
-  const vueJSCode = `
-import { Hono } from "hono";
-import { EnvBinding } from "./binding";
-import { init, useDebugEndpoint } from "@dicarne/vvorker-sdk";
-import { env } from "cloudflare:workers";
-init(env)
-
-const app = new Hono<{ Bindings: EnvBinding }>();
-useDebugEndpoint(app)
-
-app.onError(async (err, c) => {
-  console.error(err)
-  return c.json({
-    code: 500,
-    msg: err.message,
-    data: null
-  }, 500)
-})
-  
-export default app;
-`;
-
-  await runCommand('pnpm', ['create', "cloudflare@latest", projectName, "--template=cloudflare/templates/hello-world-do-template", "--git", "--no-deploy", "--lang=ts"]);
-
-
-  const jsFilePath = path.join(projectName, 'src', 'index.ts');
-  await fs.writeFile(jsFilePath, vueJSCode);
 
   const env = getEnv();
   const jsonFilePath = `vvorker.${env}.json`;
   await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
 
-  let wconfigPath = 'wrangler.jsonc'
-  if (!fs.existsSync(path.join(projectName, wconfigPath))) {
-    wconfigPath = 'wrangler.json'
-  }
-
-  const wranglerJsonPath = path.join(projectName, wconfigPath);
-  const wranglerJson = json5.parse(await fs.readFile(wranglerJsonPath, 'utf-8'));
-  wranglerJson.compatibility_flags = ["nodejs_compat"];
-  wranglerJson.durable_objects = undefined;
-  wranglerJson.migrations = undefined;
-  await fs.writeJson(wranglerJsonPath, wranglerJson, { spaces: 2 });
-
   const packageJsonPath = path.join(projectName, 'package.json');
   const packageJson = json5.parse(await fs.readFile(packageJsonPath, 'utf-8'));
-  packageJson.type = "module";
   packageJson.name = projectName;
-  packageJson.scripts.dev = "vite";
-  packageJson.scripts.build = "vite build";
-  packageJson.scripts.db = "drizzle-kit generate";
-  packageJson.scripts.start = undefined;
-  packageJson.scripts.deploy = undefined;
   await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
-
-  const viteConfigText = `import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
-import { cloudflare } from "@cloudflare/vite-plugin"
-
-// https://vite.dev/config/
-export default defineConfig({
-	plugins: [
-		cloudflare(),
-	],
-	base: "./",
-	resolve: {
-		alias: {
-			'@': fileURLToPath(new URL('./src', import.meta.url))
-		},
-	},
-})
-`
-
-  await fs.writeFile(path.join(projectName, 'vite.config.ts'), viteConfigText);
-  await fs.writeFile(path.join(projectName, 'drizzle.config.ts'), drizzleDefaultConfig);
 
   console.log(pc.green(`项目 ${projectName} 初始化完成`));
 
   try {
     await runCommand('pnpm', ['install'], projectName);
-    await runCommand('pnpm', ['install', "@types/node", "vite", "@cloudflare/vite-plugin", "-D"], projectName);
-    await runCommand('pnpm', ['install', "hono", "@dicarne/vvorker-sdk", "@hono/zod-validator", "zod"], projectName);
   } catch (error) {
     console.log(pc.red(`安装依赖失败，请手动安装`));
   }
@@ -112,53 +43,16 @@ export default defineConfig({
   }
 }
 
-async function createVueProject(projectName: string, jsonData: object) {
-
-  const vueJSCode = `
-import { Hono } from "hono";
-import { EnvBinding } from "./binding";
-import { init, useDebugEndpoint } from "@dicarne/vvorker-sdk";
-import { env } from "cloudflare:workers";
-init(env)
-
-const app = new Hono<{ Bindings: EnvBinding }>();
-useDebugEndpoint(app)
-app.onError(async (err, c) => {
-  console.error(err)
-  return c.json({
-    code: 500,
-    msg: err.message,
-    data: null
-  }, 500)
-})
-
-app.notFound(async (c) => {
+async function createVueProject(projectName: string, jsonData: object, gitRepo: string) {
   try {
-    const r = await c.env.ASSETS.fetch(c.req.url, c.req)
-    const url = new URL(c.req.url);
-    if (r.status === 404) {
-      return c.env.ASSETS.fetch("https://" + url.host + "/index.html", c.req)
-    }
-    return r
+    execSync(`git clone ${gitRepo} ${projectName}`, { stdio: 'inherit' });
+    // 删除 .git 目录
+    await fs.remove(path.join(projectName, '.git'));
   } catch (error) {
-    return c.text("404 Not Found", 404)
+    console.log(pc.red(`克隆 Git 仓库失败: ${error}`));
+    throw error;
   }
 
-});
-
-export default app;  
-`;
-
-  await runCommand('pnpm', ['create', "cloudflare@latest", projectName, "--framework=vue", "--git", "--no-deploy", "--lang=ts"]);
-
-  let wconfigPath = 'wrangler.jsonc'
-  if (!fs.existsSync(path.join(projectName, wconfigPath))) {
-    wconfigPath = 'wrangler.json'
-  }
-
-
-  const jsFilePath = path.join(projectName, 'server', 'index.ts');
-  await fs.writeFile(jsFilePath, vueJSCode);
 
   (jsonData as any)["assets"] = [
     {
@@ -170,27 +64,16 @@ export default app;
   const jsonFilePath = `vvorker.${env}.json`;
   await fs.writeJson(path.join(projectName, jsonFilePath), jsonData, { spaces: 2 });
 
-  const wranglerJsonPath = path.join(projectName, wconfigPath);
-  const wranglerJson = json5.parse(await fs.readFile(wranglerJsonPath, 'utf-8'));
-  wranglerJson.compatibility_flags = ["nodejs_compat"];
-  wranglerJson.durable_objects = undefined;
-  wranglerJson.migrations = undefined;
-  await fs.writeJson(wranglerJsonPath, wranglerJson, { spaces: 2 });
 
   const packageJsonPath = path.join(projectName, 'package.json');
   const packageJson = json5.parse(await fs.readFile(packageJsonPath, 'utf-8'));
-  packageJson.scripts.deploy = undefined;
-  packageJson.scripts.db = "drizzle-kit generate";
+  packageJson.name = projectName;
   await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
-
-  await fs.writeFile(path.join(projectName, 'drizzle.config.ts'), drizzleDefaultConfig);
 
   console.log(pc.green(`项目 ${projectName} 初始化完成`));
 
   try {
     await runCommand('pnpm', ['install'], projectName);
-    await runCommand('pnpm', ['install', "@types/node", "drizzle-kit", "-D"], projectName);
-    await runCommand('pnpm', ['install', "hono", "@dicarne/vvorker-sdk", "@hono/zod-validator", "zod"], projectName);
   } catch (error) {
     console.log(pc.red(`安装依赖失败，请手动安装`));
   }
@@ -205,7 +88,8 @@ export default app;
 export const initCommand = new Command('init')
   .command('init <projectName>')
   .description('初始化VVorker项目')
-  .action(async (projectName) => {
+  .option('--git-repo <url>', '使用自定义 Git 仓库作为模板')
+  .action(async (projectName, options) => {
     // 交互式输入uid
     const { uid, projtype } = await inquirer.prompt([{
       type: 'input',
@@ -245,11 +129,11 @@ export const initCommand = new Command('init')
 
     switch (projtype) {
       case "worker": {
-        await createWorkerProject(projectName, jsonData);
+        await createWorkerProject(projectName, jsonData, "https://git.cloud.zhishudali.ink/template/vv-template-worker.git");
         break;
       }
       case "vue": {
-        await createVueProject(projectName, jsonData);
+        await createVueProject(projectName, jsonData, "https://git.cloud.zhishudali.ink/template/vv-template-vue.git");
         break;
       }
     }
