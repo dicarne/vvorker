@@ -18,6 +18,18 @@ async function createWorkerProject(projectName: string, jsonData: object, gitRep
     throw error;
   }
 
+  let wconfigPath = 'wrangler.jsonc'
+  if (!fs.existsSync(path.join(projectName, wconfigPath))) {
+    wconfigPath = 'wrangler.json'
+  }
+
+  const wranglerJsonPath = path.join(projectName, wconfigPath);
+  const wranglerJson = json5.parse(await fs.readFile(wranglerJsonPath, 'utf-8'));
+  wranglerJson.compatibility_flags = ["nodejs_compat"];
+  wranglerJson.durable_objects = undefined;
+  wranglerJson.migrations = undefined;
+  wranglerJson.name = projectName;
+  await fs.writeJson(wranglerJsonPath, wranglerJson, { spaces: 2 });
 
   const env = getEnv();
   const jsonFilePath = `vvorker.${env}.json`;
@@ -56,7 +68,18 @@ async function createVueProject(projectName: string, jsonData: object, gitRepo: 
     console.log(pc.red(`克隆 Git 仓库失败: ${error}`));
     throw error;
   }
+  let wconfigPath = 'wrangler.jsonc'
+  if (!fs.existsSync(path.join(projectName, wconfigPath))) {
+    wconfigPath = 'wrangler.json'
+  }
 
+  const wranglerJsonPath = path.join(projectName, wconfigPath);
+  const wranglerJson = json5.parse(await fs.readFile(wranglerJsonPath, 'utf-8'));
+  wranglerJson.compatibility_flags = ["nodejs_compat"];
+  wranglerJson.durable_objects = undefined;
+  wranglerJson.migrations = undefined;
+  wranglerJson.name = projectName;
+  await fs.writeJson(wranglerJsonPath, wranglerJson, { spaces: 2 });
 
   (jsonData as any)["assets"] = [
     {
