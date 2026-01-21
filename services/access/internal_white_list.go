@@ -1,7 +1,6 @@
 package access
 
 import (
-	"runtime/debug"
 	"vvorker/common"
 	"vvorker/entities"
 	"vvorker/models"
@@ -9,7 +8,6 @@ import (
 	permissions "vvorker/utils/permissions"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -22,12 +20,7 @@ type InternalWhiteListCreateRequest struct {
 
 // CreateInternalWhiteListEndpoint 创建内部白名单端点
 func CreateInternalWhiteListEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := InternalWhiteListCreateRequest{}
 	if err := c.BindJSON(&request); err != nil {
@@ -81,12 +74,7 @@ type InternalWhiteListListRequest struct {
 
 // ListInternalWhiteListEndpoint 列出内部白名单端点
 func ListInternalWhiteListEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := InternalWhiteListListRequest{}
 	if err := c.BindJSON(&request); err != nil {
@@ -145,12 +133,7 @@ type InternalWhiteListUpdateRequest struct {
 
 // UpdateInternalWhiteListEndpoint 更新内部白名单端点
 func UpdateInternalWhiteListEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := InternalWhiteListUpdateRequest{}
 	if err := c.BindJSON(&request); err != nil {
@@ -188,12 +171,7 @@ type InternalWhiteListDeleteRequest struct {
 
 // DeleteInternalWhiteListEndpoint 删除内部白名单端点
 func DeleteInternalWhiteListEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := InternalWhiteListDeleteRequest{}
 	if err := c.BindJSON(&request); err != nil {

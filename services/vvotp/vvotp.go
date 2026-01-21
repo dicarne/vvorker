@@ -13,11 +13,7 @@ import (
 )
 
 func EnableOTPEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
-		}
-	}()
+
 	db := database.GetDB()
 	userID := c.GetUint(common.UIDKey)
 	var user models.User
@@ -48,11 +44,7 @@ func EnableOTPEndpoint(c *gin.Context) {
 }
 
 func IsEnableOTPEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
-		}
-	}()
+
 	db := database.GetDB()
 	userID := c.GetUint(common.UIDKey)
 	var user models.User
@@ -67,11 +59,7 @@ func IsEnableOTPEndpoint(c *gin.Context) {
 }
 
 func ValidAddOTPEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
-		}
-	}()
+
 	db := database.GetDB()
 	userID := c.GetUint(common.UIDKey)
 	var user models.User
@@ -115,11 +103,7 @@ func ValidAddOTPEndpoint(c *gin.Context) {
 }
 
 func DisableOTPEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
-		}
-	}()
+
 	db := database.GetDB()
 	userID := c.GetUint(common.UIDKey)
 	var user models.User

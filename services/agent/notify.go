@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"runtime/debug"
 	"vvorker/common"
 	"vvorker/defs"
 	"vvorker/entities"
@@ -19,12 +18,6 @@ func init() {
 }
 
 func NotifyEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	req := &entities.NotifyEventRequest{}
 	err := request.Bind[*entities.NotifyEventRequest](c, req)

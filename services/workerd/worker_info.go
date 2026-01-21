@@ -5,20 +5,12 @@ import (
 	"vvorker/models"
 	permissions "vvorker/utils/permissions"
 
-	"runtime/debug"
-
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
 // GetWorkerInformationByIDEndpoint 根据 ID 获取 worker 信息
 func GetWorkerInformationByIDEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	id := c.Param("id")
 	userID := c.GetUint(common.UIDKey)
@@ -46,12 +38,6 @@ func GetWorkerInformationByIDEndpoint(c *gin.Context) {
 
 // UpdateWorkerInformationEndpoint 更新 worker 信息
 func UpdateWorkerInformationEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	id := c.Param("id")
 	var updatedInfo = &models.WorkerInformation{}
@@ -82,12 +68,6 @@ func UpdateWorkerInformationEndpoint(c *gin.Context) {
 
 // DeleteWorkerInformationEndpoint 删除 worker 信息
 func DeleteWorkerInformationEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	id := c.Param("id")
 	userID := c.GetUint(common.UIDKey)

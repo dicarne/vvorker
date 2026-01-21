@@ -3,7 +3,6 @@ package auth
 import (
 	"encoding/json"
 	"net/http"
-	"runtime/debug"
 	"vvorker/authz"
 	"vvorker/common"
 	"vvorker/conf"
@@ -22,12 +21,7 @@ type tryCount struct {
 }
 
 func LoginEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	req, err := parseLoginReq(c)
 	if err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest,

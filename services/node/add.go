@@ -1,7 +1,6 @@
 package node
 
 import (
-	"runtime/debug"
 	"vvorker/common"
 	"vvorker/defs"
 	"vvorker/entities"
@@ -13,12 +12,7 @@ import (
 )
 
 func AddEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	nodeName := c.GetString(defs.KeyNodeName)
 	if n, err := models.GetNodeByNodeName(nodeName); err == nil && n != nil {
 		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)

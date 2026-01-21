@@ -123,11 +123,6 @@ func DeleteKVResourcesEndpoint(c *gin.Context) {
 /////////////////////
 
 func InvokeKVEndpoint(c *gin.Context) {
-	defer func() {
-		if err := recover(); err != nil {
-			common.RespErr(c, http.StatusInternalServerError, "Failed to invoke KV resource", gin.H{"error": err})
-		}
-	}()
 	var req = kvtypes.InvokeKVRequest{}
 	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {
 		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": err.Error()})

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"runtime/debug"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/entities"
@@ -80,12 +79,6 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker, desc string)
 
 // 更新worker
 func UpdateEndpointJSON(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	var worker *UpdateWorkerReq
 	if err := permissions.BindJSON(c, &worker); err != nil {

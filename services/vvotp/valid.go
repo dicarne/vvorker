@@ -14,11 +14,6 @@ import (
 )
 
 func ValidOtpEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
-		}
-	}()
 
 	code := c.Copy().Query("code")
 	if code == "" {

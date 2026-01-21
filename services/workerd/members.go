@@ -1,13 +1,11 @@
 package workerd
 
 import (
-	"runtime/debug"
 	"vvorker/common"
 	"vvorker/models"
 	permissions "vvorker/utils/permissions"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 type AddMemberRequest struct {
@@ -22,12 +20,6 @@ type RemoveMemberRequest struct {
 
 // AddMemberEndpoint 添加协作者
 func AddMemberEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	var req AddMemberRequest
 	if err := c.BindJSON(&req); err != nil {
@@ -74,12 +66,6 @@ func AddMemberEndpoint(c *gin.Context) {
 
 // RemoveMemberEndpoint 移除协作者
 func RemoveMemberEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	var req RemoveMemberRequest
 	if err := c.BindJSON(&req); err != nil {
@@ -119,12 +105,6 @@ func RemoveMemberEndpoint(c *gin.Context) {
 
 // ListMembersEndpoint 列出协作者
 func ListMembersEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	workerUID := c.Param("worker_uid")
 	if workerUID == "" {
@@ -152,12 +132,6 @@ func ListMembersEndpoint(c *gin.Context) {
 
 // GetWorkerCollaboratorsEndpoint 获取当前用户是拥有者或协作者的 worker 信息
 func GetWorkerCollaboratorsEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	workerUID := c.Param("uid")
 	if workerUID == "" {

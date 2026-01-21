@@ -138,12 +138,6 @@ func dbCreateWorkerLogs(logs []WorkerLog) error {
 }
 
 func HandleAgentWorkerLogs(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("handleAgentWorkerLogs panic: %v", r)
-		}
-	}()
-
 	var req AgentWorkerLogsReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)

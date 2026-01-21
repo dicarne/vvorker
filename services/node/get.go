@@ -2,7 +2,6 @@ package node
 
 import (
 	"fmt"
-	"runtime/debug"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/defs"
@@ -16,12 +15,7 @@ import (
 )
 
 func GetNodeInfoEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	nodeName := c.GetString(defs.KeyNodeName)
 
 	node, err := models.GetNodeByNodeName(nodeName)
@@ -36,12 +30,6 @@ func GetNodeInfoEndpoint(c *gin.Context) {
 }
 
 func UserGetNodesEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	nodes, err := models.AdminGetAllNodes()
 	if err != nil {

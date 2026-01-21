@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"runtime/debug"
 	"strings"
 	"time"
 	"vvorker/common"
@@ -30,12 +29,7 @@ type SSOAuthInfo struct {
 }
 
 func Endpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	host := c.Request.Host
 	c.Request.Host = host
 
@@ -255,12 +249,7 @@ type WorkerRequestStatsResp struct {
 }
 
 func GetWorkerRequestStats(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	var req WorkerRequestStatsReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest, common.RespMsgInvalidRequest, nil)
@@ -323,12 +312,7 @@ type WorkerRequestStatsByTimeResp struct {
 }
 
 func GetWorkerRequestStatsByTime(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	var req WorkerRequestStatsByTimeReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest, common.RespMsgInvalidRequest, nil)

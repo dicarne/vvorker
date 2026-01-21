@@ -1,7 +1,6 @@
 package export
 
 import (
-	"runtime/debug"
 	"vvorker/common"
 	"vvorker/conf"
 	kv "vvorker/ext/kv/src"
@@ -12,7 +11,6 @@ import (
 	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 type ExportConfigReq struct {
@@ -35,12 +33,7 @@ type ExportConfig struct {
 
 // 用于导出某些服务及所有相关资源
 func ExportResourcesConfigEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	var req ExportConfigReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.RespErr(c, 400, "参数解析失败", nil)
@@ -189,12 +182,6 @@ func ExportResourcesConfigEndpoint(c *gin.Context) {
 }
 
 func ImportResourcesConfigEndpoint(g *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(g, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	var req ExportConfig
 	if err := g.ShouldBindJSON(&req); err != nil {

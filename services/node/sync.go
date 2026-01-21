@@ -1,7 +1,6 @@
 package node
 
 import (
-	"runtime/debug"
 	"vvorker/common"
 	"vvorker/defs"
 	"vvorker/models"
@@ -12,12 +11,6 @@ import (
 )
 
 func SyncNodeEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	nodename := c.Param("nodename")
 	if len(nodename) == 0 {

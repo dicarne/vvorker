@@ -2,7 +2,6 @@ package workerd
 
 import (
 	"encoding/json"
-	"runtime/debug"
 	"strconv"
 	"vvorker/common"
 	"vvorker/conf"
@@ -17,12 +16,6 @@ import (
 )
 
 func GetWorkersEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	offsetStr := c.Param("offset")
 	if len(offsetStr) == 0 {
@@ -66,12 +59,7 @@ type SimpleWorker struct {
 }
 
 func GetAllWorkersEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	userID := c.GetUint(common.UIDKey)
 
 	// 获取用户拥有的 Workers
@@ -144,12 +132,7 @@ type GetWorkerRespose struct {
 }
 
 func GetWorkerEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	userID := c.GetUint(common.UIDKey)
 	uid := c.Param("uid")
 	if len(uid) == 0 {
@@ -179,12 +162,7 @@ type GetWorkerEndpointJSONReq struct {
 }
 
 func GetWorkerEndpointJSON(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	userID := c.GetUint(common.UIDKey)
 	req := &GetWorkerEndpointJSONReq{}
 	if err := json.NewDecoder(c.Request.Body).Decode(req); err != nil {
@@ -208,12 +186,6 @@ func GetWorkerEndpointJSON(c *gin.Context) {
 }
 
 func GetWorkerEndpointAgent(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	req := &entities.AgentGetWorkerByUIDReq{}
 	if err := json.NewDecoder(c.Request.Body).Decode(req); err != nil {
@@ -236,12 +208,7 @@ func GetWorkerEndpointAgent(c *gin.Context) {
 }
 
 func AgentSyncWorkers(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	req := &entities.AgentSyncWorkersReq{}
 	if err := c.ShouldBindJSON(req); err != nil {
 		common.RespErr(c, defs.CodeInvalidRequest, err.Error(), nil)
@@ -283,12 +250,7 @@ func AgentSyncWorkers(c *gin.Context) {
 }
 
 func FillWorkerConfig(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	req := &entities.AgentFillWorkerReq{}
 	if err := c.ShouldBindJSON(req); err != nil {
 		common.RespErr(c, defs.CodeInvalidRequest, err.Error(), nil)

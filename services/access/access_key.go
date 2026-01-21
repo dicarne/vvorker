@@ -2,14 +2,12 @@ package access
 
 import (
 	"net/http"
-	"runtime/debug"
 	"vvorker/common"
 	"vvorker/models"
 	"vvorker/utils"
 	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 type AccessKeyCreateRequest struct {
@@ -26,12 +24,7 @@ type AccessKeyDeleteRequest struct {
 }
 
 func CreateAccessKeyEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	uid := uint64(c.GetUint(common.UIDKey))
 
 	request := AccessKeyCreateRequest{}
@@ -68,12 +61,7 @@ func AccessKeyToUserID(accessKey string) (uint64, error) {
 }
 
 func GetAccessKeysEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	uid := uint64(c.GetUint(common.UIDKey))
 	db := database.GetDB()
 	var accessKeys []models.AccessKey
@@ -87,12 +75,7 @@ func GetAccessKeysEndpoint(c *gin.Context) {
 }
 
 func DeleteAccessKeyEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := AccessKeyDeleteRequest{}
 	if err := c.BindJSON(&request); err != nil {

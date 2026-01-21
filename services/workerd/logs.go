@@ -1,14 +1,12 @@
 package workerd
 
 import (
-	"runtime/debug"
 	"vvorker/common"
 	"vvorker/exec"
 	"vvorker/utils/database"
 	permissions "vvorker/utils/permissions"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 // GetWorkerLogsReq 定义获取工作者日志请求结构体
@@ -24,13 +22,6 @@ type GetWorkerLogsResp struct {
 }
 
 func GetWorkerLogsEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
-
 	var req *GetWorkerLogsReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)

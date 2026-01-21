@@ -1,13 +1,11 @@
 package workerd
 
 import (
-	"runtime/debug"
 	"vvorker/common"
 	"vvorker/exec"
 	permissions "vvorker/utils/permissions"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 type GetWorkersStatusResp struct {
@@ -15,12 +13,6 @@ type GetWorkersStatusResp struct {
 }
 
 func GetWorkersStatusByUIDEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	req := GetWorkersStatusResp{}
 	if err := c.ShouldBindJSON(&req); err != nil {

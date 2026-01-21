@@ -23,11 +23,7 @@ type ClearAssetsReq struct {
 }
 
 func ClearAssetsEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			c.JSON(500, gin.H{"error": "Internal server error"})
-		}
-	}()
+
 	var req = ClearAssetsReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": "Invalid request"})
@@ -112,11 +108,7 @@ type UploadAssetsReq struct {
 }
 
 func UploadAssetsEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			c.JSON(500, gin.H{"error": "Internal server error"})
-		}
-	}()
+
 	var req UploadAssetsReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": "Invalid request"})
@@ -184,11 +176,6 @@ type GetAssetsReq struct {
 }
 
 func GetAssetsEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			c.JSON(500, gin.H{"error": "Internal server error"})
-		}
-	}()
 
 	var req GetAssetsReq
 	req.Path = c.GetHeader("vvorker-asset-path")

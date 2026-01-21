@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"runtime/debug"
 	"strings"
 	"vvorker/common"
 	"vvorker/conf"
@@ -60,12 +59,7 @@ func generateTypeDefinition(data interface{}, indent int) string {
 }
 
 func GenerateTypes(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	worker := &GenTypeRequest{}
 
 	if err := c.BindJSON(worker); err != nil {

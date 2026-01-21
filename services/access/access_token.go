@@ -1,7 +1,6 @@
 package access
 
 import (
-	"runtime/debug"
 	"vvorker/common"
 	"vvorker/models"
 	"vvorker/utils"
@@ -9,7 +8,6 @@ import (
 	"vvorker/utils/permissions"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -21,12 +19,7 @@ type AccessTokenCreateRequest struct {
 }
 
 func CreateAccessTokenEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := AccessTokenCreateRequest{}
 	if err := c.BindJSON(&request); err != nil {
@@ -67,12 +60,7 @@ type AccessTokenListRequest struct {
 }
 
 func ListAccessTokenEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
+
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := AccessTokenListRequest{}
 	if err := c.BindJSON(&request); err != nil {
@@ -115,12 +103,6 @@ type AccessTokenDeleteRequest struct {
 }
 
 func DeleteAccessTokenEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			logrus.Errorf("Recovered in f: %+v, stack: %+v", r, string(debug.Stack()))
-			common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
-		}
-	}()
 
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := AccessTokenDeleteRequest{}

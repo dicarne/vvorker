@@ -20,11 +20,6 @@ type CreateTaskReq struct {
 }
 
 func CreateTaskEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
-		}
-	}()
 
 	var req CreateTaskReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -61,11 +56,6 @@ type GetTaskStatusReq struct {
 }
 
 func CheckInterruptTaskEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
-		}
-	}()
 
 	var req GetTaskStatusReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -91,11 +81,7 @@ type LogTaskReq struct {
 }
 
 func LogTaskEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
-		}
-	}()
+
 	var req LogTaskReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})
@@ -126,11 +112,7 @@ func LogTaskEndpoint(c *gin.Context) {
 }
 
 func CancelTaskEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
-		}
-	}()
+
 	var req GetTaskStatusReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})
@@ -156,11 +138,7 @@ func CancelTaskEndpoint(c *gin.Context) {
 }
 
 func CompleteTaskEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
-		}
-	}()
+
 	var req GetTaskStatusReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})
@@ -198,11 +176,7 @@ type ListTaskResponse struct {
 }
 
 func ListTaskEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
-		}
-	}()
+
 	var req ListTaskReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})
@@ -256,11 +230,7 @@ type GetTaskLogsReq struct {
 }
 
 func GetLogsEndpoint(c *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
-		}
-	}()
+
 	var req GetTaskLogsReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})

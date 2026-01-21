@@ -61,6 +61,8 @@ func init() {
 	proxy = gin.Default()
 	proxy.Use(modifyProxyRequestHeadersMid)
 
+	// 添加全局错误处理中间件
+	router.Use(common.RecoveryMiddleware())
 	router.Use(middleware.CORSMiddlewaire(
 		fmt.Sprintf("%v://%v", conf.AppConfigInstance.Scheme, conf.AppConfigInstance.CookieDomain),
 	))
