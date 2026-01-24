@@ -7,6 +7,7 @@ require (
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
 	github.com/codeclysm/extract/v3 v3.1.1
 	github.com/fatedier/frp v0.66.0
+	github.com/gin-contrib/pprof v1.5.3
 	github.com/gin-gonic/gin v1.11.0
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-co-op/gocron/v2 v2.19.0

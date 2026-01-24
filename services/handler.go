@@ -44,6 +44,7 @@ import (
 	"vvorker/utils/database"
 	"vvorker/utils/middleware"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/sourcegraph/conc"
@@ -57,7 +58,9 @@ var (
 func init() {
 	router = gin.Default()
 	router.MaxMultipartMemory = 8 << 20 // 8 MiB
-
+	if conf.AppConfigInstance.DEBUGPProf {
+		pprof.Register(router)
+	}
 	proxy = gin.Default()
 	proxy.Use(modifyProxyRequestHeadersMid)
 

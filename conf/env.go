@@ -133,6 +133,8 @@ type AppConfig struct {
 	EnableMinIO bool `env:"ENABLE_MINIO" env-default:"false"`
 
 	EnableLoginOPT bool `env:"ENABLE_LOGIN_OTP" env-default:"true"` // 是否启用登录OTP验证
+
+	DEBUGPProf bool `env:"DEBUG_PPROF" env-default:"false"` // 是否开启pprof
 }
 
 type JwtConfig struct {
