@@ -8,6 +8,7 @@ import (
 	kv "vvorker/ext/kv/src"
 	"vvorker/services"
 
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
@@ -40,7 +41,9 @@ func printBanner() {
 }
 
 func main() {
-
+	if conf.AppConfigInstance.ModeRelease {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	logrus.SetReportCaller(true)
 	logrus.SetLevel(logrus.DebugLevel)
 	printBanner()

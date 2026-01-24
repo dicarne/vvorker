@@ -3,7 +3,6 @@ package conf
 import (
 	"flag"
 	"fmt"
-	"os"
 	"vvorker/utils/secret"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -134,7 +133,8 @@ type AppConfig struct {
 
 	EnableLoginOPT bool `env:"ENABLE_LOGIN_OTP" env-default:"true"` // 是否启用登录OTP验证
 
-	DEBUGPProf bool `env:"DEBUG_PPROF" env-default:"false"` // 是否开启pprof
+	DEBUGPProf  bool `env:"DEBUG_PPROF" env-default:"false"` // 是否开启pprof
+	ModeRelease bool `env:"MODE_RELEASE" env-default:"false"`
 }
 
 type JwtConfig struct {
@@ -155,24 +155,14 @@ var (
 
 func init() {
 	flag.Parse()
-	logrus.Info("env path: ", *EnvPath)
 
 	AppConfigInstance = &AppConfig{}
 	JwtConf = &JwtConfig{}
 	godotenv.Load(*EnvPath)
 
-	logrus.Info("env loaded")
-	// print all env
-	for _, env := range os.Environ() {
-		logrus.Info(env)
-	}
-
 	if err := cleanenv.ReadEnv(AppConfigInstance); err != nil {
 		logrus.Panic(err)
 	}
-	// print appconfig
-	logrus.Info("appconfig loaded")
-	logrus.Info(AppConfigInstance)
 
 	if err := cleanenv.ReadEnv(JwtConf); err != nil {
 		logrus.Panic(err)
