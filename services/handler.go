@@ -466,8 +466,6 @@ func RegisterNodeToMaster() {
 			tunnel.GetClient().Add(conf.AppConfigInstance.NodeID, utils.NodeHostPrefix(
 				conf.AppConfigInstance.NodeName, conf.AppConfigInstance.NodeID),
 				int(conf.AppConfigInstance.APIPort))
-		} else {
-			logrus.Info("Tunnel already exists, skip adding")
 		}
 		if conf.AppConfigInstance.EnableAutoSync {
 			agent.SyncCall()
