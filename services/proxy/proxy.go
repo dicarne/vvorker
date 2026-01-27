@@ -74,6 +74,10 @@ func Endpoint(c *gin.Context) {
 
 				if rule.RuleType == "token" {
 					accesstoken := c.Request.Header.Get("vvorker-access-token")
+					if accesstoken == "" {
+						accesstoken = c.Request.Header.Get("Authorization")
+					}
+					accesstoken = strings.TrimPrefix(accesstoken, "Bearer ")
 					if accesstoken != "" {
 						db := database.GetDB()
 						var workerToken models.ExternalServerToken
