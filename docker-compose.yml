@@ -1,10 +1,6 @@
-version: '3'
-
 services:
   vorker-master:
     build: ./
-    # image: vaalacat/vorker
-    privileged: true
     volumes:
       # - /tmp/workerd-master:/var/lib/litefs # if you want to enable litefs, switch to this
       - /D/workerd/master:/workerd # change to your own path
@@ -17,13 +13,6 @@ services:
       - JWT_SECRET=123123
       - AGENT_SECRET=123123
       - RUN_MODE=master
-      # if you want to enable litefs(HA) support, set up the following variables
-      # ------------------------------------------------------------------------
-      # - LITEFS_ENABLED=true
-      # - LITEFS_IS_MASTER=true
-      # - LITEFS_LISTEN_ADDR=:20202
-      # - DB_PATH=/litefs/db.sqlite
-      # ------------------------------------------------------------------------
     ports:
       - 8080:8080 # reverse proxy port
       - 8888:8888 # admin webui port
@@ -32,8 +21,6 @@ services:
     restart: unless-stopped
   vorker-agent:
     build: ./
-    privileged: true
-    # image: vaalacat/vorker
     volumes:
       # - /tmp/workerd-agent:/var/lib/litefs # if you want to enable litefs, switch to this
       - /D/workerd/node1:/workerd # change to your own path
@@ -45,10 +32,3 @@ services:
       - TUNNEL_HOST=vorker-master
       - MASTER_ENDPOINT=http://vorker-master:8888
       - NODE_NAME=agent-1 # must be different amone agents
-      # if you want to enable litefs(HA) support, set up the following variables
-      # ------------------------------------------------------------------------
-      # - LITEFS_ENABLED=true
-      # - LITEFS_IS_MASTER=false
-      # - LITEFS_LISTEN_ADDR=:20201 # must be different from master
-      # - DB_PATH=/litefs/db.sqlite
-      # ------------------------------------------------------------------------

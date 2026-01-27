@@ -174,6 +174,10 @@ func init() {
 	AppConfigInstance.TunnelPassword = secret.MD5(AppConfigInstance.AgentSecret +
 		AppConfigInstance.WorkerURLSuffix + AppConfigInstance.TunnelUsername)
 	AppConfigInstance.TunnelToken = AppConfigInstance.TunnelPassword
+
+	// logrus.Info("AppConfig initialized")
+	// logrus.Infof("%v", AppConfigInstance)
+
 }
 
 func IsMaster() bool {
