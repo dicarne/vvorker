@@ -237,5 +237,193 @@ func GetAssetsEndpoint(c *gin.Context) {
 		}
 		c.Data(200, mimeType, cache)
 	}
+}
 
+type CheckAssetsReq struct {
+	WorkerUID string `json:"worker_uid"`
+	Files     []struct {
+		Path string `json:"path"`
+		Hash string `json:"hash"`
+	} `json:"files"`
+}
+
+type CheckAssetsResp struct {
+	NeedUpload []string `json:"needUpload"`
+	NeedDelete []string `json:"needDelete"`
+}
+
+func CheckAssetsEndpoint(c *gin.Context) {
+	var req CheckAssetsReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
+	if req.WorkerUID == "" {
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	userID := c.GetUint("uid")
+	if userID == 0 {
+		c.JSON(401, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	var w models.Worker
+	if err := database.GetDB().Where(&models.Worker{
+		Worker: &entities.Worker{
+			UID: req.WorkerUID,
+		},
+	}).First(&w).Error; err != nil {
+		logrus.Errorf("Worker not found: %v", err)
+		c.JSON(404, gin.H{"error": "Worker not found"})
+		return
+	}
+
+	if w.UserID != uint64(userID) {
+		c.JSON(403, gin.H{"error": "Forbidden"})
+		return
+	}
+
+	db := database.GetDB()
+
+	// 获取现有的所有 assets
+	var existingAssets []models.Assets
+	if err := db.Where(&models.Assets{
+		WorkerUID: req.WorkerUID,
+	}).Find(&existingAssets).Error; err != nil {
+		logrus.Errorf("Failed to find assets: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to find assets"})
+		return
+	}
+
+	// 构建现有 assets 的 map，key 为 path
+	existingAssetsMap := make(map[string]string)
+	for _, asset := range existingAssets {
+		existingAssetsMap[asset.Path] = asset.Hash
+	}
+
+	// 构建请求文件的 map，key 为 path
+	requestFilesMap := make(map[string]string)
+	for _, file := range req.Files {
+		requestFilesMap[file.Path] = file.Hash
+	}
+
+	resp := CheckAssetsResp{
+		NeedUpload: []string{},
+		NeedDelete: []string{},
+	}
+
+	// 检查哪些文件需要上传（新文件或哈希值变化的文件）
+	for _, file := range req.Files {
+		existingHash, exists := existingAssetsMap[file.Path]
+		if !exists {
+			// 文件不存在，需要上传
+			resp.NeedUpload = append(resp.NeedUpload, file.Path)
+		} else if existingHash != file.Hash {
+			// 文件存在但哈希值不同，需要上传
+			resp.NeedUpload = append(resp.NeedUpload, file.Path)
+		}
+	}
+
+	// 检查哪些文件需要删除（存在于数据库但不在请求中）
+	for _, asset := range existingAssets {
+		if _, exists := requestFilesMap[asset.Path]; !exists {
+			// 文件存在于数据库但不在请求中，需要删除
+			resp.NeedDelete = append(resp.NeedDelete, asset.Path)
+		}
+	}
+
+	c.JSON(200, gin.H{
+		"code":    0,
+		"data":    resp,
+		"message": "success",
+	})
+}
+
+type DeleteAssetsReq struct {
+	WorkerUID string `json:"worker_uid"`
+	Path      string `json:"path"`
+}
+
+func DeleteAssetsEndpoint(c *gin.Context) {
+	var req DeleteAssetsReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
+	if req.WorkerUID == "" || req.Path == "" {
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	userID := c.GetUint("uid")
+	if userID == 0 {
+		c.JSON(401, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	var w models.Worker
+	if err := database.GetDB().Where(&models.Worker{
+		Worker: &entities.Worker{
+			UID: req.WorkerUID,
+		},
+	}).First(&w).Error; err != nil {
+		logrus.Errorf("Worker not found: %v", err)
+		c.JSON(404, gin.H{"error": "Worker not found"})
+		return
+	}
+
+	if w.UserID != uint64(userID) {
+		c.JSON(403, gin.H{"error": "Forbidden"})
+		return
+	}
+
+	db := database.GetDB()
+
+	// 查找要删除的 asset
+	var asset models.Assets
+	if err := db.Where(&models.Assets{
+		WorkerUID: req.WorkerUID,
+		Path:      req.Path,
+	}).First(&asset).Error; err != nil {
+		c.JSON(404, gin.H{"error": "Asset not found"})
+		return
+	}
+
+	// 删除 asset
+	if err := db.Where(&models.Assets{
+		WorkerUID: req.WorkerUID,
+		Path:      req.Path,
+	}).Delete(&models.Assets{}).Error; err != nil {
+		logrus.Errorf("Failed to delete asset: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to delete asset"})
+		return
+	}
+
+	// 检查是否还有其他 asset 引用同一个文件
+	count := int64(0)
+	if err := db.Model(&models.Assets{}).Where(&models.Assets{
+		UID: asset.UID,
+	}).Count(&count).Error; err != nil {
+		logrus.Errorf("Failed to count assets: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to count assets"})
+		return
+	}
+
+	// 如果没有其他 asset 引用该文件，则删除文件
+	if count == 0 {
+		if err := db.Unscoped().Where(&models.File{
+			UID: asset.UID,
+		}).Delete(&models.File{}).Error; err != nil {
+			logrus.Errorf("Failed to delete file: %v", err)
+			c.JSON(500, gin.H{"error": "Failed to delete file"})
+			return
+		}
+	}
+
+	c.JSON(200, gin.H{
+		"code":    0,
+		"message": "Asset deleted successfully",
+	})
 }
