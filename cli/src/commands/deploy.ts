@@ -11,6 +11,7 @@ import pc from "picocolors"
 export const deployCommand = new Command('deploy')
   .description('部署到VVorker')
   .option('--skip-assets', '跳过上传assets')
+  .option('-f, --force', '强制上传所有assets，不进行差分校验')
   .action(async (options) => {
     if (!getUrl()) {
       console.error('请先配置VVorker平台的url');
@@ -102,78 +103,89 @@ export const deployCommand = new Command('deploy')
         }
       }
       collectFiles(wwwAssetsPath);
-      
-      console.log(pc.gray(`发现 ${fileInfos.length} 个文件，检查更新中...`));
-      
-      // 调用服务器接口检查哪些文件需要更新
-      let checkResp = await apiClient.post(`/api/ext/assets/check-assets`, {
-        worker_uid: uid,
-        files: fileInfos.map(f => ({ path: f.path, hash: f.hash }))
-      })
-      
-      if (checkResp.status !== 200) {
-        throw new Error(`检查文件更新失败: ${checkResp.status} ${checkResp.statusText}`);
-      }
-      
-      const { needUpload, needDelete } = checkResp.data.data;
-      
-      // 删除不再需要的文件
-      if (needDelete.length > 0) {
-        console.log(pc.gray(`正在删除 ${needDelete.length} 个已不存在的 Assets 文件...`));
-        for (const filePath of needDelete) {
-          let deleteResp = await apiClient.post(`/api/ext/assets/delete-assets`, {
-            worker_uid: uid,
-            path: filePath,
-          });
-          
-          if (deleteResp.status !== 200) {
-            console.log(pc.yellow("⚠") + pc.gray(` 删除文件失败：${filePath} ${deleteResp.status} ${deleteResp.statusText}`));
-          }
-        }
-        console.log(pc.green("✓") + pc.gray(` 已删除 ${needDelete.length} 个 Assets 文件`));
-      }
-      
-      if (needUpload.length === 0) {
-        console.log(pc.green("✓") + pc.gray(" 所有 Assets 文件都是最新的，无需上传"));
+
+      let filesToUpload: typeof fileInfos = [];
+      let needDelete: string[] = [];
+
+      if (options.force) {
+        console.log(pc.yellow("强制模式：将上传所有 Assets 文件（跳过差分校验）"));
+        console.log(pc.gray(`发现 ${fileInfos.length} 个文件，准备上传...`));
+        filesToUpload = fileInfos;
       } else {
-        console.log(pc.gray(`需要上传/更新 ${needUpload.length} 个文件...`));
-        
-        // 只上传需要更新的文件
-        for (const fileInfo of fileInfos) {
-          if (needUpload.includes(fileInfo.path)) {
-            console.log(pc.gray(fileInfo.path));
-            const fileContent = fs.readFileSync(fileInfo.fullPath);
-            
-            let uploadResp = await apiClient.post(`/api/file/upload`, {
-              file: fileContent.toString('base64'),
-              path: fileInfo.path,
-            }, {
-              headers: {
-                'Content-Type': 'application/json',
-                'x-encrypted-data': vk != "" ? vk : undefined
-              },
-            })
+        console.log(pc.gray(`发现 ${fileInfos.length} 个文件，检查更新中...`));
 
-            if (uploadResp.status !== 200) {
-              throw new Error(`上传失败：${fileInfo.path} ${uploadResp.status} ${uploadResp.statusText}`);
-            }
+        // 调用服务器接口检查哪些文件需要更新
+        let checkResp = await apiClient.post(`/api/ext/assets/check-assets`, {
+          worker_uid: uid,
+          files: fileInfos.map(f => ({ path: f.path, hash: f.hash }))
+        })
 
-            let fileuid = uploadResp.data.data.fileId;
+        if (checkResp.status !== 200) {
+          throw new Error(`检查文件更新失败: ${checkResp.status} ${checkResp.statusText}`);
+        }
 
-            let createResp = await apiClient.post(`/api/ext/assets/create-assets`, {
-              uid: fileuid,
-              "worker_uid": uid,
-              "path": fileInfo.path,
-            })
+        const checkData = checkResp.data.data;
+        filesToUpload = fileInfos.filter(f => checkData.needUpload.includes(f.path));
+        needDelete = checkData.needDelete;
 
-            if (createResp.status != 200) {
-              console.log(pc.red("✗") + pc.gray(`${fileInfo.path} ${createResp.status} ${createResp.statusText}`));
-              throw new Error(`上传失败：${fileInfo.path} ${createResp.status} ${createResp.statusText}`);
+        // 删除不再需要的文件
+        if (needDelete.length > 0) {
+          console.log(pc.gray(`正在删除 ${needDelete.length} 个已不存在的 Assets 文件...`));
+          for (const filePath of needDelete) {
+            let deleteResp = await apiClient.post(`/api/ext/assets/delete-assets`, {
+              worker_uid: uid,
+              path: filePath,
+            });
+
+            if (deleteResp.status !== 200) {
+              console.log(pc.yellow("⚠") + pc.gray(` 删除文件失败：${filePath} ${deleteResp.status} ${deleteResp.statusText}`));
             }
           }
+          console.log(pc.green("✓") + pc.gray(` 已删除 ${needDelete.length} 个 Assets 文件`));
         }
-        
-        console.log(pc.green("✓") + pc.gray(` Assets 文件上传完成，共 ${needUpload.length} 个文件`));
+
+        if (filesToUpload.length === 0) {
+          console.log(pc.green("✓") + pc.gray(" 所有 Assets 文件都是最新的，无需上传"));
+        } else {
+          console.log(pc.gray(`需要上传/更新 ${filesToUpload.length} 个文件...`));
+        }
+      }
+
+      // 上传文件
+      for (const fileInfo of filesToUpload) {
+        console.log(pc.gray(fileInfo.path));
+        const fileContent = fs.readFileSync(fileInfo.fullPath);
+
+        let uploadResp = await apiClient.post(`/api/file/upload`, {
+          file: fileContent.toString('base64'),
+          path: fileInfo.path,
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-encrypted-data': vk != "" ? vk : undefined
+          },
+        })
+
+        if (uploadResp.status !== 200) {
+          throw new Error(`上传失败：${fileInfo.path} ${uploadResp.status} ${uploadResp.statusText}`);
+        }
+
+        let fileuid = uploadResp.data.data.fileId;
+
+        let createResp = await apiClient.post(`/api/ext/assets/create-assets`, {
+          uid: fileuid,
+          "worker_uid": uid,
+          "path": fileInfo.path,
+        })
+
+        if (createResp.status != 200) {
+          console.log(pc.red("✗") + pc.gray(`${fileInfo.path} ${createResp.status} ${createResp.statusText}`));
+          throw new Error(`上传失败：${fileInfo.path} ${createResp.status} ${createResp.statusText}`);
+        }
+      }
+
+      if (filesToUpload.length > 0) {
+        console.log(pc.green("✓") + pc.gray(` Assets 文件上传完成，共 ${filesToUpload.length} 个文件`));
       }
     } else if (vvorkerJson.assets && vvorkerJson.assets.length > 0 && options.skipAssets) {
       console.log(pc.gray("已跳过 Assets 文件上传 (--skip-assets)"));
