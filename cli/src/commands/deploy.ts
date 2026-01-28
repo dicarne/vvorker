@@ -11,6 +11,7 @@ import pc from "picocolors"
 export const deployCommand = new Command('deploy')
   .description('部署到VVorker')
   .option('--skip-assets', '跳过上传assets')
+  .option('--skip-build', '跳过构建')
   .option('-f, --force', '强制上传所有assets，不进行差分校验')
   .action(async (options) => {
     if (!getUrl()) {
@@ -62,12 +63,16 @@ export const deployCommand = new Command('deploy')
     if (getUrl()!.endsWith('/')) {
       setUrl(getUrl()!.slice(0, -1));
     }
-    // 运行 pnpm run build 命令
-    // 如果存在pnpm-lock.yaml，则使用pnpm
-    if (fs.existsSync('pnpm-lock.yaml')) {
-      await runCommand('pnpm', ['run', 'build']);
+    // 运行 pnpm run build 命令（可通过 --skip-build 跳过）
+    if (options.skipBuild) {
+      console.log(pc.gray('已跳过构建 (--skip-build)'));
     } else {
-      await runCommand('npm', ['run', 'build']);
+      // 如果存在pnpm-lock.yaml，则使用pnpm
+      if (fs.existsSync('pnpm-lock.yaml')) {
+        await runCommand('pnpm', ['run', 'build']);
+      } else {
+        await runCommand('npm', ['run', 'build']);
+      }
     }
 
     console.log(pc.gray("--------------"))
