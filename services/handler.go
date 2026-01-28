@@ -269,16 +269,16 @@ func init() {
 					kvAPI.POST("/invoke", authz.AgentAuthz(), kv.InvokeKVEndpoint)
 				}
 			}
-assetsAPI := extAPI.Group("/assets")
-		{
-			if conf.IsMaster() {
-				assetsAPI.POST("/create-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), vvotp.OTPMiddleware(), assets.UploadAssetsEndpoint)
-				assetsAPI.GET("/get-assets", authz.AgentAuthz(), assets.GetAssetsEndpoint)
-				assetsAPI.POST("/clear-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), vvotp.OTPMiddleware(), assets.ClearAssetsEndpoint)
-				assetsAPI.POST("/check-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), vvotp.OTPMiddleware(), assets.CheckAssetsEndpoint)
-				assetsAPI.POST("/delete-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), vvotp.OTPMiddleware(), assets.DeleteAssetsEndpoint)
+			assetsAPI := extAPI.Group("/assets")
+			{
+				if conf.IsMaster() {
+					assetsAPI.POST("/create-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), vvotp.OTPMiddleware(), assets.UploadAssetsEndpoint)
+					assetsAPI.GET("/get-assets", authz.AgentAuthz(), assets.GetAssetsEndpoint)
+					assetsAPI.POST("/clear-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), vvotp.OTPMiddleware(), assets.ClearAssetsEndpoint)
+					assetsAPI.POST("/check-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), vvotp.OTPMiddleware(), assets.CheckAssetsEndpoint)
+					assetsAPI.POST("/delete-assets", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), vvotp.OTPMiddleware(), assets.DeleteAssetsEndpoint)
+				}
 			}
-		}
 			taskAPI := extAPI.Group("/task")
 			{
 				if conf.IsMaster() {

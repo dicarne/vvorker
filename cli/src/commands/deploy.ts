@@ -10,7 +10,8 @@ import pc from "picocolors"
 
 export const deployCommand = new Command('deploy')
   .description('部署到VVorker')
-  .action(async () => {
+  .option('--skip-assets', '跳过上传assets')
+  .action(async (options) => {
     if (!getUrl()) {
       console.error('请先配置VVorker平台的url');
       return;
@@ -75,7 +76,7 @@ export const deployCommand = new Command('deploy')
 
     let jsFilePath = "";
 
-    if (vvorkerJson.assets && vvorkerJson.assets.length > 0) {
+    if (vvorkerJson.assets && vvorkerJson.assets.length > 0 && !options.skipAssets) {
       console.log(pc.white("Assets 文件上传开始..."))
       let wwwAssetsPath = path.join(process.cwd(), vvorkerJson.assets[0].directory)
       
@@ -174,6 +175,8 @@ export const deployCommand = new Command('deploy')
         
         console.log(pc.green("✓") + pc.gray(` Assets 文件上传完成，共 ${needUpload.length} 个文件`));
       }
+    } else if (vvorkerJson.assets && vvorkerJson.assets.length > 0 && options.skipAssets) {
+      console.log(pc.gray("已跳过 Assets 文件上传 (--skip-assets)"));
     }
 
     if (vvorkerJson.project.type === "vue") {
