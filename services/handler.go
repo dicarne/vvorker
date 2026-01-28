@@ -333,13 +333,17 @@ func InitTunnel(wg *conc.WaitGroup) {
 }
 
 // initTunnelService 初始化隧道服务和访客
-func initTunnelService(serviceName string, servicePort int, visitorPort int) error {
+func initTunnelService(serviceName string, servicePort int) error {
 	err := tunnel.GetClient().AddService(serviceName, servicePort)
 	if err != nil {
 		logrus.WithError(err).Errorf("init tunnel for %s service error", serviceName)
 		return err
 	}
-	err = tunnel.GetClient().AddVisitor(serviceName, visitorPort)
+	return nil
+}
+
+func initTunnelVisitor(serviceName string, visitorPort int) error {
+	err := tunnel.GetClient().AddVisitor(serviceName, visitorPort)
 	if err != nil {
 		logrus.WithError(err).Errorf("init tunnel for %s visitor failed", serviceName)
 		return err
@@ -375,14 +379,36 @@ func Run(f embed.FS) {
 	wg.Go(func() {
 		// 将数据库远程端口代理到master临时本地端口
 		if conf.IsMaster() {
-			proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerPostgreHost, conf.AppConfigInstance.ServerPostgrePort), fmt.Sprintf(":%d", conf.AppConfigInstance.LocalTMPPostgrePort))
-			proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerRedisHost, conf.AppConfigInstance.ServerRedisPort), fmt.Sprintf(":%d", conf.AppConfigInstance.LocalTMPRedisPort))
-			proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerMySQLHost, conf.AppConfigInstance.ServerMySQLPort), fmt.Sprintf(":%d", conf.AppConfigInstance.LocalTMPMySQLPort))
+			if conf.AppConfigInstance.EnablePgSQL {
+				proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerPostgreHost, conf.AppConfigInstance.ServerPostgrePort), fmt.Sprintf(":%d", conf.AppConfigInstance.LocalTMPPostgrePort))
+				initTunnelService("service-proxy-postgresql", conf.AppConfigInstance.LocalTMPPostgrePort)
+				initTunnelVisitor("service-proxy-postgresql", conf.AppConfigInstance.ClientPostgrePort)
+			}
+			if conf.AppConfigInstance.EnableRedis {
+				proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerRedisHost, conf.AppConfigInstance.ServerRedisPort), fmt.Sprintf(":%d", conf.AppConfigInstance.LocalTMPRedisPort))
+				initTunnelService("service-proxy-redis", conf.AppConfigInstance.LocalTMPRedisPort)
+				initTunnelVisitor("service-proxy-redis", conf.AppConfigInstance.ClientRedisPort)
+			}
+
+			if conf.AppConfigInstance.EnableMySQL {
+				proxyService.InitReverseProxy(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ServerMySQLHost, conf.AppConfigInstance.ServerMySQLPort), fmt.Sprintf(":%d", conf.AppConfigInstance.LocalTMPMySQLPort))
+				initTunnelService("service-proxy-mysql", conf.AppConfigInstance.LocalTMPMySQLPort)
+				initTunnelVisitor("service-proxy-mysql", conf.AppConfigInstance.ClientMySQLPort)
+			}
+
+		} else {
+			if conf.AppConfigInstance.EnablePgSQL {
+				initTunnelVisitor("service-proxy-postgresql", conf.AppConfigInstance.ClientPostgrePort)
+			}
+			if conf.AppConfigInstance.EnableRedis {
+				initTunnelVisitor("service-proxy-redis", conf.AppConfigInstance.ClientRedisPort)
+			}
+			if conf.AppConfigInstance.EnableMySQL {
+				initTunnelVisitor("service-proxy-mysql", conf.AppConfigInstance.ClientMySQLPort)
+			}
+
 		}
-		// 将master；临时本地端口代理到worker本地端口
-		initTunnelService(conf.AppConfigInstance.NodeName+"postgresql", conf.AppConfigInstance.LocalTMPPostgrePort, conf.AppConfigInstance.ClientPostgrePort)
-		initTunnelService(conf.AppConfigInstance.NodeName+"redis", conf.AppConfigInstance.LocalTMPRedisPort, conf.AppConfigInstance.ClientRedisPort)
-		initTunnelService(conf.AppConfigInstance.NodeName+"mysql", conf.AppConfigInstance.LocalTMPMySQLPort, conf.AppConfigInstance.ClientMySQLPort)
+
 	})
 	wg.Go(func() {
 		router.Run(fmt.Sprintf("%v:%d", conf.AppConfigInstance.ListenAddr, conf.AppConfigInstance.APIPort))
@@ -466,8 +492,6 @@ func RegisterNodeToMaster() {
 			tunnel.GetClient().Add(conf.AppConfigInstance.NodeID, utils.NodeHostPrefix(
 				conf.AppConfigInstance.NodeName, conf.AppConfigInstance.NodeID),
 				int(conf.AppConfigInstance.APIPort))
-		} else {
-			logrus.Info("Tunnel already exists, skip adding")
 		}
 		if conf.AppConfigInstance.EnableAutoSync {
 			agent.SyncCall()
