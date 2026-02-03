@@ -187,3 +187,28 @@ export interface ListAccessRuleRequest {
   page: number
   page_size: number
 }
+
+export interface Secret {
+  WorkerUID: string
+  ID: number
+  Key: string
+  Value: string
+}
+
+export interface SecretCreateRequest {
+    worker_uid: string
+    key: string
+    value: string
+}
+
+export interface UpdateSecretRequest {
+    worker_uid: string
+    id: number
+    key: string
+    value: string
+}
+
+export interface DeleteSecretRequest {
+    worker_uid: string
+    id: number
+}

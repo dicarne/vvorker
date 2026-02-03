@@ -25,6 +25,7 @@ import type {
   AccessControlRequest,
   EnableAccessControlRequest,
 } from '@/types/access' // 假设存在对应的类型定义
+import type { DeleteSecretRequest, Secret, SecretCreateRequest, UpdateSecretRequest } from '@/types/access'
 // 假设存在对应的类型定义
 
 export const getWorker = (uid: string) => {
@@ -229,4 +230,30 @@ export const getWorkerCollaboratorInfo = (uid: string) => {
   return api
     .get<{ data: WorkerCollaboratorInfo }>(`api/worker/collaborator/${uid}`)
     .then((res) => res.data.data)
+}
+
+export const listWorkerSecrets = async (worker_uid: string) => {
+  const res = await api.post<CommonResponse<{ secrets: Secret[] }>>(
+    'api/worker/access/secret/list',
+    { worker_uid: worker_uid },
+  )
+  return res.data
+}
+
+export const createWorkerSecret = async (request: SecretCreateRequest) => {
+  return api
+    .post('api/worker/access/secret/create', request)
+    .then((res) => res.data)
+}
+
+export const updateWorkerSecret = async (request: UpdateSecretRequest) => {
+  return api
+    .post('api/worker/access/secret/update', request)
+    .then((res) => res.data)
+}
+
+export const deleteWorkerSecret = async (request: DeleteSecretRequest) => {
+  return api
+    .post('api/worker/access/secret/delete', request)
+    .then((res) => res.data)
 }
