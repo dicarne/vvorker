@@ -99,9 +99,9 @@ func ListSecretEndpoint(c *gin.Context) {
 	}
 
 	// 隐藏密钥值，统一显示为六个星号
-	for i := range secretList {
-		secretList[i].Value = "******"
-	}
+	// for i := range secretList {
+	// 	secretList[i].Value = "******"
+	// }
 
 	common.RespOK(c, common.RespMsgOK, gin.H{
 		"secrets": secretList,
