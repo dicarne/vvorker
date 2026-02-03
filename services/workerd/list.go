@@ -9,6 +9,7 @@ import (
 	"vvorker/entities"
 	"vvorker/funcs"
 	"vvorker/models"
+	"vvorker/models/secrets"
 	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
@@ -364,6 +365,21 @@ func FinishWorkerConfig(worker *models.Worker) string {
 				workerconfig.OSS[i] = ext
 			}
 		}
+		var workerSecrets []secrets.Secret
+		db.Model(secrets.Secret{}).Where(&secrets.Secret{
+			WorkerUID: worker.UID,
+		}).Find(&workerSecrets)
+
+		vars := gin.H{}
+		err := json.Unmarshal(workerconfig.Vars, &vars)
+		if err == nil {
+			for i, s := range workerSecrets {
+				vars[s.Key] = workerSecrets[i].Value
+			}
+		}
+
+		varsBytes, _ := json.Marshal(vars)
+		workerconfig.Vars = varsBytes
 
 		workerBytes, werr := json.Marshal(workerconfig)
 		if werr != nil {
