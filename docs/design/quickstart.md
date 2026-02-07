@@ -2,6 +2,64 @@
 
 本指南将带你快速上手使用 VVorker 平台进行项目开发和部署。
 
+
+## 0. 平台部署
+
+### 环境要求
+
+- Go 1.25.4+
+- Docker（推荐）
+- Node.js 18+（用于前端开发）
+
+### 快速部署
+
+#### 使用 Docker Compose（推荐）
+
+```bash
+# 克隆项目
+git clone https://github.com/dicarne/vvorker.git
+cd vvorker
+
+# 启动服务
+docker-compose up -d
+
+# 访问管理界面
+# http://localhost:8888/admin
+```
+
+#### 访问 Worker
+
+```bash
+# 方式 1：通过 Host 头
+curl localhost:8080 -H "Host: workername.yourdomain.com"
+
+# 方式 2：通过 Server-Host 头
+curl localhost:8080 -H "Server-Host: workername.yourdomain.com"
+
+# 方式 3：通过 HTTPS（配置了域名后）
+curl https://workername.yourdomain.com
+```
+
+## 生态工具
+
+### CLI 工具（vvcli）
+
+命令行工具，用于快速部署和管理 Worker：
+
+- 创建本地项目
+- 部署代码
+- 切换多个开发环境
+- 生成类型
+
+### SDK（TypeScript）
+
+提供 TypeScript/JavaScript SDK，便于在项目中集成 VVorker：
+
+- Worker 代码打包
+- API 调用封装
+- 资源管理接口
+
+
 ## 1. 创建 Worker
 
 ### 访问管理控制台
