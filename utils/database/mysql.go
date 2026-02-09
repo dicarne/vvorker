@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"time"
 	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/utils"
@@ -63,6 +64,27 @@ func initMysql() {
 	if err != nil {
 		panic("Failed to connect to database")
 	}
+
+	// 配置连接池 - 防止连接超时和重置
+	sqlDB, err := db.DB()
+	if err != nil {
+		panic("Failed to get database instance")
+	}
+
+	// 从环境变量读取连接池配置
+	maxIdleConns := conf.AppConfigInstance.DBMaxIdleConns
+	maxOpenConns := conf.AppConfigInstance.DBMaxOpenConns
+	connMaxLifetime := time.Duration(conf.AppConfigInstance.DBConnMaxLifetime) * time.Minute
+	connMaxIdleTime := time.Duration(conf.AppConfigInstance.DBConnMaxIdleTime) * time.Minute
+
+	// 连接池配置
+	sqlDB.SetMaxIdleConns(maxIdleConns)           // 最大空闲连接数
+	sqlDB.SetMaxOpenConns(maxOpenConns)           // 最大打开连接数
+	sqlDB.SetConnMaxLifetime(connMaxLifetime)     // 连接最大生命周期
+	sqlDB.SetConnMaxIdleTime(connMaxIdleTime)     // 空闲连接超时时间
+
+	logrus.Infof("MySQL database initialized with connection pool: max_idle=%d, max_open=%d, max_lifetime=%v, max_idle_time=%v",
+		maxIdleConns, maxOpenConns, connMaxLifetime, connMaxIdleTime)
 
 	GetManager().SetDB(defs.DBTypeMysql, db)
 }
