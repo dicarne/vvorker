@@ -164,6 +164,7 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 			Output: "Worker started!",
 			Time:   time.Now(),
 			Type:   "warn",
+			LogUID: utils.GenerateUID(),
 		}})
 
 	var worker entities.Worker
@@ -273,8 +274,9 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 
 			// 读取标准输出并发送到 channel
 			go func(uid string) {
-				buf := make([]byte, 4096)
-				lineBuffer := make([]byte, 0, 4096)
+				maxBufferSize := 4 * 1024
+				buf := make([]byte, maxBufferSize)
+				lineBuffer := make([]byte, 0, maxBufferSize)
 				for {
 					select {
 					case <-ctx.Done(): // 监听上下文取消信号
@@ -285,50 +287,9 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 							data := buf[:n]
 							// 累积数据到行缓冲区
 							lineBuffer = append(lineBuffer, data...)
-
-							// 按换行符切分日志
-							for {
-								newlineIdx := -1
-								for i, b := range lineBuffer {
-									if b == '\n' {
-										newlineIdx = i
-										break
-									}
-								}
-
-								if newlineIdx == -1 {
-									// 没有换行符，等待更多数据
-									break
-								}
-
+							if n < maxBufferSize {
+								// 如果读取的数据小于缓冲区大小，说明已经读取完毕
 								// 提取一行
-								line := string(lineBuffer[:newlineIdx])
-								// 移除行尾的 \r (Windows换行符)
-								if len(line) > 0 && line[len(line)-1] == '\r' {
-									line = line[:len(line)-1]
-								}
-
-								// 发送完整行到channel
-								if line != "" {
-									logUID := utils.GenerateUID()
-									workerLogChan <- WorkerLog{
-										WorkerLogData: &WorkerLogData{
-											UID:    copy.WorkerUID,
-											Output: line,
-											Time:   time.Now(),
-											Type:   "stdout",
-											LogUID: logUID,
-										},
-									}
-									logrus.Infof("workerd %s stdout: %s", uid, line)
-								}
-
-								// 移除已处理的行（包括换行符）
-								lineBuffer = lineBuffer[newlineIdx+1:]
-							}
-
-							// 如果缓冲区过大（超过10KB），强制发送并清空
-							if len(lineBuffer) > 10240 {
 								line := string(lineBuffer)
 								logUID := utils.GenerateUID()
 								workerLogChan <- WorkerLog{
@@ -340,7 +301,21 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 										LogUID: logUID,
 									},
 								}
-								logrus.Infof("workerd %s stdout: %s", uid, line)
+								lineBuffer = lineBuffer[:0]
+							} else if len(lineBuffer) > 10240 {
+								// 如果缓冲区过大（超过10KB），强制发送并清空
+
+								line := string(lineBuffer)
+								logUID := utils.GenerateUID()
+								workerLogChan <- WorkerLog{
+									WorkerLogData: &WorkerLogData{
+										UID:    copy.WorkerUID,
+										Output: line,
+										Time:   time.Now(),
+										Type:   "stdout",
+										LogUID: logUID,
+									},
+								}
 								lineBuffer = lineBuffer[:0]
 							}
 						}
@@ -358,9 +333,8 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 										LogUID: logUID,
 									},
 								}
-								logrus.Infof("workerd %s stdout: %s", uid, line)
+								lineBuffer = lineBuffer[:0]
 							}
-							return
 						}
 					}
 				}
@@ -368,8 +342,9 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 
 			// 读取错误输出并发送到 channel
 			go func(uid string) {
-				buf := make([]byte, 4096)
-				lineBuffer := make([]byte, 0, 4096)
+				maxBufferSize := 4 * 1024
+				buf := make([]byte, maxBufferSize)
+				lineBuffer := make([]byte, 0, maxBufferSize)
 				for {
 					select {
 					case <-ctx.Done(): // 监听上下文取消信号
@@ -380,50 +355,9 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 							data := buf[:n]
 							// 累积数据到行缓冲区
 							lineBuffer = append(lineBuffer, data...)
-
-							// 按换行符切分日志
-							for {
-								newlineIdx := -1
-								for i, b := range lineBuffer {
-									if b == '\n' {
-										newlineIdx = i
-										break
-									}
-								}
-
-								if newlineIdx == -1 {
-									// 没有换行符，等待更多数据
-									break
-								}
-
+							if n < maxBufferSize {
+								// 如果读取的数据小于缓冲区大小，说明已经读取完毕
 								// 提取一行
-								line := string(lineBuffer[:newlineIdx])
-								// 移除行尾的 \r (Windows换行符)
-								if len(line) > 0 && line[len(line)-1] == '\r' {
-									line = line[:len(line)-1]
-								}
-
-								// 发送完整行到channel
-								if line != "" {
-									logUID := utils.GenerateUID()
-									workerLogChan <- WorkerLog{
-										WorkerLogData: &WorkerLogData{
-											UID:    copy.WorkerUID,
-											Output: line,
-											Time:   time.Now(),
-											Type:   "error",
-											LogUID: logUID,
-										},
-									}
-									logrus.Errorf("workerd %s : %d error: %s", uid, copy.LocalID, line)
-								}
-
-								// 移除已处理的行（包括换行符）
-								lineBuffer = lineBuffer[newlineIdx+1:]
-							}
-
-							// 如果缓冲区过大（超过10KB），强制发送并清空
-							if len(lineBuffer) > 10240 {
 								line := string(lineBuffer)
 								logUID := utils.GenerateUID()
 								workerLogChan <- WorkerLog{
@@ -431,11 +365,25 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 										UID:    copy.WorkerUID,
 										Output: line,
 										Time:   time.Now(),
-										Type:   "error",
+										Type:   "stderr",
 										LogUID: logUID,
 									},
 								}
-								logrus.Errorf("workerd %s : %d error: %s", uid, copy.LocalID, line)
+								lineBuffer = lineBuffer[:0]
+							} else if len(lineBuffer) > 10240 {
+								// 如果缓冲区过大（超过10KB），强制发送并清空
+
+								line := string(lineBuffer)
+								logUID := utils.GenerateUID()
+								workerLogChan <- WorkerLog{
+									WorkerLogData: &WorkerLogData{
+										UID:    copy.WorkerUID,
+										Output: line,
+										Time:   time.Now(),
+										Type:   "stderr",
+										LogUID: logUID,
+									},
+								}
 								lineBuffer = lineBuffer[:0]
 							}
 						}
@@ -449,13 +397,12 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 										UID:    copy.WorkerUID,
 										Output: line,
 										Time:   time.Now(),
-										Type:   "error",
+										Type:   "stdout",
 										LogUID: logUID,
 									},
 								}
-								logrus.Errorf("workerd %s : %d error: %s", uid, copy.LocalID, line)
+								lineBuffer = lineBuffer[:0]
 							}
-							return
 						}
 					}
 				}

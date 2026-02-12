@@ -38,24 +38,28 @@ onUnmounted(() => {
     window.clearInterval(intervalId)
   }
 })
+
+function renderTag(type: string) {
+  if (type === 'warn') return "warning"
+  if (type === 'success') return "success"
+  if (type === 'error') return "error"
+  if (type === "stderr") return "error"
+  return "default"
+}
 </script>
 <template>
   <div ref="containerRef">
     <NList class="log-container" bordered>
-      <NListItem v-for="item in logs" :key="item.log_uid">
+      <NListItem v-for="item in logs" :key="item.log_uid ? item.log_uid : item.uid + item.time">
         <template #prefix>
-          <NTag size="small">{{ formatDate(new Date(item.time)) }}</NTag>
+          <NTag size="small" :type="renderTag(item.type)">{{ formatDate(new Date(item.time)) }}
+          </NTag>
         </template>
         <div class="log-content">{{ item.output }}</div>
       </NListItem>
     </NList>
-    <NPagination
-      class="v-item-column"
-      v-model:page="curPage"
-      :page-size="DEFAULT_PAGE_SIZE"
-      :item-count="totalCount"
-      @update:page="fetchLogs"
-    />
+    <NPagination class="v-item-column" v-model:page="curPage" :page-size="DEFAULT_PAGE_SIZE" :item-count="totalCount"
+      @update:page="fetchLogs" />
   </div>
 </template>
 

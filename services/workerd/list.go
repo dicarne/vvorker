@@ -12,6 +12,7 @@ import (
 	"vvorker/funcs"
 	"vvorker/models"
 	"vvorker/models/secrets"
+	"vvorker/utils"
 	"vvorker/utils/database"
 
 	"github.com/gin-gonic/gin"
@@ -309,6 +310,7 @@ func FinishWorkerConfig(worker *models.Worker) string {
 							Output: "[PostgreSQL Migration Error] " + errLog,
 							Time:   time.Now(),
 							Type:   "error",
+							LogUID: utils.GenerateUID(),
 						}})
 				}
 			} else {
@@ -322,6 +324,7 @@ func FinishWorkerConfig(worker *models.Worker) string {
 								Output: "[PostgreSQL Migration Error] " + errLog,
 								Time:   time.Now(),
 								Type:   "error",
+								LogUID: utils.GenerateUID(),
 							}})
 					}
 				}
@@ -356,6 +359,7 @@ func FinishWorkerConfig(worker *models.Worker) string {
 							Output: "[MySQL Migration Error] " + errLog,
 							Time:   time.Now(),
 							Type:   "error",
+							LogUID: utils.GenerateUID(),
 						}})
 				}
 			} else {
@@ -369,6 +373,7 @@ func FinishWorkerConfig(worker *models.Worker) string {
 								Output: "[MySQL Migration Error] " + errLog,
 								Time:   time.Now(),
 								Type:   "error",
+								LogUID: utils.GenerateUID(),
 							}})
 					}
 				}
