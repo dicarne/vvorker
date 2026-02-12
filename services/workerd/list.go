@@ -281,6 +281,12 @@ func FinishWorkerConfig(worker *models.Worker) string {
 	workerconfig, err := conf.ParseWorkerConfig(worker.Template)
 	if err == nil {
 		db := database.GetDB()
+
+		// 查找当前worker的部署任务
+		var task models.Task
+		taskResult := ""
+		taskUpdated := false
+
 		for i, ext := range workerconfig.PgSql {
 			if len(ext.ResourceID) != 0 {
 				var pgresources = models.PostgreSQL{}
@@ -296,6 +302,7 @@ func FinishWorkerConfig(worker *models.Worker) string {
 
 				_, errLog := funcs.MigratePostgreSQLDatabase(worker.UserID, ext.ResourceID)
 				if errLog != "" {
+					taskResult += "[PostgreSQL Migration Error] " + errLog + "\n"
 					db.Create(&exec.WorkerLog{
 						WorkerLogData: &exec.WorkerLogData{
 							UID:    worker.UID,
@@ -308,6 +315,7 @@ func FinishWorkerConfig(worker *models.Worker) string {
 				if len(ext.Migrate) != 0 {
 					_, errLog := funcs.MigratePostgreSQLDatabase(worker.UserID, "worker_resource:pgsql:"+worker.UID+":"+ext.Migrate)
 					if errLog != "" {
+						taskResult += "[PostgreSQL Migration Error] " + errLog + "\n"
 						db.Create(&exec.WorkerLog{
 							WorkerLogData: &exec.WorkerLogData{
 								UID:    worker.UID,
@@ -341,6 +349,7 @@ func FinishWorkerConfig(worker *models.Worker) string {
 
 				_, errLog := funcs.MigrateMySQLDatabase(worker.UserID, ext.ResourceID)
 				if errLog != "" {
+					taskResult += "[MySQL Migration Error] " + errLog + "\n"
 					db.Create(&exec.WorkerLog{
 						WorkerLogData: &exec.WorkerLogData{
 							UID:    worker.UID,
@@ -353,6 +362,7 @@ func FinishWorkerConfig(worker *models.Worker) string {
 				if len(ext.Migrate) != 0 {
 					_, errLog := funcs.MigrateMySQLDatabase(worker.UserID, "worker_resource:mysql:"+worker.UID+":"+ext.Migrate)
 					if errLog != "" {
+						taskResult += "[MySQL Migration Error] " + errLog + "\n"
 						db.Create(&exec.WorkerLog{
 							WorkerLogData: &exec.WorkerLogData{
 								UID:    worker.UID,
@@ -362,6 +372,20 @@ func FinishWorkerConfig(worker *models.Worker) string {
 							}})
 					}
 				}
+			}
+		}
+
+		// 迁移完成后更新任务状态
+		// 查找正在运行的任务
+		db.Where("worker_uid = ? AND status = 'running'", worker.UID).Order("created_at desc").First(&task)
+		if task.ID != 0 && !taskUpdated {
+			taskUpdated = true
+			if taskResult != "" {
+				models.UpdateTaskResult(task.TraceID, taskResult)
+				models.CompleteTask(task.TraceID, "failed")
+			} else {
+				models.UpdateTaskResult(task.TraceID, "success")
+				models.CompleteTask(task.TraceID, "completed")
 			}
 		}
 

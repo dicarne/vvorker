@@ -24,12 +24,18 @@ type UpdateWorkerReq struct {
 	Description string `json:"Description"`
 }
 
-func UpdateWorker(userID uint, UID string, worker *entities.Worker, desc string) error {
+func UpdateWorker(userID uint, UID string, worker *entities.Worker, desc string) (string, error) {
 	FillWorkerValue(worker, true, UID, userID)
 
 	workerRecord, err := models.GetWorkerByUID(userID, UID)
 	if err != nil {
-		return err
+		return "", err
+	}
+
+	// 创建部署任务
+	traceID := utils.GenerateUID()
+	if err := models.CreateTask(traceID, UID, "running"); err != nil {
+		logrus.WithError(err).Warn("failed to create deployment task")
 	}
 
 	curNodeName := conf.AppConfigInstance.NodeName
@@ -41,7 +47,10 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker, desc string)
 	// 删除旧的worker
 	err = workerRecord.Delete()
 	if err != nil {
-		return err
+		if traceID != "" {
+			models.CompleteTask(traceID, "failed")
+		}
+		return traceID, err
 	}
 
 	// 创建新的worker
@@ -58,23 +67,32 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker, desc string)
 	if conf.AppConfigInstance.FileStorageUseOSS {
 		err = funcs.UploadFileToSysBucket(fmt.Sprintf("code/%s", newWorker.GetUID()), bytes.NewReader(code))
 		if err != nil {
-			return err
+			if traceID != "" {
+				models.CompleteTask(traceID, "failed")
+			}
+			return traceID, err
 		}
 	}
 
 	err = newWorker.Create()
 	if err != nil {
-		return err
+		if traceID != "" {
+			models.CompleteTask(traceID, "failed")
+		}
+		return traceID, err
 	}
 
 	if worker.NodeName == curNodeName {
-		err := generate.GenWorkerConfig(newWorker.ToEntity(), newWorker)
+		err = generate.GenWorkerConfig(newWorker.ToEntity(), newWorker)
 		if err != nil {
-			return err
+			if traceID != "" {
+				models.CompleteTask(traceID, "failed")
+			}
+			return traceID, err
 		}
-		exec.ExecManager.RunCmd(worker.GetUID(), []string{})
+		exec.ExecManager.RunCmd(worker.GetUID(), []string{traceID})
 	}
-	return nil
+	return traceID, nil
 }
 
 // 更新worker
@@ -114,11 +132,13 @@ func UpdateEndpointJSON(c *gin.Context) {
 	}
 	worker.Worker.SemVersion = config.Version
 
-	if err := UpdateWorker(uint(oldworker.UserID), UID, worker.Worker, worker.Description); err != nil {
+	traceID, err := UpdateWorker(uint(oldworker.UserID), UID, worker.Worker, worker.Description)
+	if err != nil {
 		logrus.WithError(err).Errorf("update worker error, worker is: [%+v]", worker.Worker)
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}
+	c.Set("trace_id", traceID)
 
 	if oldworker.Name != worker.Worker.Name {
 		cacheKey := fmt.Sprintf("db:workerd:uid_name_%s_cache:", oldworker.Name)
@@ -127,7 +147,13 @@ func UpdateEndpointJSON(c *gin.Context) {
 		sys_cache.Del(lockKey)
 	}
 
-	common.RespOK(c, "update worker success", gin.H{
+	traceIDValue, _ := c.Get("trace_id")
+	traceID, _ = traceIDValue.(string)
+	result := gin.H{
 		"version": worker.Worker.Version,
-	})
+	}
+	if traceID != "" {
+		result["task_id"] = traceID
+	}
+	common.RespOK(c, "update worker success", result)
 }

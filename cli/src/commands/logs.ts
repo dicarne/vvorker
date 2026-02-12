@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { apiClient } from '../utils/api';
 import { loadVVorkerConfig } from '../utils/vvorker-config';
+import { withWorkingDir } from '../utils/working-dir';
 import pc from "picocolors";
 import axios from 'axios';
 
@@ -10,23 +11,25 @@ export const logsCommand = new Command('logs')
   .option('-p,--page <number>', '页码，从1开始', '1')
   .option('--page-size <number>', '每页记录数', '50')
   .action(async (options) => {
-    try {
-      const vvorkerJson = loadVVorkerConfig();
-      const uid = vvorkerJson.project?.uid ?? vvorkerJson.uid;
-      
-      if (!uid) {
-        console.error(pc.red('未找到 worker uid'));
-        return;
-      }
+    await withWorkingDir(async () => {
+      try {
+        const vvorkerJson = loadVVorkerConfig();
+        const uid = vvorkerJson.project?.uid ?? vvorkerJson.uid;
 
-      if (options.follow) {
-        await streamLogs(uid);
-      } else {
-        await fetchLogs(uid, parseInt(options.page), parseInt(options.pageSize));
+        if (!uid) {
+          console.error(pc.red('未找到 worker uid'));
+          return;
+        }
+
+        if (options.follow) {
+          await streamLogs(uid);
+        } else {
+          await fetchLogs(uid, parseInt(options.page), parseInt(options.pageSize));
+        }
+      } catch (error) {
+        console.error(pc.red(`获取日志失败: ${error}`));
       }
-    } catch (error) {
-      console.error(pc.red(`获取日志失败: ${error}`));
-    }
+    });
   });
 
 async function fetchLogs(uid: string, page: number, pageSize: number) {

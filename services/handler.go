@@ -116,25 +116,25 @@ func init() {
 						whitelistApi.POST("/delete", access.DeleteInternalWhiteListEndpoint)
 					}
 
-controlApi := accessApi.Group("/control")
-				{
-					controlApi.POST("/update-control", access.UpdateEnableAccessControlEndpoint)
-					controlApi.POST("/get-control", access.GetAccessControlEndpoint)
-					controlApi.POST("/list-rules", access.ListAccessRuleEndpoint)
-					controlApi.POST("/create-rule", access.AddAccessRuleEndpoint)
-					controlApi.POST("/update-rule", access.UpdateAccessRuleEndpoint)
-					controlApi.POST("/delete-rule", access.DeleteAccessRuleEndpoint)
-					controlApi.POST("/switch-rule", access.SwitchAccessRuleEndpoint)
-				}
+					controlApi := accessApi.Group("/control")
+					{
+						controlApi.POST("/update-control", access.UpdateEnableAccessControlEndpoint)
+						controlApi.POST("/get-control", access.GetAccessControlEndpoint)
+						controlApi.POST("/list-rules", access.ListAccessRuleEndpoint)
+						controlApi.POST("/create-rule", access.AddAccessRuleEndpoint)
+						controlApi.POST("/update-rule", access.UpdateAccessRuleEndpoint)
+						controlApi.POST("/delete-rule", access.DeleteAccessRuleEndpoint)
+						controlApi.POST("/switch-rule", access.SwitchAccessRuleEndpoint)
+					}
 
-				secretApi := accessApi.Group("/secret")
-				{
-					secretApi.POST("/create", access.CreateSecretEndpoint)
-					secretApi.POST("/list", access.ListSecretEndpoint)
-					secretApi.POST("/update", access.UpdateSecretEndpoint)
-					secretApi.POST("/delete", access.DeleteSecretEndpoint)
+					secretApi := accessApi.Group("/secret")
+					{
+						secretApi.POST("/create", access.CreateSecretEndpoint)
+						secretApi.POST("/list", access.ListSecretEndpoint)
+						secretApi.POST("/update", access.UpdateSecretEndpoint)
+						secretApi.POST("/delete", access.DeleteSecretEndpoint)
+					}
 				}
-			}
 
 				workerV2 := workerApi.Group("/v2")
 				{
@@ -297,6 +297,7 @@ controlApi := accessApi.Group("/control")
 					taskAPI.POST("/logs", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), task.GetLogsEndpoint)
 					taskAPI.POST("/complete", authz.AgentAuthz(), task.CompleteTaskEndpoint)
 					taskAPI.POST("/list", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), task.ListTaskEndpoint)
+					taskAPI.POST("/check-interrupt-task", authz.AccessKeyMiddleware(), authz.JWTMiddleware(), task.CheckInterruptTaskEndpoint)
 				}
 			}
 

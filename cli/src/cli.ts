@@ -11,7 +11,38 @@ import { createCommand } from "./commands/create";
 import { upgradeCommand } from "./commands/upgrade";
 import { logsCommand } from "./commands/logs";
 
+// 全局变量，用于存储工作目录
+let globalWorkingDir: string | null = null;
+
+/**
+ * 设置工作目录（供外部使用）
+ */
+export function setWorkingDir(dir: string) {
+  globalWorkingDir = dir;
+}
+
+/**
+ * 获取工作目录
+ */
+export function getWorkingDir(): string {
+  if (globalWorkingDir) {
+    return globalWorkingDir;
+  }
+  return process.cwd();
+}
+
 const program = new Command();
+
+// 全局选项：指定工作目录
+program.option('-d, --directory <dir>', '指定工作目录');
+
+// 存储工作目录选项的hook
+program.hook('preAction', (thisCommand) => {
+  const opts = thisCommand.opts();
+  if (opts.directory) {
+    globalWorkingDir = opts.directory;
+  }
+});
 
 program.addCommand(initCommand);
 program.addCommand(deployCommand);
