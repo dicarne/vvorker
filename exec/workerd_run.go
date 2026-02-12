@@ -156,7 +156,16 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 		return
 	}
 
+	// 写入 worker 启动日志到数据库
 	db := database.GetDB()
+	db.Create(&WorkerLog{
+		WorkerLogData: &WorkerLogData{
+			UID:    uid,
+			Output: "Worker started!",
+			Time:   time.Now(),
+			Type:   "warn",
+		}})
+
 	var worker entities.Worker
 	if err := db.Where("uid = ?", uid).First(&worker).Error; err != nil {
 		logrus.Warnf("workerconfig error: %v", err)
@@ -199,6 +208,7 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 	for _, copy := range copies {
 		m.RunWorker(argv, &copy)
 	}
+
 }
 
 func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
