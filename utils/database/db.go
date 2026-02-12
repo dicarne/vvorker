@@ -67,15 +67,16 @@ func (m *DBManagerImpl) IsNil() bool {
 	return m == nil
 }
 
+// GetDB 获取数据库连接实例
 func GetDB() *gorm.DB {
 	mgr := GetManager()
 	for mgr.IsNil() {
 		logrus.Infof("wait for init db")
 		mgr = GetManager()
 		time.Sleep(3 * time.Second)
-
 	}
 	mgr.WaitforInit()
+
 	switch conf.AppConfigInstance.DBType {
 	case defs.DBTypeSqlite:
 		return mgr.GetSqlite()
@@ -86,6 +87,7 @@ func GetDB() *gorm.DB {
 	}
 	return nil
 }
+
 
 // func CloseDB(db *gorm.DB) {
 // 	tdb, err := db.DB()
