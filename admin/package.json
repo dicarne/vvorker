@@ -12,10 +12,12 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.10.0",
     "color-hash": "^2.0.2",
     "lodash": "^4.17.21",
     "naive-ui": "^2.42.0",
+    "tailwindcss": "^4.1.18",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1"
   },

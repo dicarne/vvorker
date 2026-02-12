@@ -17,8 +17,10 @@ import {
 import type { FormInst, FormRules } from 'naive-ui' // 导入 FormInst 类型
 import { passwordRules } from '@/constant/formrules'
 import type { UserInfo } from '@/types/auth'
-import type { AccessKey } from '@/types/user'
+import type { AccessKey } from '@/types/access'
+import { Copy24Regular as CopyIcon } from '@vicons/fluent'
 import { changePassword } from '@/api/users'
+import { useCopyContent } from '@/composables/useUtils'
 import {
   createAccessKey,
   deleteAccessKey,
@@ -31,6 +33,7 @@ import {
 
 const userInfo = inject<Ref<UserInfo>>('userInfo')!
 const message = useMessage()
+const { copyContent } = useCopyContent()
 
 // Config 相关
 // 修改密码
@@ -138,11 +141,11 @@ const handleDeleteAccessKeyConfirm = async () => {
     IsDeletingAccessKey.value = true
     await deleteAccessKey(accessKeyToDelete.value)
     accessKeys.value = accessKeys.value.filter((key) => key.key !== accessKeyToDelete.value)
-    message.success('删除 Access Key 成功')
+    message.success('删除 API 密钥成功')
     handleDeleteAccessKeyClose()
   } catch (error) {
     console.error('deleteAccessKey Error', error)
-    message.error('删除 Access Key 失败')
+    message.error('删除 API 密钥失败')
   } finally {
     IsDeletingAccessKey.value = false
   }
@@ -203,6 +206,26 @@ const handleOptAddCodeConfirm = async () => {
     message.error('验证失败')
   }
 }
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return ''
+  try {
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) {
+      return dateStr
+    }
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
+  } catch (error) {
+    return dateStr
+  }
+}
 </script>
 <template>
   <div class="v-main">
@@ -210,24 +233,12 @@ const handleOptAddCodeConfirm = async () => {
       <div class="v-flex-between-center">
         <div>用户密码</div>
         <NButton secondary type="primary" @click="showChangePasswordModal = true">修改密码</NButton>
-        <NModal
-          v-model:show="showChangePasswordModal"
-          preset="dialog"
-          title="修改密码"
-          positive-text="确认"
-          negative-text="取消"
-          :mask-closable="false"
-          :loading="isChangingPassword"
-          @positive-click="handleChangePasswordConfirm"
-          @negative-click="handleChangePasswordClose"
-        >
+        <NModal v-model:show="showChangePasswordModal" preset="dialog" title="修改密码" positive-text="确认"
+          negative-text="取消" :mask-closable="false" :loading="isChangingPassword"
+          @positive-click="handleChangePasswordConfirm" @negative-click="handleChangePasswordClose">
           <NForm :model="pswdForm" :rules="pswdRules" ref="pswdFormRef">
             <NFormItem label="新密码" path="password">
-              <NInput
-                v-model:value="pswdForm.password"
-                type="password"
-                placeholder="请输入新密码"
-              />
+              <NInput v-model:value="pswdForm.password" type="password" placeholder="请输入新密码" />
             </NFormItem>
           </NForm>
         </NModal>
@@ -236,44 +247,41 @@ const handleOptAddCodeConfirm = async () => {
     <NCard title="API 密钥" style="margin-top: 16px">
       <template #header-extra>
         <NButton type="primary" secondary @click="showCreateAccessKeyModal = true">创建密钥</NButton>
-        <NModal
-          v-model:show="showCreateAccessKeyModal"
-          preset="dialog"
-          title="创建密钥"
-          positive-text="确认"
-          negative-text="取消"
-          :loading="IsCreatingAccessKey"
-          :mask-closable="false"
-          @positive-click="handleCreateAccessKeyConfirm"
-          @negative-click="handleCreateAccessKeyClose"
-        >
-          <NForm
-            :model="createAccessKeyForm"
-            :rules="createAccessKeyRules"
-            ref="createAccessKeyFormRef"
-          >
+        <NModal v-model:show="showCreateAccessKeyModal" preset="dialog" title="创建密钥" positive-text="确认"
+          negative-text="取消" :loading="IsCreatingAccessKey" :mask-closable="false"
+          @positive-click="handleCreateAccessKeyConfirm" @negative-click="handleCreateAccessKeyClose">
+          <NForm :model="createAccessKeyForm" :rules="createAccessKeyRules" ref="createAccessKeyFormRef" class="mt-8">
             <NFormItem label="密钥名称" path="accessKeyName">
-              <NInput
-                v-model:value="createAccessKeyForm.accessKeyName"
-                placeholder="请输入密钥名称"
-              />
+              <NInput v-model:value="createAccessKeyForm.accessKeyName" placeholder="请输入密钥名称" />
             </NFormItem>
           </NForm>
         </NModal>
       </template>
-      <NList>
+      <NList v-if="accessKeys.length > 0">
         <NListItem v-for="item in accessKeys" :key="item.key">
-          <template #prefix>
-            <div style="min-width: 400px">Key Name: {{ item.name }}</div>
-          </template>
-          <template #suffix>
-            <NButton type="error" secondary @click="handleDeleteAccessKeyClick(item.key)"
-              >删除</NButton
-            >
-          </template>
-          <div class="v-item" style="min-width: 400px">Key ID: {{ item.key }}</div>
+          <div class="access-key-item">
+            <div class="access-key-content">
+              <div class="access-key-name">
+                {{ item.name }}
+              </div>
+              <div class="access-key-value">
+                <NInput :value="item.key" readonly class="access-key-input" />
+              </div>
+              <div class="access-key-actions">
+                <NButton quaternary type="primary" size="small" @click="copyContent(item.key)">
+                  <template #icon>
+                    <CopyIcon />
+                  </template>
+                  复制
+                </NButton>
+                <NButton type="error" secondary size="small" @click="handleDeleteAccessKeyClick(item.key)">删除</NButton>
+              </div>
+            </div>
+            <div v-if="item.created_at" class="access-key-time">创建于 {{ formatDate(item.created_at) }}</div>
+          </div>
         </NListItem>
       </NList>
+      <NEmpty v-else description="暂无 API 密钥" />
     </NCard>
     <NCard title="OTP" style="margin-top: 16px">
       <NSpace>
@@ -283,23 +291,53 @@ const handleOptAddCodeConfirm = async () => {
       <NSpace v-if="otpUrl">
         <NQrCode :value="otpUrl" />
         <NInput v-model:value="optAddCode" placeholder="请输入 OTP 代码" />
-        <NButton type="primary" secondary @click="handleOptAddCodeConfirm"
-          >验证并添加认证器</NButton
-        >
+        <NButton type="primary" secondary @click="handleOptAddCodeConfirm">验证并添加认证器</NButton>
       </NSpace>
     </NCard>
-    <NModal
-      v-model:show="showDeleteAccessKeyModal"
-      preset="dialog"
-      title="删除 Access Key"
-      positive-text="确认"
-      negative-text="取消"
-      :loading="IsDeletingAccessKey"
-      :mask-closable="false"
-      @positive-click="handleDeleteAccessKeyConfirm"
-      @negative-click="handleDeleteAccessKeyClose"
-    >
-      <div>确认要删除这个 Access Key ？</div>
+    <NModal v-model:show="showDeleteAccessKeyModal" preset="dialog" title="删除 API 密钥" positive-text="确认"
+      negative-text="取消" :loading="IsDeletingAccessKey" :mask-closable="false"
+      @positive-click="handleDeleteAccessKeyConfirm" @negative-click="handleDeleteAccessKeyClose">
+      <div>确认要删除这个 API 密钥？</div>
     </NModal>
   </div>
 </template>
+<style scoped>
+.access-key-item {
+  width: 100%;
+  padding: 8px 0;
+}
+
+.access-key-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.access-key-name {
+  min-width: 150px;
+  font-weight: 500;
+  color: #333;
+}
+
+.access-key-value {
+  flex: 1;
+  min-width: 200px;
+}
+
+.access-key-input {
+  width: 100%;
+  font-family: 'Courier New', monospace;
+}
+
+.access-key-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.access-key-time {
+  font-size: 12px;
+  color: #999;
+  margin-top: 8px;
+}
+</style>
