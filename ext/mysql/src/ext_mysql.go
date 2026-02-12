@@ -338,13 +338,14 @@ func UpdateMigrate(c *gin.Context) {
 	common.RespOK(c, "success", gin.H{})
 }
 
-func migrateCustomMySQLResource(userID uint64, pgid string) error {
+func migrateCustomMySQLResource(logBuilder *strings.Builder, userID uint64, pgid string) error {
 	db := database.GetDB()
 	migrates := []models.MySQLMigration{}
 	if err := db.Where(&models.MySQLMigration{
 		UserID: userID,
 		DBUID:  pgid,
 	}).Order("sequence").Find(&migrates).Error; err != nil {
+		logBuilder.WriteString(fmt.Sprintf("Failed to get MySQL custom migrations: %v\n", err))
 		return err
 	}
 
@@ -364,6 +365,7 @@ func migrateCustomMySQLResource(userID uint64, pgid string) error {
 
 	dbConn, err := sql.Open("mysql", dbConnectionStr)
 	if err != nil {
+		logBuilder.WriteString(fmt.Sprintf("Failed to connect to custom MySQL database: %v\n", err))
 		return err
 	}
 	defer dbConn.Close()
@@ -375,17 +377,20 @@ func migrateCustomMySQLResource(userID uint64, pgid string) error {
 		}).First(&models.MigrationHistory{}).Error; err == nil {
 			continue
 		}
+		logBuilder.WriteString(fmt.Sprintf("Executing custom MySQL migration file: %s\n", migrate.FileName))
 		_, err = dbConn.Exec(migrate.FileContent)
 		errMsg := ""
 		if err != nil {
 			logrus.Error(err)
 			errMsg = err.Error()
+			logBuilder.WriteString(fmt.Sprintf("Custom MySQL migration error for file %s: %v\n", migrate.FileName, err))
 		}
 		if err := db.Create(&models.MigrationHistory{
 			Key:   key,
 			Error: errMsg,
 		}).Error; err != nil {
 			logrus.Error(err)
+			logBuilder.WriteString(fmt.Sprintf("Failed to save custom MySQL migration history: %v\n", err))
 		}
 		migrate.MigrateKey = key
 		db.Save(&migrate)
@@ -394,7 +399,8 @@ func migrateCustomMySQLResource(userID uint64, pgid string) error {
 	return nil
 }
 
-func MigrateMySQLDatabase(userID uint64, pgid string) error {
+func MigrateMySQLDatabase(userID uint64, pgid string) (error, string) {
+	var logBuilder strings.Builder
 	if !strings.HasPrefix(pgid, "worker_resource:mysql:") {
 		// Original migration logic for non-custom resources
 		db := database.GetDB()
@@ -402,7 +408,8 @@ func MigrateMySQLDatabase(userID uint64, pgid string) error {
 		if err := db.Where(&models.MySQL{
 			UID: pgid,
 		}).First(&mysqlResource).Error; err != nil {
-			return err
+			logBuilder.WriteString(fmt.Sprintf("Failed to get MySQL resource: %v\n", err))
+			return err, logBuilder.String()
 		}
 
 		migrates := []models.MySQLMigration{}
@@ -410,14 +417,16 @@ func MigrateMySQLDatabase(userID uint64, pgid string) error {
 			UserID: userID,
 			DBUID:  mysqlResource.UID,
 		}).Order("sequence").Find(&migrates).Error; err != nil {
-			return err
+			logBuilder.WriteString(fmt.Sprintf("Failed to get MySQL migrations: %v\n", err))
+			return err, logBuilder.String()
 		}
 
 		mysqlResource.Database = cutDatabaseName("vvorker_" + mysqlResource.UID)
 
 		dbConn, err := sql.Open("mysql", buildMysqlDBConnectionString(mysqlResource.Database)+"&multiStatements=true")
 		if err != nil {
-			return err
+			logBuilder.WriteString(fmt.Sprintf("Failed to connect to MySQL database: %v\n", err))
+			return err, logBuilder.String()
 		}
 		defer dbConn.Close()
 
@@ -428,27 +437,31 @@ func MigrateMySQLDatabase(userID uint64, pgid string) error {
 			}).First(&models.MigrationHistory{}).Error; err == nil {
 				continue
 			}
+			logBuilder.WriteString(fmt.Sprintf("Executing MySQL migration file: %s\n", migrate.FileName))
 			_, err = dbConn.Exec(migrate.FileContent)
 			errMsg := ""
 			if err != nil {
 				logrus.Error(err)
 				errMsg = err.Error()
+				logBuilder.WriteString(fmt.Sprintf("MySQL migration error for file %s: %v\n", migrate.FileName, err))
 			}
 			if err := db.Create(&models.MigrationHistory{
 				Key:   key,
 				Error: errMsg,
 			}).Error; err != nil {
 				logrus.Error(err)
+				logBuilder.WriteString(fmt.Sprintf("Failed to save migration history: %v\n", err))
 			}
 			migrate.MigrateKey = key
 			db.Save(&migrate)
 		}
 
-		return nil
+		return nil, logBuilder.String()
 	}
 
 	// Handle custom database connection
-	return migrateCustomMySQLResource(userID, pgid)
+	err := migrateCustomMySQLResource(&logBuilder, userID, pgid)
+	return err, logBuilder.String()
 }
 
 func init() {

@@ -326,12 +326,13 @@ func UpdateMigrate(c *gin.Context) {
 	common.RespOK(c, "success", gin.H{})
 }
 
-func migrateResource(userID uint64, pgid string) error {
+func migrateResource(logBuilder *strings.Builder, userID uint64, pgid string) error {
 	db := database.GetDB()
 	pgResource := models.PostgreSQL{}
 	if err := db.Where(&models.PostgreSQL{
 		UID: pgid,
 	}).First(&pgResource).Error; err != nil {
+		logBuilder.WriteString(fmt.Sprintf("Failed to get PostgreSQL resource: %v\n", err))
 		return err
 	}
 
@@ -340,6 +341,7 @@ func migrateResource(userID uint64, pgid string) error {
 		UserID: userID,
 		DBUID:  pgid,
 	}).Order("sequence").Find(&migrates).Error; err != nil {
+		logBuilder.WriteString(fmt.Sprintf("Failed to get PostgreSQL migrations: %v\n", err))
 		return err
 	}
 
@@ -353,6 +355,7 @@ func migrateResource(userID uint64, pgid string) error {
 			" sslmode=disable"+
 			" dbname="+pgResource.Database)
 	if err != nil {
+		logBuilder.WriteString(fmt.Sprintf("Failed to connect to PostgreSQL database: %v\n", err))
 		return err
 	}
 	defer pgdb.Close()
@@ -364,17 +367,20 @@ func migrateResource(userID uint64, pgid string) error {
 		}).First(&models.MigrationHistory{}).Error; err == nil {
 			continue
 		}
+		logBuilder.WriteString(fmt.Sprintf("Executing migration file: %s\n", migrate.FileName))
 		_, err = pgdb.Exec(migrate.FileContent)
 		errMsg := ""
 		if err != nil {
 			logrus.Error(err)
 			errMsg = err.Error()
+			logBuilder.WriteString(fmt.Sprintf("Migration error for file %s: %v\n", migrate.FileName, err))
 		}
 		if err := db.Create(&models.MigrationHistory{
 			Key:   key,
 			Error: errMsg,
 		}).Error; err != nil {
 			logrus.Error(err)
+			logBuilder.WriteString(fmt.Sprintf("Failed to save migration history: %v\n", err))
 		}
 		migrate.MigrateKey = key
 		db.Save(&migrate)
@@ -382,13 +388,14 @@ func migrateResource(userID uint64, pgid string) error {
 	return nil
 }
 
-func migrateCustomResource(userID uint64, pgid string) error {
+func migrateCustomResource(logBuilder *strings.Builder, userID uint64, pgid string) error {
 	db := database.GetDB()
 	migrates := []models.PostgreSQLMigration{}
 	if err := db.Where(&models.PostgreSQLMigration{
 		UserID: userID,
 		DBUID:  pgid,
 	}).Order("sequence").Find(&migrates).Error; err != nil {
+		logBuilder.WriteString(fmt.Sprintf("Failed to get PostgreSQL custom migrations: %v\n", err))
 		return err
 	}
 	if len(migrates) == 0 {
@@ -402,6 +409,7 @@ func migrateCustomResource(userID uint64, pgid string) error {
 			" port="+fmt.Sprintf("%d", config.CustomDBPort)+
 			" sslmode=disable")
 	if err != nil {
+		logBuilder.WriteString(fmt.Sprintf("Failed to connect to custom PostgreSQL database: %v\n", err))
 		return err
 	}
 	defer pgdb.Close()
@@ -412,17 +420,20 @@ func migrateCustomResource(userID uint64, pgid string) error {
 		}).First(&models.MigrationHistory{}).Error; err == nil {
 			continue
 		}
+		logBuilder.WriteString(fmt.Sprintf("Executing custom migration file: %s\n", migrate.FileName))
 		_, err = pgdb.Exec(migrate.FileContent)
 		errMsg := ""
 		if err != nil {
 			logrus.Error(err)
 			errMsg = err.Error()
+			logBuilder.WriteString(fmt.Sprintf("Custom migration error for file %s: %v\n", migrate.FileName, err))
 		}
 		if err := db.Create(&models.MigrationHistory{
 			Key:   key,
 			Error: errMsg,
 		}).Error; err != nil {
 			logrus.Error(err)
+			logBuilder.WriteString(fmt.Sprintf("Failed to save custom migration history: %v\n", err))
 		}
 		migrate.MigrateKey = key
 		db.Save(&migrate)
@@ -430,11 +441,14 @@ func migrateCustomResource(userID uint64, pgid string) error {
 	return nil
 }
 
-func MigratePostgreSQLDatabase(userID uint64, pgid string) error {
+func MigratePostgreSQLDatabase(userID uint64, pgid string) (error, string) {
+	var logBuilder strings.Builder
 	if !strings.HasPrefix(pgid, "worker_resource:pgsql:") {
-		return migrateResource(userID, pgid)
+		err := migrateResource(&logBuilder, userID, pgid)
+		return err, logBuilder.String()
 	} else {
-		return migrateCustomResource(userID, pgid)
+		err := migrateCustomResource(&logBuilder, userID, pgid)
+		return err, logBuilder.String()
 	}
 }
 

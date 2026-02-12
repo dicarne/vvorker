@@ -3,10 +3,12 @@ package workerd
 import (
 	"encoding/json"
 	"strconv"
+	"time"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/entities"
+	"vvorker/exec"
 	"vvorker/funcs"
 	"vvorker/models"
 	"vvorker/models/secrets"
@@ -292,10 +294,28 @@ func FinishWorkerConfig(worker *models.Worker) string {
 				}
 				workerconfig.PgSql[i] = ext
 
-				funcs.MigratePostgreSQLDatabase(worker.UserID, ext.ResourceID)
+				_, errLog := funcs.MigratePostgreSQLDatabase(worker.UserID, ext.ResourceID)
+				if errLog != "" {
+					db.Create(&exec.WorkerLog{
+						WorkerLogData: &exec.WorkerLogData{
+							UID:    worker.UID,
+							Output: "[PostgreSQL Migration Error] " + errLog,
+							Time:   time.Now(),
+							Type:   "error",
+						}})
+				}
 			} else {
 				if len(ext.Migrate) != 0 {
-					funcs.MigratePostgreSQLDatabase(worker.UserID, "worker_resource:pgsql:"+worker.UID+":"+ext.Migrate)
+					_, errLog := funcs.MigratePostgreSQLDatabase(worker.UserID, "worker_resource:pgsql:"+worker.UID+":"+ext.Migrate)
+					if errLog != "" {
+						db.Create(&exec.WorkerLog{
+							WorkerLogData: &exec.WorkerLogData{
+								UID:    worker.UID,
+								Output: "[PostgreSQL Migration Error] " + errLog,
+								Time:   time.Now(),
+								Type:   "error",
+							}})
+					}
 				}
 			}
 		}
@@ -319,10 +339,28 @@ func FinishWorkerConfig(worker *models.Worker) string {
 				}
 				workerconfig.Mysql[i] = ext
 
-				funcs.MigrateMySQLDatabase(worker.UserID, ext.ResourceID)
+				_, errLog := funcs.MigrateMySQLDatabase(worker.UserID, ext.ResourceID)
+				if errLog != "" {
+					db.Create(&exec.WorkerLog{
+						WorkerLogData: &exec.WorkerLogData{
+							UID:    worker.UID,
+							Output: "[MySQL Migration Error] " + errLog,
+							Time:   time.Now(),
+							Type:   "error",
+						}})
+				}
 			} else {
 				if len(ext.Migrate) != 0 {
-					funcs.MigrateMySQLDatabase(worker.UserID, "worker_resource:mysql:"+worker.UID+":"+ext.Migrate)
+					_, errLog := funcs.MigrateMySQLDatabase(worker.UserID, "worker_resource:mysql:"+worker.UID+":"+ext.Migrate)
+					if errLog != "" {
+						db.Create(&exec.WorkerLog{
+							WorkerLogData: &exec.WorkerLogData{
+								UID:    worker.UID,
+								Output: "[MySQL Migration Error] " + errLog,
+								Time:   time.Now(),
+								Type:   "error",
+							}})
+					}
 				}
 			}
 		}
