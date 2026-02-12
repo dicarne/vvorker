@@ -210,11 +210,11 @@ onMounted(async () => {
       @negative-click="handleCreateSecretClose"
     >
       <NForm ref="createSecretFormRef" :rules="workerSecretRules" :model="createSecretForm">
-        <NFormItem label="Key">
-          <NInput v-model:value="createSecretForm.key" placeholder="请输入Key" />
+        <NFormItem label="变量名">
+          <NInput v-model:value="createSecretForm.key" placeholder="请输入变量名" />
         </NFormItem>
-        <NFormItem label="Value">
-          <NInput v-model:value="createSecretForm.value" placeholder="请输入Value" />
+        <NFormItem label="变量值">
+          <NInput v-model:value="createSecretForm.value" placeholder="请输入变量值" />
         </NFormItem>
       </NForm>
     </NModal>
