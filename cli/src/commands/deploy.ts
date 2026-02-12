@@ -33,8 +33,7 @@ async function checkDeploymentResult(apiClient: any, uid: string, taskId: string
 
         // 任务完成
         if (status === 'completed') {
-          console.log(pc.green("✓ 部署完成！"));
-          console.log(pc.green("✓ 数据库迁移成功！"));
+          console.log(pc.green("✓ 数据库迁移完成！"));
           return;
         }
 
@@ -373,14 +372,12 @@ export const deployCommand = new Command('deploy')
       })
 
       if (resp.data.code === 0) {
-        console.log(pc.green("✓ 部署成功！"));
-
         // 获取任务ID并等待部署完成
         const taskId: string = resp.data.data.task_id || "";
         await checkDeploymentResult(apiClient, uid, taskId);
+        console.log(pc.green("✓ 部署完成！"));
       } else {
         console.log(pc.red("✗ 部署失败！"));
-        throw new Error(`部署失败：${resp.data.message}`);
       }
     });
   });

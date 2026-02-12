@@ -377,15 +377,17 @@ func FinishWorkerConfig(worker *models.Worker) string {
 
 		// 迁移完成后更新任务状态
 		// 查找正在运行的任务
-		db.Where("worker_uid = ? AND status = 'running'", worker.UID).Order("created_at desc").First(&task)
-		if task.ID != 0 && !taskUpdated {
-			taskUpdated = true
-			if taskResult != "" {
-				models.UpdateTaskResult(task.TraceID, taskResult)
-				models.CompleteTask(task.TraceID, "failed")
-			} else {
-				models.UpdateTaskResult(task.TraceID, "success")
-				models.CompleteTask(task.TraceID, "completed")
+		ret := db.Where("worker_uid = ? AND status = 'running'", worker.UID).Order("created_at desc").First(&task)
+		if ret.Error == nil {
+			if task.ID != 0 && !taskUpdated {
+				taskUpdated = true
+				if taskResult != "" {
+					models.UpdateTaskResult(task.TraceID, taskResult)
+					models.CompleteTask(task.TraceID, "failed")
+				} else {
+					models.UpdateTaskResult(task.TraceID, "success")
+					models.CompleteTask(task.TraceID, "completed")
+				}
 			}
 		}
 

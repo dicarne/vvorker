@@ -1,6 +1,6 @@
 {
   "name": "@dicarne/vvcli",
-  "version": "1.4.11",
+  "version": "1.4.12",
   "description": "cli for vvorker",
   "bin": {
     "vvcli": "./dist/cli.js"
