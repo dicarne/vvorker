@@ -206,7 +206,7 @@ const handleOptAddCodeConfirm = async () => {
 </script>
 <template>
   <div class="v-main">
-    <NCard title="Config">
+    <NCard title="配置">
       <div class="v-flex-between-center">
         <div>用户密码</div>
         <NButton secondary type="primary" @click="showChangePasswordModal = true">修改密码</NButton>
@@ -233,13 +233,13 @@ const handleOptAddCodeConfirm = async () => {
         </NModal>
       </div>
     </NCard>
-    <NCard title="Access Key" style="margin-top: 16px">
+    <NCard title="API 密钥" style="margin-top: 16px">
       <template #header-extra>
-        <NButton type="primary" secondary @click="showCreateAccessKeyModal = true">创建</NButton>
+        <NButton type="primary" secondary @click="showCreateAccessKeyModal = true">创建密钥</NButton>
         <NModal
           v-model:show="showCreateAccessKeyModal"
           preset="dialog"
-          title="创建 Access Key"
+          title="创建密钥"
           positive-text="确认"
           negative-text="取消"
           :loading="IsCreatingAccessKey"
@@ -252,10 +252,10 @@ const handleOptAddCodeConfirm = async () => {
             :rules="createAccessKeyRules"
             ref="createAccessKeyFormRef"
           >
-            <NFormItem label="Access Key 名称" path="accessKeyName">
+            <NFormItem label="密钥名称" path="accessKeyName">
               <NInput
                 v-model:value="createAccessKeyForm.accessKeyName"
-                placeholder="请输入 Access Key 名称"
+                placeholder="请输入密钥名称"
               />
             </NFormItem>
           </NForm>
