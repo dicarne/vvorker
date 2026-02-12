@@ -46,7 +46,7 @@ onUnmounted(() => {
         <template #prefix>
           <NTag size="small">{{ formatDate(new Date(item.time)) }}</NTag>
         </template>
-        <span>{{ item.output }}</span>
+        <div class="log-content">{{ item.output }}</div>
       </NListItem>
     </NList>
     <NPagination
@@ -64,5 +64,12 @@ onUnmounted(() => {
   /* 运算符前后添加空格 */
   height: calc(100vh - 310px);
   overflow-y: auto;
+}
+
+.log-content {
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 </style>
