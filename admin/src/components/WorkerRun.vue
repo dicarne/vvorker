@@ -32,7 +32,7 @@ const handleRun = async () => {
 </script>
 <template>
   <NButton quaternary type="primary" @click="handleRun">
-    <NIcon><RunIcon /></NIcon>
+    <NIcon class="mr-1"><RunIcon /></NIcon>
     运行
   </NButton>
 </template>
