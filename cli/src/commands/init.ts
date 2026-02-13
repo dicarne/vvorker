@@ -118,7 +118,6 @@ async function createVueProject(
 export const initCommand = new Command("init")
   .command("init <projectName>")
   .description("初始化VVorker项目")
-  .option("--git-repo <url>", "使用自定义 Git 仓库作为模板")
   .action(async (projectName, options) => {
     // 交互式输入uid
     const { uid, projtype } = await inquirer.prompt([
