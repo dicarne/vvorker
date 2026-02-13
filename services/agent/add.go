@@ -35,7 +35,7 @@ func AddWorkerEventHandler(c *gin.Context, req *entities.NotifyEventRequest) {
 			common.RespErr(c, common.RespCodeInvalidRequest, common.RespMsgInvalidRequest, nil)
 			return
 		}
-		exec.ExecManager.RunCmd(worker.GetUID(), []string{})
+		exec.ExecManager.RunCmd(worker.GetUID())
 	}
 
 	logrus.Info("add worker event handler success")

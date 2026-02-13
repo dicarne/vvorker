@@ -150,7 +150,7 @@ func HandleAgentWorkerLogs(c *gin.Context) {
 	common.RespOK(c, common.RespMsgOK, nil)
 }
 
-func (m *execManager) RunCmd(uid string, argv []string) {
+func (m *execManager) RunCmd(uid string) {
 	if _, ok := m.chanMap.Get(uid); ok {
 		logrus.Warnf("workerd %s is already running!", uid)
 		return
@@ -207,19 +207,19 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 	}
 
 	for _, copy := range copies {
-		m.RunWorker(argv, &copy)
+		m.RunWorker(&copy)
 	}
 
 }
 
-func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
+func (m *execManager) RunWorker(copy *workercopy.WorkerCopy) {
 	uid := copy.WorkerUID + "-" + strconv.Itoa(int(copy.LocalID))
 
 	c := make(chan struct{})
 	m.chanMap.Set(uid, c)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	go func(ctx context.Context, uid string, argv []string, m *execManager) {
+	go func(ctx context.Context, uid string, m *execManager) {
 		defer func(uid string, m *execManager) {
 			m.signMap.Delete(uid)
 		}(uid, m)
@@ -244,7 +244,8 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 				filepath.Join(workerdDir, defs.CapFileName+"-"+strconv.Itoa(int(copy.LocalID))),
 			}
 			args = append(args, "--verbose")
-			args = append(args, argv...)
+
+			logrus.Infof("Starting workerd %s with args: %v", uid, args)
 
 			cmd := exec.CommandContext(ctx, conf.AppConfigInstance.WorkerdBinPath, args...)
 			cmd.Dir = workerdDir
@@ -419,7 +420,7 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 			}
 			time.Sleep(3 * time.Second)
 		}
-	}(ctx, uid, argv, m)
+	}(ctx, uid, m)
 
 	go func(cancel context.CancelFunc, uid string, m *execManager) {
 		defer func(uid string, m *execManager) {

@@ -90,7 +90,7 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker, desc string)
 			}
 			return traceID, err
 		}
-		exec.ExecManager.RunCmd(worker.GetUID(), []string{traceID})
+		exec.ExecManager.RunCmd(worker.GetUID())
 	}
 	return traceID, nil
 }

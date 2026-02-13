@@ -524,7 +524,7 @@ func (w *Worker) Flush() error {
 		return err
 	}
 
-	exec.ExecManager.RunCmd(w.UID, []string{})
+	exec.ExecManager.RunCmd(w.UID)
 
 	return nil
 }
@@ -695,7 +695,7 @@ func SyncWorkers(workerList []entities.WorkerUIDVersion) error {
 			continue
 		}
 
-		exec.ExecManager.RunCmd(worker.UID, []string{})
+		exec.ExecManager.RunCmd(worker.UID)
 	}
 
 	if partialFail {
