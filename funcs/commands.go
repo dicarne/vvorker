@@ -4,7 +4,7 @@ import "io"
 
 // MigratePostgreSQLDatabaseFunc is a function type for migrating PostgreSQL database
 // This allows the actual implementation to be set during package initialization
-type MigratePostgreSQLDatabaseFunc func(userID uint64, dbid string) error
+type MigratePostgreSQLDatabaseFunc func(userID uint64, dbid string) (error, string)
 
 // migratePostgreSQLDatabase is the actual function that will be called
 var migratePostgreSQLDatabase MigratePostgreSQLDatabaseFunc
@@ -17,7 +17,8 @@ func SetMigratePostgreSQLDatabase(fn MigratePostgreSQLDatabaseFunc) {
 
 // MigratePostgreSQLDatabase migrates a PostgreSQL database
 // This is a wrapper around the actual implementation that can be set during initialization
-func MigratePostgreSQLDatabase(userID uint64, dbid string) error {
+// Returns error and error log string
+func MigratePostgreSQLDatabase(userID uint64, dbid string) (error, string) {
 	if migratePostgreSQLDatabase == nil {
 		panic("MigratePostgreSQLDatabase function not initialized. Call SetMigratePostgreSQLDatabase during package initialization.")
 	}
@@ -26,7 +27,7 @@ func MigratePostgreSQLDatabase(userID uint64, dbid string) error {
 
 // MigrateMySQLDatabaseFunc is a function type for migrating MySQL database
 // This allows the actual implementation to be set during package initialization
-type MigrateMySQLDatabaseFunc func(userID uint64, dbid string) error
+type MigrateMySQLDatabaseFunc func(userID uint64, dbid string) (error, string)
 
 // migrateMySQLDatabase is the actual function that will be called
 var migrateMySQLDatabase MigrateMySQLDatabaseFunc
@@ -39,7 +40,8 @@ func SetMigrateMySQLDatabase(fn MigrateMySQLDatabaseFunc) {
 
 // MigrateMySQLDatabase migrates a MySQL database
 // This is a wrapper around the actual implementation that can be set during initialization
-func MigrateMySQLDatabase(userID uint64, dbid string) error {
+// Returns error and error log string
+func MigrateMySQLDatabase(userID uint64, dbid string) (error, string) {
 	if migrateMySQLDatabase == nil {
 		panic("MigrateMySQLDatabase function not initialized. Call SetMigrateMySQLDatabase during package initialization.")
 	}

@@ -156,7 +156,17 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 		return
 	}
 
+	// 写入 worker 启动日志到数据库
 	db := database.GetDB()
+	db.Create(&WorkerLog{
+		WorkerLogData: &WorkerLogData{
+			UID:    uid,
+			Output: "Worker started!",
+			Time:   time.Now(),
+			Type:   "warn",
+			LogUID: utils.GenerateUID(),
+		}})
+
 	var worker entities.Worker
 	if err := db.Where("uid = ?", uid).First(&worker).Error; err != nil {
 		logrus.Warnf("workerconfig error: %v", err)
@@ -199,6 +209,7 @@ func (m *execManager) RunCmd(uid string, argv []string) {
 	for _, copy := range copies {
 		m.RunWorker(argv, &copy)
 	}
+
 }
 
 func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
@@ -263,7 +274,9 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 
 			// 读取标准输出并发送到 channel
 			go func(uid string) {
-				buf := make([]byte, 1024)
+				maxBufferSize := 4 * 1024
+				buf := make([]byte, maxBufferSize)
+				lineBuffer := make([]byte, 0, maxBufferSize)
 				for {
 					select {
 					case <-ctx.Done(): // 监听上下文取消信号
@@ -271,19 +284,57 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 					default:
 						n, err := stdoutPipe.Read(buf)
 						if n > 0 {
-							workerLogChan <- WorkerLog{
-								WorkerLogData: &WorkerLogData{
-									UID:    copy.WorkerUID,
-									Output: string(buf[:n]),
-									Time:   time.Now(),
-									Type:   "stdout",
-									LogUID: utils.GenerateUID(),
-								},
+							data := buf[:n]
+							// 累积数据到行缓冲区
+							lineBuffer = append(lineBuffer, data...)
+							if n < maxBufferSize {
+								// 如果读取的数据小于缓冲区大小，说明已经读取完毕
+								// 提取一行
+								line := string(lineBuffer)
+								logUID := utils.GenerateUID()
+								workerLogChan <- WorkerLog{
+									WorkerLogData: &WorkerLogData{
+										UID:    copy.WorkerUID,
+										Output: line,
+										Time:   time.Now(),
+										Type:   "stdout",
+										LogUID: logUID,
+									},
+								}
+								lineBuffer = lineBuffer[:0]
+							} else if len(lineBuffer) > 10240 {
+								// 如果缓冲区过大（超过10KB），强制发送并清空
+
+								line := string(lineBuffer)
+								logUID := utils.GenerateUID()
+								workerLogChan <- WorkerLog{
+									WorkerLogData: &WorkerLogData{
+										UID:    copy.WorkerUID,
+										Output: line,
+										Time:   time.Now(),
+										Type:   "stdout",
+										LogUID: logUID,
+									},
+								}
+								lineBuffer = lineBuffer[:0]
 							}
-							logrus.Infof("workerd %s stdout: %s", uid, string(buf[:n]))
 						}
 						if err != nil {
-							return
+							// 退出前发送剩余的缓冲区数据
+							if len(lineBuffer) > 0 {
+								line := string(lineBuffer)
+								logUID := utils.GenerateUID()
+								workerLogChan <- WorkerLog{
+									WorkerLogData: &WorkerLogData{
+										UID:    copy.WorkerUID,
+										Output: line,
+										Time:   time.Now(),
+										Type:   "stdout",
+										LogUID: logUID,
+									},
+								}
+								lineBuffer = lineBuffer[:0]
+							}
 						}
 					}
 				}
@@ -291,7 +342,9 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 
 			// 读取错误输出并发送到 channel
 			go func(uid string) {
-				buf := make([]byte, 1024)
+				maxBufferSize := 4 * 1024
+				buf := make([]byte, maxBufferSize)
+				lineBuffer := make([]byte, 0, maxBufferSize)
 				for {
 					select {
 					case <-ctx.Done(): // 监听上下文取消信号
@@ -299,19 +352,57 @@ func (m *execManager) RunWorker(argv []string, copy *workercopy.WorkerCopy) {
 					default:
 						n, err := stderrPipe.Read(buf)
 						if n > 0 {
-							workerLogChan <- WorkerLog{
-								WorkerLogData: &WorkerLogData{
-									UID:    copy.WorkerUID,
-									Output: string(buf[:n]),
-									Time:   time.Now(),
-									Type:   "error",
-									LogUID: utils.GenerateUID(),
-								},
+							data := buf[:n]
+							// 累积数据到行缓冲区
+							lineBuffer = append(lineBuffer, data...)
+							if n < maxBufferSize {
+								// 如果读取的数据小于缓冲区大小，说明已经读取完毕
+								// 提取一行
+								line := string(lineBuffer)
+								logUID := utils.GenerateUID()
+								workerLogChan <- WorkerLog{
+									WorkerLogData: &WorkerLogData{
+										UID:    copy.WorkerUID,
+										Output: line,
+										Time:   time.Now(),
+										Type:   "stderr",
+										LogUID: logUID,
+									},
+								}
+								lineBuffer = lineBuffer[:0]
+							} else if len(lineBuffer) > 10240 {
+								// 如果缓冲区过大（超过10KB），强制发送并清空
+
+								line := string(lineBuffer)
+								logUID := utils.GenerateUID()
+								workerLogChan <- WorkerLog{
+									WorkerLogData: &WorkerLogData{
+										UID:    copy.WorkerUID,
+										Output: line,
+										Time:   time.Now(),
+										Type:   "stderr",
+										LogUID: logUID,
+									},
+								}
+								lineBuffer = lineBuffer[:0]
 							}
-							logrus.Errorf("workerd %s : %d error: %s", uid, copy.LocalID, string(buf[:n]))
 						}
 						if err != nil {
-							return
+							// 退出前发送剩余的缓冲区数据
+							if len(lineBuffer) > 0 {
+								line := string(lineBuffer)
+								logUID := utils.GenerateUID()
+								workerLogChan <- WorkerLog{
+									WorkerLogData: &WorkerLogData{
+										UID:    copy.WorkerUID,
+										Output: line,
+										Time:   time.Now(),
+										Type:   "stdout",
+										LogUID: logUID,
+									},
+								}
+								lineBuffer = lineBuffer[:0]
+							}
 						}
 					}
 				}

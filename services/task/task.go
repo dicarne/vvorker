@@ -71,7 +71,7 @@ func CheckInterruptTaskEndpoint(c *gin.Context) {
 		return
 	}
 
-	common.RespOK(c, "success", gin.H{"status": tt.Status})
+	common.RespOK(c, "success", gin.H{"status": tt.Status, "result": tt.Result})
 }
 
 type LogTaskReq struct {

@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 .v-base-page {
   width: 100vw;
   height: 100vh;

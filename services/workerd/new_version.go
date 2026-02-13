@@ -47,10 +47,11 @@ func NewVersionEndpoint(c *gin.Context) {
 
 	worker.ActiveVersionID = versionID
 
-	if err := UpdateWorker(userID, workerID, worker.ToEntity(), ""); err != nil {
+	traceID, err := UpdateWorker(userID, workerID, worker.ToEntity(), "")
+	if err != nil {
 		common.RespErr(c, common.RespCodeInternalError, "update worker error", nil)
 		return
 	}
 
-	common.RespOK(c, "new version success", nil)
+	common.RespOK(c, "new version success", gin.H{"task_id": traceID})
 }
