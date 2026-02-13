@@ -3,6 +3,7 @@ import * as fs from 'fs-extra';
 import { loadVVorkerConfig } from '../utils/vvorker-config';
 import { apiClient } from '../utils/api';
 import { withWorkingDir } from '../utils/working-dir';
+import pc from "picocolors"
 
 export const typesCommand = new Command('types')
   .description("用于自动生成配置文件对应的TypeScript类型")
@@ -20,6 +21,6 @@ export const typesCommand = new Command('types')
         fs.writeFileSync(`${process.cwd()}/src/binding.ts`, w);
       }
       fs.writeFileSync(`${process.cwd()}/vvorker-schema.json`, resp.data.data.schema)
-      console.log('类型生成成功');
+      console.log(pc.green("✓ 类型生成成功！"));
     });
   });

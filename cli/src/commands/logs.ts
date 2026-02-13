@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { apiClient } from '../utils/api';
 import { loadVVorkerConfig } from '../utils/vvorker-config';
 import { withWorkingDir } from '../utils/working-dir';
+import { config } from '../utils/config';
 import pc from "picocolors";
 import axios from 'axios';
 
@@ -12,6 +13,11 @@ export const logsCommand = new Command('logs')
   .option('--page-size <number>', '每页记录数', '50')
   .action(async (options) => {
     await withWorkingDir(async () => {
+      if (!config.current_env) {
+        console.error(pc.red('当前没有选择环境'));
+        console.error(pc.gray('请先使用 ') + pc.cyan('vvcli create') + pc.gray(' 创建环境'));
+        return;
+      }
       try {
         const vvorkerJson = loadVVorkerConfig();
         const uid = vvorkerJson.project?.uid ?? vvorkerJson.uid;

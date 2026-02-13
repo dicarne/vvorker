@@ -16,7 +16,7 @@ fs.ensureDirSync(vvcliDir)
 
 const configFilePath = `${vvcliDir}/config.json`;
 if (!fs.existsSync(configFilePath)) {
-  fs.writeFileSync(configFilePath, JSON.stringify({ env: {}, current_env: 'default' }));
+  fs.writeFileSync(configFilePath, JSON.stringify({ env: {}, current_env: '' }));
 }
 
 export let config = JSON.parse(fs.readFileSync(configFilePath, 'utf-8')) as Config;
@@ -26,13 +26,17 @@ export function saveConfig() {
 }
 
 export function getToken() {
-  let env = config.current_env ?? "default";
-  return config.env[env]?.token;
+  if (!config.current_env) {
+    return undefined;
+  }
+  return config.env[config.current_env]?.token;
 }
 
 export function getUrl() {
-  let env = config.current_env ?? "default";
-  let url = config.env[env]?.url;
+  if (!config.current_env) {
+    return undefined;
+  }
+  let url = config.env[config.current_env]?.url;
   if (url?.endsWith('/')) {
     url = url.slice(0, -1)
   }
@@ -52,11 +56,16 @@ export function ensureEnv(env: string) {
 }
 
 export function setUrl(url: string) {
-  let env = config.current_env ?? "default";
-  ensureEnv(env);
-  config.env[env].url = url;
+  if (!config.current_env) {
+    throw new Error("当前没有选择环境，请先使用 vvcli create 创建环境");
+  }
+  ensureEnv(config.current_env);
+  config.env[config.current_env].url = url;
 }
 
 export function getEnv() {
-  return config.current_env ?? "default"
+  if (!config.current_env) {
+    throw new Error("当前没有选择环境，请先使用 vvcli create 创建环境");
+  }
+  return config.current_env
 }

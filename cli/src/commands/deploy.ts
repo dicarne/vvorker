@@ -63,6 +63,11 @@ export const deployCommand = new Command('deploy')
   .option('-f, --force', '强制上传所有assets，不进行差分校验')
   .action(async (options) => {
     await withWorkingDir(async () => {
+      if (!config.current_env) {
+        console.error(pc.red('当前没有选择环境'));
+        console.error(pc.gray('请先使用 ') + pc.cyan('vvcli create') + pc.gray(' 创建环境'));
+        return;
+      }
       if (!getUrl()) {
         console.error('请先配置VVorker平台的url');
         return;

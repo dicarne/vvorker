@@ -6,6 +6,8 @@ import pc from "picocolors";
 export const createCommand = new Command('create')
   .description('创建新的环境')
   .action(async () => {
+    console.log(pc.gray('请根据文档说明创建新的环境：\n') + pc.cyan('https://vvorker-docs.vvorker.zhishudali.ink/config/env.html'));
+    console.log();
     const answers = await inquirer.prompt([
       {
         type: 'input',
@@ -15,7 +17,7 @@ export const createCommand = new Command('create')
           if (!input || input.trim() === '') {
             return '环境名称不能为空';
           }
-          if (config.env[input]) {
+          if (config.env && config.env[input]) {
             return '该环境已存在，请使用其他名称';
           }
           return true;
@@ -40,10 +42,10 @@ export const createCommand = new Command('create')
       {
         type: 'input',
         name: 'token',
-        message: '请输入 Token：',
+        message: '请输入 API 密钥：',
         validate: (input: string) => {
           if (!input || input.trim() === '') {
-            return 'Token 不能为空';
+            return 'API 密钥不能为空';
           }
           return true;
         }
@@ -57,6 +59,12 @@ export const createCommand = new Command('create')
       url,
       token
     };
+
+    // 如果这是第一个环境，自动设置为当前环境
+    if (!config.current_env) {
+      config.current_env = envName;
+    }
+
     saveConfig();
 
     console.log(pc.green('环境创建成功！'));
@@ -64,5 +72,8 @@ export const createCommand = new Command('create')
     console.log(pc.green('URL：') + url);
     const mid = Math.floor(token.length / 2);
     const showToken = token.slice(0, mid) + "*".repeat(8) + token.slice(mid + 8);
-    console.log(pc.green('Token：') + showToken);
+    console.log(pc.green('API 密钥：') + showToken);
+    if (!config.current_env || config.current_env === envName) {
+      console.log(pc.gray('已自动设置为当前环境'));
+    }
   });

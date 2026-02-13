@@ -60,7 +60,11 @@ vvcli create
 
 填写环境名、url、token。
 
-url指的是平台的根地址url。
+- **环境名**：用于标识不同的部署环境（如 dev、test、prod）
+- **url**：VVorker 平台的根地址（如 https://vvorker.cloud.zhishudali.ink）
+- **token**：用于身份验证的访问令牌
+
+详细说明请参考 [CLI 环境配置](/config/env)。
 
 ## env
 
