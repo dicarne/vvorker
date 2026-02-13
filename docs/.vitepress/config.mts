@@ -15,7 +15,6 @@ export default withMermaid({
         items: [
           { text: "基本概念", link: "/design/basic" },
           { text: "快速开始", link: "/design/quickstart" },
-          { text: "钦定", link: "/design/must" },
           { text: "网络", link: "/design/network" },
         ],
       },
