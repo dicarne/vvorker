@@ -84,7 +84,8 @@ func GenerateTypes(c *gin.Context) {
 		return
 	}
 	finalStr := ""
-	typeStr := `
+	typeStr := `/// <reference path="../worker-configuration.d.ts" />
+
 export interface EnvBinding {
 `
 	if len(worker.WorkerConfig.Ai) > 0 {
