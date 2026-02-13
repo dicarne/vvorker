@@ -35,6 +35,7 @@ export default withMermaid({
         text: "CONFIG",
         items: [
           { text: "CLI 环境", link: "/config/env" },
+          { text: "项目配置", link: "/config/vvorker_project_config" },
           { text: "节点配置", link: "/config/node_config" },
           { text: "SSO配置", link: "/config/sso" },
         ],
