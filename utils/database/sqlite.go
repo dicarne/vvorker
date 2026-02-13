@@ -3,7 +3,6 @@ package database
 import (
 	"os"
 	"path/filepath"
-	"time"
 	"vvorker/conf"
 	"vvorker/defs"
 	"vvorker/utils"
@@ -13,14 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
-
-// max 返回两个整数中较大的一个
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
 
 func initSqlite() {
 	if conf.AppConfigInstance.LitefsEnabled {
@@ -45,28 +36,6 @@ func initSqlite() {
 		logrus.Panicf("DB PATH: %s", dbPath)
 		panic(err)
 	}
-
-	// 配置连接池 - 防止连接超时和重置
-	sqlDB, err := db.DB()
-	if err != nil {
-		panic("Failed to get database instance")
-	}
-
-	// SQLite 使用更小的连接池配置（因为是文件数据库）
-	// 使用主配置的值除以2-3倍
-	maxIdleConns := max(1, conf.AppConfigInstance.DBMaxIdleConns/2)
-	maxOpenConns := max(3, conf.AppConfigInstance.DBMaxOpenConns/3)
-	connMaxLifetime := time.Duration(conf.AppConfigInstance.DBConnMaxLifetime*2) * time.Minute
-	connMaxIdleTime := time.Duration(conf.AppConfigInstance.DBConnMaxIdleTime*5) * time.Minute
-
-	// 连接池配置
-	sqlDB.SetMaxIdleConns(maxIdleConns)           // 最大空闲连接数
-	sqlDB.SetMaxOpenConns(maxOpenConns)           // 最大打开连接数
-	sqlDB.SetConnMaxLifetime(connMaxLifetime)     // 连接最大生命周期
-	sqlDB.SetConnMaxIdleTime(connMaxIdleTime)     // 空闲连接超时时间
-
-	logrus.Infof("SQLite database initialized with connection pool: max_idle=%d, max_open=%d, max_lifetime=%v, max_idle_time=%v",
-		maxIdleConns, maxOpenConns, connMaxLifetime, connMaxIdleTime)
 
 	GetManager().SetDB(defs.DBTypeSqlite, db)
 }
