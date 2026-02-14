@@ -7,7 +7,8 @@ import { loadVVorkerConfig, saveVVorkerConfig } from '../utils/vvorker-config';
 import { runCommand } from '../utils/system';
 import { apiClient, requireOTP } from '../utils/api';
 import { withWorkingDir } from '../utils/working-dir';
-import pc from "picocolors"
+import pc from "picocolors";
+import { checkForUpdate } from '../utils/update-check';
 
 async function checkDeploymentResult(apiClient: any, uid: string, taskId: string) {
   if (!taskId) {
@@ -63,6 +64,8 @@ export const deployCommand = new Command('deploy')
   .option('--skip-build', '跳过构建')
   .option('-f, --force', '强制上传所有assets，不进行差分校验')
   .action(async (options) => {
+    await checkForUpdate();
+    
     await withWorkingDir(async () => {
       if (!config.current_env) {
         console.error(pc.red('当前没有选择环境'));

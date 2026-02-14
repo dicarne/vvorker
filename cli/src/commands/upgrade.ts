@@ -7,6 +7,5 @@ import { runCommand } from '../utils/system';
 export const upgradeCommand = new Command('upgrade')
     .description("用于升级cli")
     .action(async () => {
-        await runCommand('pnpm', ['i', '@dicarne/vvcli', '-g']);
-
+        await runCommand('pnpm', ['update', '@dicarne/vvcli', '-g']);
     });

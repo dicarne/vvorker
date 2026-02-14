@@ -1,6 +1,6 @@
 {
   "name": "@dicarne/vvcli",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "cli for vvorker",
   "bin": {
     "vvcli": "./dist/cli.js"
@@ -9,7 +9,6 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/cli.ts",
-    "___preinstall": "npm run build",
     "prepublishOnly": "tsc",
     "tonpm": "npm publish --access=public"
   },

@@ -8,6 +8,8 @@ export interface EnvConfig {
 export interface Config {
   current_env: string;
   env: { [key: string]: EnvConfig };
+  disable_update?: boolean;
+  last_update_time?: string; // ISO格式日期字符串，如 "2026-02-14"
 }
 
 const userHome = require('os').homedir();

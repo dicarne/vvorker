@@ -10,6 +10,7 @@ import { versionCommand } from "./commands/version";
 import { createCommand } from "./commands/create";
 import { upgradeCommand } from "./commands/upgrade";
 import { logsCommand } from "./commands/logs";
+import { installCommand } from "./commands/install";
 
 // 全局变量，用于存储工作目录
 let globalWorkingDir: string | null = null;
@@ -54,5 +55,6 @@ program.addCommand(versionCommand);
 program.addCommand(createCommand);
 program.addCommand(upgradeCommand);
 program.addCommand(logsCommand);
+program.addCommand(installCommand);
 
 program.parse(process.argv);

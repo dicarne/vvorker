@@ -7,6 +7,7 @@ import { runCommand } from "../utils/system";
 import pc from "picocolors";
 import { getEnv } from "../utils/config";
 import { execSync } from "child_process";
+import { checkForUpdate } from "../utils/update-check";
 
 /**
  * 公共初始化函数，处理项目创建的通用逻辑
@@ -119,6 +120,8 @@ export const initCommand = new Command("init")
   .command("init <projectName>")
   .description("初始化VVorker项目")
   .action(async (projectName, options) => {
+    await checkForUpdate();
+    
     // 交互式输入uid
     const { uid, projtype } = await inquirer.prompt([
       {
