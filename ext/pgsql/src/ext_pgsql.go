@@ -332,7 +332,7 @@ func migrateResource(logBuilder *strings.Builder, userID uint64, pgid string) er
 	if err := db.Where(&models.PostgreSQL{
 		UID: pgid,
 	}).First(&pgResource).Error; err != nil {
-		logBuilder.WriteString(fmt.Sprintf("Failed to get PostgreSQL resource: %v\n", err))
+		logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to get PostgreSQL resource: %v\n", err))
 		return err
 	}
 
@@ -341,7 +341,7 @@ func migrateResource(logBuilder *strings.Builder, userID uint64, pgid string) er
 		UserID: userID,
 		DBUID:  pgid,
 	}).Order("sequence").Find(&migrates).Error; err != nil {
-		logBuilder.WriteString(fmt.Sprintf("Failed to get PostgreSQL migrations: %v\n", err))
+		logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to get PostgreSQL migrations: %v\n", err))
 		return err
 	}
 
@@ -355,7 +355,7 @@ func migrateResource(logBuilder *strings.Builder, userID uint64, pgid string) er
 			" sslmode=disable"+
 			" dbname="+pgResource.Database)
 	if err != nil {
-		logBuilder.WriteString(fmt.Sprintf("Failed to connect to PostgreSQL database: %v\n", err))
+		logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to connect to PostgreSQL database: %v\n", err))
 		return err
 	}
 	defer pgdb.Close()
@@ -367,20 +367,20 @@ func migrateResource(logBuilder *strings.Builder, userID uint64, pgid string) er
 		}).First(&models.MigrationHistory{}).Error; err == nil {
 			continue
 		}
-		logBuilder.WriteString(fmt.Sprintf("Executing migration file: %s\n", migrate.FileName))
+		logBuilder.WriteString(fmt.Sprintf("[INFO] Executing migration file: %s\n", migrate.FileName))
 		_, err = pgdb.Exec(migrate.FileContent)
 		errMsg := ""
 		if err != nil {
 			logrus.Error(err)
 			errMsg = err.Error()
-			logBuilder.WriteString(fmt.Sprintf("Migration error for file %s: %v\n", migrate.FileName, err))
+			logBuilder.WriteString(fmt.Sprintf("[ERROR] Migration error for file %s: %v\n", migrate.FileName, err))
 		}
 		if err := db.Create(&models.MigrationHistory{
 			Key:   key,
 			Error: errMsg,
 		}).Error; err != nil {
 			logrus.Error(err)
-			logBuilder.WriteString(fmt.Sprintf("Failed to save migration history: %v\n", err))
+			logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to save migration history: %v\n", err))
 		}
 		migrate.MigrateKey = key
 		db.Save(&migrate)
@@ -395,7 +395,7 @@ func migrateCustomResource(logBuilder *strings.Builder, userID uint64, pgid stri
 		UserID: userID,
 		DBUID:  pgid,
 	}).Order("sequence").Find(&migrates).Error; err != nil {
-		logBuilder.WriteString(fmt.Sprintf("Failed to get PostgreSQL custom migrations: %v\n", err))
+		logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to get PostgreSQL custom migrations: %v\n", err))
 		return err
 	}
 	if len(migrates) == 0 {
@@ -409,7 +409,7 @@ func migrateCustomResource(logBuilder *strings.Builder, userID uint64, pgid stri
 			" port="+fmt.Sprintf("%d", config.CustomDBPort)+
 			" sslmode=disable")
 	if err != nil {
-		logBuilder.WriteString(fmt.Sprintf("Failed to connect to custom PostgreSQL database: %v\n", err))
+		logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to connect to custom PostgreSQL database: %v\n", err))
 		return err
 	}
 	defer pgdb.Close()
@@ -420,20 +420,20 @@ func migrateCustomResource(logBuilder *strings.Builder, userID uint64, pgid stri
 		}).First(&models.MigrationHistory{}).Error; err == nil {
 			continue
 		}
-		logBuilder.WriteString(fmt.Sprintf("Executing custom migration file: %s\n", migrate.FileName))
+		logBuilder.WriteString(fmt.Sprintf("[INFO] Executing custom migration file: %s\n", migrate.FileName))
 		_, err = pgdb.Exec(migrate.FileContent)
 		errMsg := ""
 		if err != nil {
 			logrus.Error(err)
 			errMsg = err.Error()
-			logBuilder.WriteString(fmt.Sprintf("Custom migration error for file %s: %v\n", migrate.FileName, err))
+			logBuilder.WriteString(fmt.Sprintf("[ERROR] Custom migration error for file %s: %v\n", migrate.FileName, err))
 		}
 		if err := db.Create(&models.MigrationHistory{
 			Key:   key,
 			Error: errMsg,
 		}).Error; err != nil {
 			logrus.Error(err)
-			logBuilder.WriteString(fmt.Sprintf("Failed to save custom migration history: %v\n", err))
+			logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to save custom migration history: %v\n", err))
 		}
 		migrate.MigrateKey = key
 		db.Save(&migrate)

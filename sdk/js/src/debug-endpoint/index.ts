@@ -9,6 +9,7 @@ import { Base64 } from "js-base64";
 
 /**
  * VITE_VVORKER_BASE_URL 设置为到服务的url
+ * VITE_VVORKER_TOKEN 设置为服务的token
  * @param app0
  * @returns
  */

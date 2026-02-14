@@ -33,6 +33,7 @@ async function checkDeploymentResult(apiClient: any, uid: string, taskId: string
 
         // 任务完成
         if (status === 'completed') {
+          console.log(taskResp.data.data.result);
           console.log(pc.green("✓ 数据库迁移完成！"));
           return;
         }

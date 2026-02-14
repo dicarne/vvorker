@@ -3,6 +3,7 @@ package workerd
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 	"time"
 	"vvorker/common"
 	"vvorker/conf"
@@ -303,11 +304,11 @@ func FinishWorkerConfig(worker *models.Worker) string {
 
 				_, errLog := funcs.MigratePostgreSQLDatabase(worker.UserID, ext.ResourceID)
 				if errLog != "" {
-					taskResult += "[PostgreSQL Migration Error] " + errLog + "\n"
+					taskResult += errLog + "\n"
 					db.Create(&exec.WorkerLog{
 						WorkerLogData: &exec.WorkerLogData{
 							UID:    worker.UID,
-							Output: "[PostgreSQL Migration Error] " + errLog,
+							Output: errLog,
 							Time:   time.Now(),
 							Type:   "error",
 							LogUID: utils.GenerateUID(),
@@ -317,11 +318,11 @@ func FinishWorkerConfig(worker *models.Worker) string {
 				if len(ext.Migrate) != 0 {
 					_, errLog := funcs.MigratePostgreSQLDatabase(worker.UserID, "worker_resource:pgsql:"+worker.UID+":"+ext.Migrate)
 					if errLog != "" {
-						taskResult += "[PostgreSQL Migration Error] " + errLog + "\n"
+						taskResult += errLog + "\n"
 						db.Create(&exec.WorkerLog{
 							WorkerLogData: &exec.WorkerLogData{
 								UID:    worker.UID,
-								Output: "[PostgreSQL Migration Error] " + errLog,
+								Output: errLog,
 								Time:   time.Now(),
 								Type:   "error",
 								LogUID: utils.GenerateUID(),
@@ -352,11 +353,11 @@ func FinishWorkerConfig(worker *models.Worker) string {
 
 				_, errLog := funcs.MigrateMySQLDatabase(worker.UserID, ext.ResourceID)
 				if errLog != "" {
-					taskResult += "[MySQL Migration Error] " + errLog + "\n"
+					taskResult += errLog + "\n"
 					db.Create(&exec.WorkerLog{
 						WorkerLogData: &exec.WorkerLogData{
 							UID:    worker.UID,
-							Output: "[MySQL Migration Error] " + errLog,
+							Output: errLog,
 							Time:   time.Now(),
 							Type:   "error",
 							LogUID: utils.GenerateUID(),
@@ -366,11 +367,11 @@ func FinishWorkerConfig(worker *models.Worker) string {
 				if len(ext.Migrate) != 0 {
 					_, errLog := funcs.MigrateMySQLDatabase(worker.UserID, "worker_resource:mysql:"+worker.UID+":"+ext.Migrate)
 					if errLog != "" {
-						taskResult += "[MySQL Migration Error] " + errLog + "\n"
+						taskResult += errLog + "\n"
 						db.Create(&exec.WorkerLog{
 							WorkerLogData: &exec.WorkerLogData{
 								UID:    worker.UID,
-								Output: "[MySQL Migration Error] " + errLog,
+								Output: errLog,
 								Time:   time.Now(),
 								Type:   "error",
 								LogUID: utils.GenerateUID(),
@@ -386,7 +387,7 @@ func FinishWorkerConfig(worker *models.Worker) string {
 		if ret.Error == nil {
 			if task.ID != 0 && !taskUpdated {
 				taskUpdated = true
-				if taskResult != "" {
+				if taskResult != "" && strings.Contains(taskResult, "[ERROR]") {
 					models.UpdateTaskResult(task.TraceID, taskResult)
 					models.CompleteTask(task.TraceID, "failed")
 				} else {

@@ -345,7 +345,7 @@ func migrateCustomMySQLResource(logBuilder *strings.Builder, userID uint64, pgid
 		UserID: userID,
 		DBUID:  pgid,
 	}).Order("sequence").Find(&migrates).Error; err != nil {
-		logBuilder.WriteString(fmt.Sprintf("Failed to get MySQL custom migrations: %v\n", err))
+		logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to get MySQL custom migrations: %v\n", err))
 		return err
 	}
 
@@ -365,7 +365,7 @@ func migrateCustomMySQLResource(logBuilder *strings.Builder, userID uint64, pgid
 
 	dbConn, err := sql.Open("mysql", dbConnectionStr)
 	if err != nil {
-		logBuilder.WriteString(fmt.Sprintf("Failed to connect to custom MySQL database: %v\n", err))
+		logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to connect to custom MySQL database: %v\n", err))
 		return err
 	}
 	defer dbConn.Close()
@@ -377,20 +377,20 @@ func migrateCustomMySQLResource(logBuilder *strings.Builder, userID uint64, pgid
 		}).First(&models.MigrationHistory{}).Error; err == nil {
 			continue
 		}
-		logBuilder.WriteString(fmt.Sprintf("Executing custom MySQL migration file: %s\n", migrate.FileName))
+		logBuilder.WriteString(fmt.Sprintf("[INFO] Executing custom MySQL migration file: %s\n", migrate.FileName))
 		_, err = dbConn.Exec(migrate.FileContent)
 		errMsg := ""
 		if err != nil {
 			logrus.Error(err)
 			errMsg = err.Error()
-			logBuilder.WriteString(fmt.Sprintf("Custom MySQL migration error for file %s: %v\n", migrate.FileName, err))
+			logBuilder.WriteString(fmt.Sprintf("[ERROR] Custom MySQL migration error for file %s: %v\n", migrate.FileName, err))
 		}
 		if err := db.Create(&models.MigrationHistory{
 			Key:   key,
 			Error: errMsg,
 		}).Error; err != nil {
 			logrus.Error(err)
-			logBuilder.WriteString(fmt.Sprintf("Failed to save custom MySQL migration history: %v\n", err))
+			logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to save custom MySQL migration history: %v\n", err))
 		}
 		migrate.MigrateKey = key
 		db.Save(&migrate)
@@ -408,7 +408,7 @@ func MigrateMySQLDatabase(userID uint64, pgid string) (error, string) {
 		if err := db.Where(&models.MySQL{
 			UID: pgid,
 		}).First(&mysqlResource).Error; err != nil {
-			logBuilder.WriteString(fmt.Sprintf("Failed to get MySQL resource: %v\n", err))
+			logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to get MySQL resource: %v\n", err))
 			return err, logBuilder.String()
 		}
 
@@ -417,7 +417,7 @@ func MigrateMySQLDatabase(userID uint64, pgid string) (error, string) {
 			UserID: userID,
 			DBUID:  mysqlResource.UID,
 		}).Order("sequence").Find(&migrates).Error; err != nil {
-			logBuilder.WriteString(fmt.Sprintf("Failed to get MySQL migrations: %v\n", err))
+			logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to get MySQL migrations: %v\n", err))
 			return err, logBuilder.String()
 		}
 
@@ -425,7 +425,7 @@ func MigrateMySQLDatabase(userID uint64, pgid string) (error, string) {
 
 		dbConn, err := sql.Open("mysql", buildMysqlDBConnectionString(mysqlResource.Database)+"&multiStatements=true")
 		if err != nil {
-			logBuilder.WriteString(fmt.Sprintf("Failed to connect to MySQL database: %v\n", err))
+			logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to connect to MySQL database: %v\n", err))
 			return err, logBuilder.String()
 		}
 		defer dbConn.Close()
@@ -437,20 +437,20 @@ func MigrateMySQLDatabase(userID uint64, pgid string) (error, string) {
 			}).First(&models.MigrationHistory{}).Error; err == nil {
 				continue
 			}
-			logBuilder.WriteString(fmt.Sprintf("Executing MySQL migration file: %s\n", migrate.FileName))
+			logBuilder.WriteString(fmt.Sprintf("[INFO] Executing MySQL migration file: %s\n", migrate.FileName))
 			_, err = dbConn.Exec(migrate.FileContent)
 			errMsg := ""
 			if err != nil {
 				logrus.Error(err)
 				errMsg = err.Error()
-				logBuilder.WriteString(fmt.Sprintf("MySQL migration error for file %s: %v\n", migrate.FileName, err))
+				logBuilder.WriteString(fmt.Sprintf("[ERROR] MySQL migration error for file %s: %v\n", migrate.FileName, err))
 			}
 			if err := db.Create(&models.MigrationHistory{
 				Key:   key,
 				Error: errMsg,
 			}).Error; err != nil {
 				logrus.Error(err)
-				logBuilder.WriteString(fmt.Sprintf("Failed to save migration history: %v\n", err))
+				logBuilder.WriteString(fmt.Sprintf("[ERROR] Failed to save migration history: %v\n", err))
 			}
 			migrate.MigrateKey = key
 			db.Save(&migrate)
