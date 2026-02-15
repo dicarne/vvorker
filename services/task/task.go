@@ -3,7 +3,6 @@ package task
 import (
 	"time"
 	"vvorker/common"
-	"vvorker/entities"
 	"vvorker/models"
 	"vvorker/utils/database"
 
@@ -120,11 +119,20 @@ func CancelTaskEndpoint(c *gin.Context) {
 		return
 	}
 
+	userID := c.GetUint(common.UIDKey)
+
+	// 检查用户是否有权限访问该 worker
+	if _, err := models.GetWorkerByUID(userID, req.WorkerUID); err != nil {
+		common.RespErr(c, 403, "error", gin.H{"error": "No permission"})
+		return
+	}
+
 	db := database.GetDB()
 
 	var tt models.Task
 	if err := db.Where(&models.Task{
-		TraceID: req.TraceID,
+		TraceID:   req.TraceID,
+		WorkerUID: req.WorkerUID,
 	}).First(&tt).Error; err != nil {
 		common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
 		return
@@ -165,7 +173,7 @@ func CompleteTaskEndpoint(c *gin.Context) {
 }
 
 type ListTaskReq struct {
-	WorkerUID string `json:"worker_uid"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
 	TraceID   string `json:"trace_id"`
 	Page      int    `json:"page"`
 	PageSize  int    `json:"page_size"`
@@ -180,25 +188,28 @@ func ListTaskEndpoint(c *gin.Context) {
 
 	var req ListTaskReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})
+		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request, worker_uid is required"})
 		return
 	}
-	db := database.GetDB()
 
-	userID := uint64(c.GetUint(common.UIDKey))
+	userID := c.GetUint(common.UIDKey)
+
+	// 检查用户是否有权限访问该 worker
+	worker, err := models.GetWorkerByUID(userID, req.WorkerUID)
+	if err != nil {
+		common.RespErr(c, 403, "error", gin.H{"error": "No permission"})
+		return
+	}
+
+	db := database.GetDB()
 
 	var total int64
 
-	// 查询符合条件的任务总数
+	// 直接根据 worker_uid 查询任务
 	if err := db.Model(&models.Task{}).
-		Joins("JOIN workers ON tasks.worker_uid = workers.uid").
-		Where(&models.Worker{
-			Worker: &entities.Worker{
-				UserID: userID,
-			},
-		}).
 		Where(&models.Task{
-			Type: "usertask",
+			WorkerUID: req.WorkerUID,
+			Type:      "usertask",
 		}).
 		Count(&total).Error; err != nil {
 		common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
@@ -206,17 +217,11 @@ func ListTaskEndpoint(c *gin.Context) {
 	}
 
 	var tasks []ListTaskResponse
-	// 通过 JOIN 关联 tasks 表和 workers 表，筛选出符合条件的任务，并获取 worker 的 name
 	if err := db.Table("tasks").
-		Select("tasks.*, workers.name as worker_name").
-		Joins("JOIN workers ON tasks.worker_uid = workers.uid").
-		Where(&models.Worker{
-			Worker: &entities.Worker{
-				UserID: userID,
-			},
-		}).
+		Select("tasks.*").
 		Where(&models.Task{
-			Type: "usertask",
+			WorkerUID: req.WorkerUID,
+			Type:      "usertask",
 		}).
 		Order("tasks.start_time desc").
 		Offset((req.Page - 1) * req.PageSize).
@@ -226,11 +231,16 @@ func ListTaskEndpoint(c *gin.Context) {
 		return
 	}
 
+	// 添加 worker_name
+	for i := range tasks {
+		tasks[i].WorkerName = worker.Name
+	}
+
 	common.RespOK(c, "success", gin.H{"tasks": tasks, "total": total})
 }
 
 type GetTaskLogsReq struct {
-	WorkerUID string `json:"worker_uid"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
 	TraceID   string `json:"trace_id"`
 	Page      int    `json:"page"`
 	PageSize  int    `json:"page_size"`
@@ -240,33 +250,26 @@ func GetLogsEndpoint(c *gin.Context) {
 
 	var req GetTaskLogsReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})
+		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request, worker_uid is required"})
 		return
 	}
-	userID := uint64(c.GetUint(common.UIDKey))
-	if userID == 0 {
-		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})
+
+	userID := c.GetUint(common.UIDKey)
+
+	// 检查用户是否有权限访问该 worker
+	if _, err := models.GetWorkerByUID(userID, req.WorkerUID); err != nil {
+		common.RespErr(c, 403, "error", gin.H{"error": "No permission"})
 		return
 	}
+
 	db := database.GetDB()
-	// 查找这个trace id 是否是这个worker的，这个worker是否是这个用户的
-	var count int64
-	if err := db.Model(&models.Task{}).
-		Joins("JOIN workers ON tasks.worker_uid = workers.uid").
-		Where(&models.Task{
-			TraceID: req.TraceID,
-		}).
-		Where(&models.Worker{
-			Worker: &entities.Worker{
-				UserID: userID,
-			},
-		}).
-		Limit(1).
-		Count(&count).Error; err != nil {
-		common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
-	}
-	if count == 0 {
-		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})
+	// 检查该任务是否属于该 worker
+	var task models.Task
+	if err := db.Where(&models.Task{
+		TraceID:   req.TraceID,
+		WorkerUID: req.WorkerUID,
+	}).First(&task).Error; err != nil {
+		common.RespErr(c, 400, "error", gin.H{"error": "Task not found"})
 		return
 	}
 

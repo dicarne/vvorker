@@ -1,4 +1,5 @@
 
+
 import { env, RpcTarget, WorkerEntrypoint } from 'cloudflare:workers'
 import { v4 } from 'uuid'
 
@@ -16,7 +17,7 @@ let commonConfig = {
 	"Content-Type": "application/json",
 }
 
-class TaskRpcTarget extends RpcTarget {
+export class TaskRpcTarget extends RpcTarget {
 	constructor(private id: string) {
 		super()
 	}
@@ -69,5 +70,10 @@ export default class Task extends WorkerEntrypoint {
 			return undefined
 		}
 		return new TaskRpcTarget(id)
+	}
+
+	// 获取指定 trace_id 的 TaskRpcTarget，用于 debug 端点
+	async getTask(trace_id: string) {
+		return new TaskRpcTarget(trace_id)
 	}
 }

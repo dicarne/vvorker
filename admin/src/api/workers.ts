@@ -175,13 +175,13 @@ export const listAccessRules = async (request: ListAccessRuleRequest) => {
   return res.data
 }
 
-export const listTasks = (page: number, page_size: number) => {
+export const listTasks = (page: number, page_size: number, worker_uid?: string) => {
   return api.post<{
     data: {
       total: number
       tasks: Task[]
     }
-  }>('api/ext/task/list', { page, page_size })
+  }>('api/ext/task/list', { page, page_size, worker_uid })
 }
 
 export const getTaskLogs = (

@@ -25,6 +25,7 @@ import WorkerRules from '@/components/WorkerRules.vue'
 import WorkerAuth from '@/components/WorkerAuth.vue'
 import WorkerCollaboration from '@/components/WorkerCollaboration.vue'
 import WorkerSecrets from '@/components/WorkerSecrets.vue'
+import WorkerTasks from '@/components/WorkerTasks.vue'
 import {
   DEFAULT_WORKER_ITEM,
   type VorkerSettingsProperties,
@@ -225,6 +226,9 @@ const handleOpenWorkerClick = async () => {
       </NTabPane>
       <NTabPane name="secrets" tab="变量">
         <WorkerSecrets :uid="worker.UID" />
+      </NTabPane>
+      <NTabPane name="tasks" tab="任务">
+        <WorkerTasks :uid="worker.UID" />
       </NTabPane>
       <template #suffix>
         <!-- 使用 WorkerRun 组件 -->

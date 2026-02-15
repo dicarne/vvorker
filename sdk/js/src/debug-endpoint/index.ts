@@ -1,5 +1,5 @@
 import { Context, Env, Hono } from "hono";
-import { DebugEndpointRequest, ServiceBinding } from "../types/debug-endpoint";
+import { DebugEndpointRequest, ServiceBinding, TaskBinding } from "../types/debug-endpoint";
 import { KVBinding } from "@dicarne/vvorker-kv";
 import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
 import { OSSBinding } from "@dicarne/vvorker-oss";
@@ -218,6 +218,44 @@ export function useDebugEndpoint(app0: any) {
         switch (req.method) {
           case "fetch":
             return proxy.fetch(req.params.url, req.params.init);
+          default:
+            return c.json({ error: "method not found", req }, 404);
+        }
+      }
+      case "task": {
+        let task = (c.env as any)[req.binding] as TaskBinding;
+        if (!task) {
+          return c.json({ error: "task binding not found", req }, 404);
+        }
+        switch (req.method) {
+          case "client": {
+            const rpcTarget = await task.client();
+            // TaskRpcTarget 有 id 属性存储 trace_id
+            const traceId = (rpcTarget as any).id;
+            return c.json({
+              code: 0,
+              message: "task",
+              data: { trace_id: traceId },
+            });
+          }
+          case "should_exit": {
+            const rpcTarget = await task.getTask(req.params.trace_id);
+            const shouldExit = await rpcTarget.should_exit();
+            return c.json({
+              message: "task",
+              data: shouldExit,
+            });
+          }
+          case "complete": {
+            const rpcTarget = await task.getTask(req.params.trace_id);
+            await rpcTarget.complete();
+            return c.json({ message: "task", data: null });
+          }
+          case "log": {
+            const rpcTarget = await task.getTask(req.params.trace_id);
+            await rpcTarget.log(req.params.text);
+            return c.json({ message: "task", data: null });
+          }
           default:
             return c.json({ error: "method not found", req }, 404);
         }

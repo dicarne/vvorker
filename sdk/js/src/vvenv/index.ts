@@ -3,7 +3,7 @@ import { OSSBinding } from "@dicarne/vvorker-oss";
 import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
 import { MYSQLBinding } from "@dicarne/vvorker-mysql";
 import { config, isLocalDev } from "../common/common";
-import { ServiceBinding } from "../types/debug-endpoint";
+import { ServiceBinding, TaskBinding, TaskRpcTarget } from "../types/debug-endpoint";
 import { Base64 } from "js-base64";
 
 function vvoss(key: string, binding: OSSBinding): OSSBinding {
@@ -614,6 +614,89 @@ function assets(key: string, binding: Fetcher) {
   };
 }
 
+function vvtask(bindingKey: string, binding: TaskBinding): TaskBinding {
+  if (isLocalDev()) {
+    return {
+      client: async () => {
+        const r = await fetch(`${config().url}/__vvorker__debug`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${config().token}`,
+          },
+          body: JSON.stringify({
+            service: "task",
+            binding: bindingKey,
+            method: "client",
+            params: {},
+          }),
+        });
+        const result = (await r.json()) as any;
+        if (result.code === 0 && result.data?.trace_id) {
+          return createTaskRpcTargetDev(result.data.trace_id, bindingKey);
+        }
+        throw new Error(`Failed to create task: ${JSON.stringify(result)}`);
+      },
+      getTask: async (trace_id: string) => {
+        return createTaskRpcTargetDev(trace_id, bindingKey);
+      },
+    };
+  }
+  return binding;
+}
+
+function createTaskRpcTargetDev(traceId: string, bindingKey: string): TaskRpcTarget {
+  return {
+    should_exit: async () => {
+      const r = await fetch(`${config().url}/__vvorker__debug`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${config().token}`,
+        },
+        body: JSON.stringify({
+          service: "task",
+          binding: bindingKey,
+          method: "should_exit",
+          params: { trace_id: traceId },
+        }),
+      });
+      const result = (await r.json()) as any;
+      return result.data === true;
+    },
+    complete: async () => {
+      await fetch(`${config().url}/__vvorker__debug`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${config().token}`,
+        },
+        body: JSON.stringify({
+          service: "task",
+          binding: bindingKey,
+          method: "complete",
+          params: { trace_id: traceId },
+        }),
+      });
+    },
+    log: async (text: string) => {
+      await fetch(`${config().url}/__vvorker__debug`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${config().token}`,
+        },
+        body: JSON.stringify({
+          service: "task",
+          binding: bindingKey,
+          method: "log",
+          params: { trace_id: traceId, text },
+        }),
+      });
+    },
+  };
+}
+
 /**
  * 用于转换环境变量和绑定，在开发时（env.vars.MODE="development"）将通过代理和节点进行交互，从而获取节点的绑定和变量。
  * 在生产时，将直接返回绑定和变量。
@@ -634,5 +717,6 @@ export function vvbind<T extends { env: { vars: any; [key: string]: any } }>(
       service(name as string, c.env[name as string]),
     assets: (key: keyof T["env"]) =>
       assets(key as string, c.env[key as string]),
+    task: (key: keyof T["env"]) => vvtask(key as string, c.env[key as string]),
   };
 }
