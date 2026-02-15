@@ -92,6 +92,8 @@ const getStatusType = (status: string) => {
       return 'warning'
     case 'failed':
       return 'error'
+    case 'interrupt':
+      return 'error'
     default:
       return 'default'
   }
@@ -108,6 +110,8 @@ const getStatusText = (status: string) => {
       return '已取消'
     case 'failed':
       return '失败'
+    case 'interrupt':
+      return '已中断'
     default:
       return status
   }
@@ -161,6 +165,7 @@ const columns = [
             size: 'small',
             type: 'primary',
             text: true,
+            style: { marginRight: '12px' },
             onClick: () => handleViewLogs(row.trace_id),
           },
           { default: () => '查看日志' }

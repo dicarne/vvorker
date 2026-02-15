@@ -37,4 +37,9 @@ func MigrateNormalModel() {
 	if err := EnsureAdminExists(); err != nil {
 		logrus.WithError(err).Errorf("failed to ensure admin exists")
 	}
+
+	// 将所有 running 状态的任务标记为 interrupt
+	if err := MarkRunningTasksAsInterrupt(); err != nil {
+		logrus.WithError(err).Errorf("failed to mark running tasks as interrupt")
+	}
 }

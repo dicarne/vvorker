@@ -63,3 +63,12 @@ func GetTask(traceID string) (*Task, error) {
 	}
 	return &task, nil
 }
+
+// MarkRunningTasksAsInterrupt 将所有 running 状态的任务标记为 interrupt
+func MarkRunningTasksAsInterrupt() error {
+	db := database.GetDB()
+	return db.Model(&Task{}).Where("status = ?", "running").Updates(map[string]interface{}{
+		"status":   "interrupt",
+		"end_time": time.Now(),
+	}).Error
+}
