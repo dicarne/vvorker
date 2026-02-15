@@ -238,9 +238,9 @@ func Endpoint(c *gin.Context) {
 }
 
 type WorkerRequestStatsReq struct {
-	WorkerUID string    `json:"worker_uid"`
-	StartTime time.Time `json:"start_time"`
-	EndTime   time.Time `json:"end_time"`
+	WorkerUID string    `json:"worker_uid" binding:"required"`
+	StartTime time.Time `json:"start_time" binding:"required"`
+	EndTime   time.Time `json:"end_time" binding:"required"`
 }
 
 type WorkerRequestStatsResp struct {
@@ -293,10 +293,10 @@ func GetWorkerRequestStats(c *gin.Context) {
 }
 
 type WorkerRequestStatsByTimeReq struct {
-	WorkerUID string    `json:"worker_uid"`
-	StartTime time.Time `json:"start_time"`
-	EndTime   time.Time `json:"end_time"`
-	Interval  string    `json:"interval"` // 时间间隔，如 "1h", "1d"
+	WorkerUID string    `json:"worker_uid" binding:"required"`
+	StartTime time.Time `json:"start_time" binding:"required"`
+	EndTime   time.Time `json:"end_time" binding:"required"`
+	Interval  string    `json:"interval" binding:"required"`
 }
 
 type WorkerRequestStatsByTimeItem struct {

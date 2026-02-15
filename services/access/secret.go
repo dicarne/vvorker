@@ -12,9 +12,9 @@ import (
 
 // SecretCreateRequest 创建密钥请求结构体
 type SecretCreateRequest struct {
-	WorkerUID string `json:"worker_uid"`
-	Key       string `json:"key"`
-	Value     string `json:"value"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
+	Key       string `json:"key" binding:"required"`
+	Value     string `json:"value" binding:"required"`
 }
 
 // CreateSecretEndpoint 创建密钥端点
@@ -23,7 +23,6 @@ func CreateSecretEndpoint(c *gin.Context) {
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := SecretCreateRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 	if uid == 0 {
@@ -63,7 +62,7 @@ func CreateSecretEndpoint(c *gin.Context) {
 
 // SecretListRequest 列出密钥请求结构体
 type SecretListRequest struct {
-	WorkerUID string `json:"worker_uid"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
 }
 
 // ListSecretEndpoint 列出密钥端点
@@ -72,7 +71,6 @@ func ListSecretEndpoint(c *gin.Context) {
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := SecretListRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 	if uid == 0 {
@@ -110,8 +108,8 @@ func ListSecretEndpoint(c *gin.Context) {
 
 // SecretUpdateRequest 更新密钥请求结构体
 type SecretUpdateRequest struct {
-	WorkerUID string `json:"worker_uid"`
-	ID        uint   `json:"id"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
+	ID        uint   `json:"id" binding:"required,gt=0"`
 	Key       string `json:"key"`
 	Value     string `json:"value"`
 }
@@ -122,7 +120,6 @@ func UpdateSecretEndpoint(c *gin.Context) {
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := SecretUpdateRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 	if uid == 0 {
@@ -168,8 +165,8 @@ func UpdateSecretEndpoint(c *gin.Context) {
 
 // SecretDeleteRequest 删除密钥请求结构体
 type SecretDeleteRequest struct {
-	WorkerUID string `json:"worker_uid"`
-	ID        uint   `json:"id"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
+	ID        uint   `json:"id" binding:"required,gt=0"`
 }
 
 // DeleteSecretEndpoint 删除密钥端点
@@ -178,7 +175,6 @@ func DeleteSecretEndpoint(c *gin.Context) {
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := SecretDeleteRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 	if uid == 0 {

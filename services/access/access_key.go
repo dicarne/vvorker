@@ -11,7 +11,7 @@ import (
 )
 
 type AccessKeyCreateRequest struct {
-	Name string `json:"name"`
+	Name string `json:"name" binding:"required"`
 }
 
 type AccessKeyCreateResponse struct {
@@ -20,7 +20,7 @@ type AccessKeyCreateResponse struct {
 }
 
 type AccessKeyDeleteRequest struct {
-	AccessKey string `json:"key"`
+	AccessKey string `json:"key" binding:"required"`
 }
 
 func CreateAccessKeyEndpoint(c *gin.Context) {
@@ -29,7 +29,6 @@ func CreateAccessKeyEndpoint(c *gin.Context) {
 
 	request := AccessKeyCreateRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		c.JSON(400, gin.H{"code": 1, "msg": err.Error()})
 		return
 	}
 	if uid == 0 {
@@ -79,7 +78,6 @@ func DeleteAccessKeyEndpoint(c *gin.Context) {
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := AccessKeyDeleteRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		c.JSON(400, gin.H{"code": 1, "msg": err.Error()})
 		return
 	}
 	db := database.GetDB()

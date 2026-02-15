@@ -11,8 +11,8 @@ import (
 
 // GetWorkerLogsReq 定义获取工作者日志请求结构体
 type GetWorkerLogsReq struct {
-	Page     int `json:"page"`      // 页码，从 1 开始
-	PageSize int `json:"page_size"` // 每页记录数
+	Page     int `json:"page" binding:"gte=1"`      // 页码，从 1 开始
+	PageSize int `json:"page_size" binding:"gte=1"` // 每页记录数
 }
 
 // 定义返回结构体

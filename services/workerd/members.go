@@ -9,13 +9,13 @@ import (
 )
 
 type AddMemberRequest struct {
-	WorkerUID string `json:"worker_uid"`
-	UserName  string `json:"user_name"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
+	UserName  string `json:"user_name" binding:"required"`
 }
 
 type RemoveMemberRequest struct {
-	WorkerUID string `json:"worker_uid"`
-	UserID    uint64 `json:"user_id"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
+	UserID    uint64 `json:"user_id" binding:"required,gt=0"`
 }
 
 // AddMemberEndpoint 添加协作者

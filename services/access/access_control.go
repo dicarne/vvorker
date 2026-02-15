@@ -14,8 +14,8 @@ import (
 )
 
 type EnableAccessControlRequest struct {
-	Enable    bool   `json:"enable"`
-	WorkerUID string `json:"worker_uid"`
+	Enable    *bool  `json:"enable" binding:"required"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
 }
 
 func UpdateEnableAccessControlEndpoint(c *gin.Context) {
@@ -27,7 +27,6 @@ func UpdateEnableAccessControlEndpoint(c *gin.Context) {
 	}
 	request := EnableAccessControlRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 
@@ -44,7 +43,7 @@ func UpdateEnableAccessControlEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInternalError, "worker not found", nil)
 		return
 	}
-	user.EnableAccessControl = request.Enable
+	user.EnableAccessControl = *request.Enable
 	if err := db.Save(&user).Error; err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
@@ -54,7 +53,7 @@ func UpdateEnableAccessControlEndpoint(c *gin.Context) {
 }
 
 type AccessControlRequest struct {
-	WorkerUID string `json:"worker_uid"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
 }
 
 func GetAccessControlEndpoint(c *gin.Context) {
@@ -66,7 +65,6 @@ func GetAccessControlEndpoint(c *gin.Context) {
 	}
 	request := AccessControlRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 
@@ -97,7 +95,6 @@ func AddAccessRuleEndpoint(c *gin.Context) {
 	}
 	request := models.AccessRule{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 	request.Length = len(request.Path)
@@ -126,7 +123,6 @@ func UpdateAccessRuleEndpoint(c *gin.Context) {
 	}
 	request := models.AccessRule{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 	request.Length = len(request.Path)
@@ -153,8 +149,8 @@ func UpdateAccessRuleEndpoint(c *gin.Context) {
 }
 
 type DeleteAccessRuleRequest struct {
-	WorkerUID string `json:"worker_uid"`
-	RuleUID   string `json:"rule_uid"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
+	RuleUID   string `json:"rule_uid" binding:"required"`
 }
 
 func DeleteAccessRuleEndpoint(c *gin.Context) {
@@ -166,7 +162,6 @@ func DeleteAccessRuleEndpoint(c *gin.Context) {
 	}
 	request := DeleteAccessRuleRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 	if request.RuleUID == "" {
@@ -197,9 +192,9 @@ func DeleteAccessRuleEndpoint(c *gin.Context) {
 }
 
 type ListAccessRuleRequest struct {
-	WorkerUID string `json:"worker_uid"`
-	Page      int    `json:"page"`
-	PageSize  int    `json:"page_size"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
+	Page      int    `json:"page" binding:"gte=1"`
+	PageSize  int    `json:"page_size" binding:"gte=1"`
 }
 
 func ListAccessRuleEndpoint(c *gin.Context) {
@@ -211,7 +206,6 @@ func ListAccessRuleEndpoint(c *gin.Context) {
 	}
 	request := ListAccessRuleRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 
@@ -240,9 +234,9 @@ func ListAccessRuleEndpoint(c *gin.Context) {
 }
 
 type SwitchAccessRuleRequest struct {
-	WorkerUID string `json:"worker_uid"`
-	RuleUID   string `json:"rule_uid"`
-	Disable   bool   `json:"disable"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
+	RuleUID   string `json:"rule_uid" binding:"required"`
+	Disable   *bool  `json:"disable" binding:"required"`
 }
 
 func SwitchAccessRuleEndpoint(c *gin.Context) {
@@ -254,7 +248,6 @@ func SwitchAccessRuleEndpoint(c *gin.Context) {
 	}
 	request := SwitchAccessRuleRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 
@@ -267,7 +260,7 @@ func SwitchAccessRuleEndpoint(c *gin.Context) {
 
 	db := database.GetDB()
 	stat := 1
-	if request.Disable {
+	if *request.Disable {
 		stat = 2
 	}
 

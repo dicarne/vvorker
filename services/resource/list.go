@@ -32,7 +32,6 @@ func ListResourceEndpoint(c *gin.Context) {
 
 	request := ListResourceRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, http.StatusInternalServerError, "List resource failed.", gin.H{"error": err.Error()})
 		return
 	}
 	if uid == 0 {

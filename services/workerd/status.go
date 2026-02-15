@@ -9,7 +9,7 @@ import (
 )
 
 type GetWorkersStatusResp struct {
-	UIDS []string `json:"uids"`
+	UIDS []string `json:"uids" binding:"required,min=1"`
 }
 
 func GetWorkersStatusByUIDEndpoint(c *gin.Context) {

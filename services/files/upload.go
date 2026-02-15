@@ -28,8 +28,8 @@ const (
 )
 
 type UploadFileReq struct {
-	File string `json:"file"`
-	Path string `json:"path"`
+	File string `json:"file" binding:"required"`
+	Path string `json:"path" binding:"required"`
 }
 
 type UploadFileResp struct {

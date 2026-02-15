@@ -14,8 +14,8 @@ func init() {
 }
 
 type CreateTaskReq struct {
-	WorkerUID string `json:"worker_uid"`
-	TraceID   string `json:"trace_id"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
+	TraceID   string `json:"trace_id" binding:"required"`
 	Name      string `json:"name"`
 }
 
@@ -52,8 +52,8 @@ func CreateTaskEndpoint(c *gin.Context) {
 }
 
 type GetTaskStatusReq struct {
-	WorkerUID string `json:"worker_uid"`
-	TraceID   string `json:"trace_id"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
+	TraceID   string `json:"trace_id" binding:"required"`
 }
 
 func CheckInterruptTaskEndpoint(c *gin.Context) {
@@ -75,9 +75,9 @@ func CheckInterruptTaskEndpoint(c *gin.Context) {
 }
 
 type LogTaskReq struct {
-	WorkerUID string `json:"worker_uid"`
-	TraceID   string `json:"trace_id"`
-	Log       string `json:"log"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
+	TraceID   string `json:"trace_id" binding:"required"`
+	Log       string `json:"log" binding:"required"`
 }
 
 func LogTaskEndpoint(c *gin.Context) {

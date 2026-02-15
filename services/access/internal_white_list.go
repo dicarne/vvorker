@@ -13,8 +13,8 @@ import (
 
 // InternalWhiteListCreateRequest 创建内部白名单请求结构体
 type InternalWhiteListCreateRequest struct {
-	WorkerUID       string `json:"worker_uid"`
-	AllowWorkerName string `json:"name"`
+	WorkerUID       string `json:"worker_uid" binding:"required"`
+	AllowWorkerName string `json:"name" binding:"required"`
 	Description     string `json:"description"`
 }
 
@@ -24,7 +24,6 @@ func CreateInternalWhiteListEndpoint(c *gin.Context) {
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := InternalWhiteListCreateRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 	if uid == 0 {
@@ -67,9 +66,9 @@ func CreateInternalWhiteListEndpoint(c *gin.Context) {
 
 // InternalWhiteListListRequest 列出内部白名单请求结构体
 type InternalWhiteListListRequest struct {
-	WorkerUID string `json:"worker_uid"`
-	Page      int    `json:"page"`
-	PageSize  int    `json:"page_size"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
+	Page      int    `json:"page" binding:"gte=1"`
+	PageSize  int    `json:"page_size" binding:"gte=1"`
 }
 
 // ListInternalWhiteListEndpoint 列出内部白名单端点
@@ -78,7 +77,6 @@ func ListInternalWhiteListEndpoint(c *gin.Context) {
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := InternalWhiteListListRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 	if uid == 0 {
@@ -126,9 +124,9 @@ func ListInternalWhiteListEndpoint(c *gin.Context) {
 
 // InternalWhiteListUpdateRequest 更新内部白名单请求结构体
 type InternalWhiteListUpdateRequest struct {
-	WorkerUID   string `json:"worker_uid"`
+	WorkerUID   string `json:"worker_uid" binding:"required"`
 	Description string `json:"description"`
-	ID          uint   `json:"id"`
+	ID          uint   `json:"id" binding:"required,gt=0"`
 }
 
 // UpdateInternalWhiteListEndpoint 更新内部白名单端点
@@ -137,7 +135,6 @@ func UpdateInternalWhiteListEndpoint(c *gin.Context) {
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := InternalWhiteListUpdateRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 	if uid == 0 {
@@ -165,8 +162,8 @@ func UpdateInternalWhiteListEndpoint(c *gin.Context) {
 
 // InternalWhiteListDeleteRequest 删除内部白名单请求结构体
 type InternalWhiteListDeleteRequest struct {
-	WorkerUID string `json:"worker_uid"`
-	ID        uint   `json:"id"`
+	WorkerUID string `json:"worker_uid" binding:"required"`
+	ID        uint   `json:"id" binding:"required,gt=0"`
 }
 
 // DeleteInternalWhiteListEndpoint 删除内部白名单端点
@@ -175,7 +172,6 @@ func DeleteInternalWhiteListEndpoint(c *gin.Context) {
 	uid := uint64(c.GetUint(common.UIDKey))
 	request := InternalWhiteListDeleteRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 	if uid == 0 {

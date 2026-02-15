@@ -10,9 +10,9 @@ import (
 )
 
 type UpdateUserRequest struct {
-	Password string `json:"password"`
-	Role     string `json:"role"`
-	Status   int    `json:"status"`
+	Password string `json:"password" binding:"omitempty,min=6"`
+	Role     string `json:"role" binding:"omitempty,oneof=admin normal"`
+	Status   *int   `json:"status" binding:"omitempty,oneof=0 1 2"`
 }
 
 // UpdateUserEndpoint 更新用户信息
@@ -65,8 +65,8 @@ func UpdateUserEndpoint(c *gin.Context) {
 	if req.Role != "" {
 		userToUpdate.Role = req.Role
 	}
-	if req.Status != 0 {
-		userToUpdate.Status = req.Status
+	if *req.Status != 0 {
+		userToUpdate.Status = *req.Status
 	}
 
 	// 保存更新

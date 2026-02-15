@@ -14,8 +14,8 @@ import (
 )
 
 type ExportConfigReq struct {
-	ServiceUIDs  []string `json:"service_uids"`  // 服务ID列表
-	ServiceNames []string `json:"service_names"` // 服务名称列表
+	ServiceUIDs  []string `json:"service_uids"`
+	ServiceNames []string `json:"service_names"`
 }
 
 type AssetFile struct {
