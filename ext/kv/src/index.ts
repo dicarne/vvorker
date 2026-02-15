@@ -29,7 +29,6 @@ async function invoke<T>(config: any) {
 		data: T
 	}
 	if (r.code !== 0) {
-		console.error(r)
 		return undefined
 	}
 	return r.data
