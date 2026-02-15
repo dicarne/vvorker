@@ -27,11 +27,6 @@ func CreateUserEndpoint(c *gin.Context) {
 		return
 	}
 
-	if req.Username == "" || req.Password == "" {
-		common.RespErr(c, common.RespCodeInvalidRequest, "invalid request", nil)
-		return
-	}
-
 	// 检查用户名是否已存在
 	existingUser, _ := models.AdminGetUserByUsername(req.Username)
 	if existingUser != nil {

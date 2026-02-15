@@ -159,14 +159,6 @@ func DeleteAccessRuleEndpoint(c *gin.Context) {
 	if err := c.BindJSON(&request); err != nil {
 		return
 	}
-	if request.RuleUID == "" {
-		common.RespErr(c, common.RespCodeInvalidRequest, "rule_uid is required", nil)
-		return
-	}
-	if request.WorkerUID == "" {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker_uid is required", nil)
-		return
-	}
 
 	// 检查用户是否有写权限（拥有者或协作者）
 	_, err := permissions.CanWriteWorker(c, uid, request.WorkerUID)

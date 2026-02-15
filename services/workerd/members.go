@@ -26,11 +26,6 @@ func AddMemberEndpoint(c *gin.Context) {
 		return
 	}
 
-	if req.WorkerUID == "" || req.UserName == "" {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker_uid and user_name are required", nil)
-		return
-	}
-
 	userID, ok := common.RequireUID32(c)
 	if !ok {
 		return
@@ -71,11 +66,6 @@ func RemoveMemberEndpoint(c *gin.Context) {
 
 	var req RemoveMemberRequest
 	if err := c.BindJSON(&req); err != nil {
-		return
-	}
-
-	if req.WorkerUID == "" || req.UserID == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker_uid and user_name are required", nil)
 		return
 	}
 

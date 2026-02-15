@@ -28,14 +28,6 @@ func CreateSecretEndpoint(c *gin.Context) {
 	if err := c.BindJSON(&request); err != nil {
 		return
 	}
-	if request.WorkerUID == "" {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker_uid is required", nil)
-		return
-	}
-	if request.Key == "" {
-		common.RespErr(c, common.RespCodeInvalidRequest, "key is required", nil)
-		return
-	}
 
 	// 检查用户是否有写权限（拥有者或协作者）
 	_, err := permissions.CanWriteWorker(c, uid, request.WorkerUID)
@@ -73,10 +65,6 @@ func ListSecretEndpoint(c *gin.Context) {
 	}
 	request := SecretListRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		return
-	}
-	if request.WorkerUID == "" {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker_uid is required", nil)
 		return
 	}
 
@@ -124,14 +112,6 @@ func UpdateSecretEndpoint(c *gin.Context) {
 	if err := c.BindJSON(&request); err != nil {
 		return
 	}
-	if request.WorkerUID == "" {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker_uid is required", nil)
-		return
-	}
-	if request.ID == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "id is required", nil)
-		return
-	}
 
 	// 检查用户是否有写权限（拥有者或协作者）
 	_, err := permissions.CanWriteWorker(c, uid, request.WorkerUID)
@@ -176,14 +156,6 @@ func DeleteSecretEndpoint(c *gin.Context) {
 	}
 	request := SecretDeleteRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		return
-	}
-	if request.WorkerUID == "" {
-		common.RespErr(c, common.RespCodeInvalidRequest, "worker_uid is required", nil)
-		return
-	}
-	if request.ID == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "id is required", nil)
 		return
 	}
 
