@@ -194,7 +194,4 @@ example.com/static/* → Worker B
 - 提高服务可用性
 - 实现负载均衡
 
-## 下一步
 
-- [资源绑定](./resource-binding.md)：为 Worker 绑定数据库和其他资源
-- [协作功能](./collaboration.md)：了解如何与其他用户协作管理 Worker

@@ -181,8 +181,3 @@ VVorker 提供了实时节点监控功能，帮助您了解系统运行状态和
 3. 分析 Worker 日志
 4. 检查数据库查询性能
 5. 检查网络状况
-
-## 相关功能
-
-- [Worker 管理](./worker-management.md)：了解如何管理 Worker 和查看日志
-- [资源绑定](./resource-binding.md)：配置数据库和其他资源
