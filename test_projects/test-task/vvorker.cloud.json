@@ -1,0 +1,20 @@
+{
+  "$schema": "vvorker-schema.json",
+  "name": "worker",
+  "project": {
+    "uid": "template",
+    "type": "worker"
+  },
+  "version": "0.0.0",
+  "services": [],
+  "vars": {},
+  "ai": [],
+  "oss": [],
+  "pgsql": [],
+  "mysql": [],
+  "kv": [],
+  "assets": [],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}

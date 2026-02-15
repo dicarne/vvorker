@@ -1,0 +1,27 @@
+{
+  "$schema": "vvorker-schema.json",
+  "name": "test-task",
+  "project": {
+    "uid": "75b2d9f5b14543528b78bf0a6085d698",
+    "type": "worker"
+  },
+  "version": "0.0.0",
+  "services": [],
+  "vars": {
+    "MODE": "development"
+  },
+  "ai": [],
+  "oss": [],
+  "pgsql": [],
+  "mysql": [],
+  "kv": [],
+  "task": [
+    {
+      "binding": "task"
+    }
+  ],
+  "assets": [],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}

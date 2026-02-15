@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "test-task",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-10-08",
+  "upload_source_maps": true,
+  "observability": {
+    "enabled": true
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
