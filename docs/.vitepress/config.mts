@@ -19,6 +19,16 @@ export default withMermaid({
         ],
       },
       {
+        text: "控制台指南",
+        items: [
+          { text: "控制台概述", link: "/guide/admin-overview" },
+          { text: "用户管理", link: "/guide/user-management" },
+          { text: "Worker 管理", link: "/guide/worker-management" },
+          { text: "节点监控", link: "/guide/node-monitoring" },
+          { text: "协作功能", link: "/guide/collaboration" },
+        ],
+      },
+      {
         text: "SDK",
         items: [
           { text: "基础", link: "/sdk/vvorker-sdk" },
