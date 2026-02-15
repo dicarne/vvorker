@@ -20,13 +20,12 @@ type AccessTokenCreateRequest struct {
 
 func CreateAccessTokenEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	request := AccessTokenCreateRequest{}
-	if err := c.BindJSON(&request); err != nil {
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	request := AccessTokenCreateRequest{}
+	if err := c.BindJSON(&request); err != nil {
 		return
 	}
 
@@ -60,13 +59,12 @@ type AccessTokenListRequest struct {
 
 func ListAccessTokenEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	request := AccessTokenListRequest{}
-	if err := c.BindJSON(&request); err != nil {
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	request := AccessTokenListRequest{}
+	if err := c.BindJSON(&request); err != nil {
 		return
 	}
 
@@ -102,13 +100,12 @@ type AccessTokenDeleteRequest struct {
 
 func DeleteAccessTokenEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	request := AccessTokenDeleteRequest{}
-	if err := c.BindJSON(&request); err != nil {
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	request := AccessTokenDeleteRequest{}
+	if err := c.BindJSON(&request); err != nil {
 		return
 	}
 

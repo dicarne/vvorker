@@ -29,7 +29,7 @@ func CreateEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, common.RespMsgInvalidRequest, nil)
 		return
 	}
-	userID := uint64(c.GetUint(common.UIDKey))
+	userID, _ := common.RequireUID(c)
 
 	newUID, err := Create(uint(userID), worker.Worker)
 	if err != nil {

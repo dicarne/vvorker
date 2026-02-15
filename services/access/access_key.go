@@ -25,14 +25,13 @@ type AccessKeyDeleteRequest struct {
 
 func CreateAccessKeyEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
+	uid, ok := common.RequireUID(c)
+	if !ok {
+		return
+	}
 
 	request := AccessKeyCreateRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		return
-	}
-	if uid == 0 {
-		c.JSON(400, gin.H{"code": 1, "msg": "uid is required"})
 		return
 	}
 	db := database.GetDB()
@@ -61,7 +60,7 @@ func AccessKeyToUserID(accessKey string) (uint64, error) {
 
 func GetAccessKeysEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
+	uid, _ := common.RequireUID(c)
 	db := database.GetDB()
 	var accessKeys []models.AccessKey
 	if err := db.Where(&models.AccessKey{
@@ -75,7 +74,7 @@ func GetAccessKeysEndpoint(c *gin.Context) {
 
 func DeleteAccessKeyEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
+	uid, _ := common.RequireUID(c)
 	request := AccessKeyDeleteRequest{}
 	if err := c.BindJSON(&request); err != nil {
 		return

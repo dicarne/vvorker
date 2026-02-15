@@ -350,10 +350,8 @@ func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 	if err := c.BindJSON(&req); err != nil {
 		return
 	}
-	userID := uint64(c.GetUint(common.UIDKey))
-	if userID == 0 {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": "uid is required"})
+	userID, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
 	// valid
@@ -435,9 +433,8 @@ func DeleteOSSResourcesEndpoint(c *gin.Context) {
 		return
 	}
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	if uid == 0 {
-		common.RespErr(c, http.StatusBadRequest, "Invalid UID", gin.H{"error": "Invalid UID"})
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
 	condition := models.OSS{UID: req.UID, UserID: uid}

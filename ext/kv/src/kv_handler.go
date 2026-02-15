@@ -43,10 +43,8 @@ func CreateKVResourcesEndpoint(c *gin.Context) {
 		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": "invalid request"})
 		return
 	}
-	userID := uint64(c.GetUint(common.UIDKey))
-	if userID == 0 {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": "uid is required"})
+	userID, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
 	kvResource, err := CreateKV(userID, req.Name)
@@ -87,7 +85,7 @@ func RecoverKV(userID uint64, kv *models.KV) error {
 
 // 删除指定KV资源
 func DeleteKVResourcesEndpoint(c *gin.Context) {
-	uid := uint64(c.GetUint(common.UIDKey))
+	uid, _ := common.RequireUID(c)
 
 	var req = entities.DeleteResourcesReq{}
 	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {

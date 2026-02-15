@@ -20,9 +20,8 @@ type EnableAccessControlRequest struct {
 
 func UpdateEnableAccessControlEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
 	request := EnableAccessControlRequest{}
@@ -58,9 +57,8 @@ type AccessControlRequest struct {
 
 func GetAccessControlEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
 	request := AccessControlRequest{}
@@ -88,9 +86,8 @@ func GetAccessControlEndpoint(c *gin.Context) {
 
 func AddAccessRuleEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
 	request := models.AccessRule{}
@@ -116,9 +113,8 @@ func AddAccessRuleEndpoint(c *gin.Context) {
 
 func UpdateAccessRuleEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
 	request := models.AccessRule{}
@@ -155,9 +151,8 @@ type DeleteAccessRuleRequest struct {
 
 func DeleteAccessRuleEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
 	request := DeleteAccessRuleRequest{}
@@ -199,9 +194,8 @@ type ListAccessRuleRequest struct {
 
 func ListAccessRuleEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
 	request := ListAccessRuleRequest{}
@@ -241,9 +235,8 @@ type SwitchAccessRuleRequest struct {
 
 func SwitchAccessRuleEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
 	request := SwitchAccessRuleRequest{}

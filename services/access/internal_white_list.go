@@ -21,13 +21,12 @@ type InternalWhiteListCreateRequest struct {
 // CreateInternalWhiteListEndpoint 创建内部白名单端点
 func CreateInternalWhiteListEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	request := InternalWhiteListCreateRequest{}
-	if err := c.BindJSON(&request); err != nil {
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	request := InternalWhiteListCreateRequest{}
+	if err := c.BindJSON(&request); err != nil {
 		return
 	}
 
@@ -74,13 +73,12 @@ type InternalWhiteListListRequest struct {
 // ListInternalWhiteListEndpoint 列出内部白名单端点
 func ListInternalWhiteListEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	request := InternalWhiteListListRequest{}
-	if err := c.BindJSON(&request); err != nil {
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	request := InternalWhiteListListRequest{}
+	if err := c.BindJSON(&request); err != nil {
 		return
 	}
 
@@ -132,13 +130,12 @@ type InternalWhiteListUpdateRequest struct {
 // UpdateInternalWhiteListEndpoint 更新内部白名单端点
 func UpdateInternalWhiteListEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	request := InternalWhiteListUpdateRequest{}
-	if err := c.BindJSON(&request); err != nil {
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	request := InternalWhiteListUpdateRequest{}
+	if err := c.BindJSON(&request); err != nil {
 		return
 	}
 
@@ -169,13 +166,12 @@ type InternalWhiteListDeleteRequest struct {
 // DeleteInternalWhiteListEndpoint 删除内部白名单端点
 func DeleteInternalWhiteListEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	request := InternalWhiteListDeleteRequest{}
-	if err := c.BindJSON(&request); err != nil {
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	request := InternalWhiteListDeleteRequest{}
+	if err := c.BindJSON(&request); err != nil {
 		return
 	}
 

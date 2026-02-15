@@ -67,7 +67,7 @@ func GenerateTypes(c *gin.Context) {
 		return
 	}
 
-	userID := uint64(c.GetUint(common.UIDKey))
+	userID, _ := common.RequireUID(c)
 	uid := worker.Project.UID
 
 	logrus.Infof("userID: %d, uid: %s", userID, uid)

@@ -148,10 +148,8 @@ func CreateNewMySQLResourcesEndpoint(c *gin.Context) {
 		return
 	}
 
-	userID := uint64(c.GetUint(common.UIDKey))
-	if userID == 0 {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": "uid is required"})
+	userID, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
 	UID := utils.GenerateUID()
@@ -173,7 +171,7 @@ func CreateNewMySQLResourcesEndpoint(c *gin.Context) {
 }
 
 func DeleteMySQLResourcesEndpoint(c *gin.Context) {
-	uid := uint64(c.GetUint(common.UIDKey))
+	uid, _ := common.RequireUID(c)
 
 	var req = entities.DeleteResourcesReq{}
 	if err := c.BindJSON(&req); err != nil {
@@ -279,9 +277,8 @@ func UpdateMigrate(c *gin.Context) {
 	if err := c.BindJSON(&req); err != nil {
 		return
 	}
-	userID := uint64(c.GetUint(common.UIDKey))
-	if userID == 0 {
-		common.RespErr(c, http.StatusBadRequest, "Failed to convert UserID to uint64", gin.H{"error": "uid is required"})
+	userID, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
 	db := database.GetDB()

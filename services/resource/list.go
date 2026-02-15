@@ -1,7 +1,6 @@
 package resource
 
 import (
-	"net/http"
 	"vvorker/common"
 	"vvorker/models"
 	"vvorker/utils/database"
@@ -28,14 +27,13 @@ type ListResourceResponse struct {
 }
 
 func ListResourceEndpoint(c *gin.Context) {
-	uid := uint64(c.GetUint(common.UIDKey))
+	uid, ok := common.RequireUID(c)
+	if !ok {
+		return
+	}
 
 	request := ListResourceRequest{}
 	if err := c.BindJSON(&request); err != nil {
-		return
-	}
-	if uid == 0 {
-		common.RespErr(c, http.StatusInternalServerError, "uid is required.", gin.H{"error": "uid is required"})
 		return
 	}
 	db := database.GetDB()

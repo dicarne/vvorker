@@ -20,13 +20,12 @@ type SecretCreateRequest struct {
 // CreateSecretEndpoint 创建密钥端点
 func CreateSecretEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	request := SecretCreateRequest{}
-	if err := c.BindJSON(&request); err != nil {
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	request := SecretCreateRequest{}
+	if err := c.BindJSON(&request); err != nil {
 		return
 	}
 	if request.WorkerUID == "" {
@@ -68,13 +67,12 @@ type SecretListRequest struct {
 // ListSecretEndpoint 列出密钥端点
 func ListSecretEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	request := SecretListRequest{}
-	if err := c.BindJSON(&request); err != nil {
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	request := SecretListRequest{}
+	if err := c.BindJSON(&request); err != nil {
 		return
 	}
 	if request.WorkerUID == "" {
@@ -117,13 +115,13 @@ type SecretUpdateRequest struct {
 // UpdateSecretEndpoint 更新密钥端点
 func UpdateSecretEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	request := SecretUpdateRequest{}
-	if err := c.BindJSON(&request); err != nil {
+
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	request := SecretUpdateRequest{}
+	if err := c.BindJSON(&request); err != nil {
 		return
 	}
 	if request.WorkerUID == "" {
@@ -172,13 +170,12 @@ type SecretDeleteRequest struct {
 // DeleteSecretEndpoint 删除密钥端点
 func DeleteSecretEndpoint(c *gin.Context) {
 
-	uid := uint64(c.GetUint(common.UIDKey))
-	request := SecretDeleteRequest{}
-	if err := c.BindJSON(&request); err != nil {
+	uid, ok := common.RequireUID(c)
+	if !ok {
 		return
 	}
-	if uid == 0 {
-		common.RespErr(c, common.RespCodeInvalidRequest, "uid is required", nil)
+	request := SecretDeleteRequest{}
+	if err := c.BindJSON(&request); err != nil {
 		return
 	}
 	if request.WorkerUID == "" {
