@@ -383,7 +383,7 @@ func FinishWorkerConfig(worker *models.Worker) string {
 
 		// 迁移完成后更新任务状态
 		// 查找正在运行的任务
-		ret := db.Where("worker_uid = ? AND status = 'running'", worker.UID).Order("created_at desc").First(&task)
+		ret := db.Where("worker_uid = ? AND status = 'running' AND type = 'deployment'", worker.UID).Order("created_at desc").First(&task)
 		if ret.Error == nil {
 			if task.ID != 0 && !taskUpdated {
 				taskUpdated = true

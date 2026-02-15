@@ -34,7 +34,7 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker, desc string)
 
 	// 创建部署任务
 	traceID := utils.GenerateUID()
-	if err := models.CreateTask(traceID, UID, "running"); err != nil {
+	if err := models.CreateTask(traceID, UID, "running", "deployment"); err != nil {
 		logrus.WithError(err).Warn("failed to create deployment task")
 	}
 

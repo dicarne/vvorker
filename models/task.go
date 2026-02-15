@@ -15,6 +15,7 @@ type Task struct {
 	EndTime   time.Time `json:"end_time"`
 	Status    string    `json:"status"`
 	Result    string    `json:"result"` // 迁移结果: "success", "error: ..."
+	Type      string    `json:"type"`   // 任务类型: "deployment", "usertask"
 }
 
 type TaskLog struct {
@@ -26,12 +27,13 @@ type TaskLog struct {
 }
 
 // CreateTask 创建任务
-func CreateTask(traceID, workerUID, status string) error {
+func CreateTask(traceID, workerUID, status string, taskType string) error {
 	db := database.GetDB()
 	return db.Create(&Task{
 		TraceID:   traceID,
 		WorkerUID: workerUID,
 		Status:    status,
+		Type:      taskType,
 		StartTime: time.Now(),
 	}).Error
 }

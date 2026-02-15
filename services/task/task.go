@@ -43,6 +43,7 @@ func CreateTaskEndpoint(c *gin.Context) {
 		WorkerUID: req.WorkerUID,
 		Status:    "running",
 		StartTime: time.Now(),
+		Type:      "usertask",
 	}).Error; err != nil {
 		common.RespErr(c, 500, "error", gin.H{"error": err.Error()})
 		return
@@ -196,6 +197,9 @@ func ListTaskEndpoint(c *gin.Context) {
 				UserID: userID,
 			},
 		}).
+		Where(&models.Task{
+			Type: "usertask",
+		}).
 		Count(&total).Error; err != nil {
 		common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
 		return
@@ -210,6 +214,9 @@ func ListTaskEndpoint(c *gin.Context) {
 			Worker: &entities.Worker{
 				UserID: userID,
 			},
+		}).
+		Where(&models.Task{
+			Type: "usertask",
 		}).
 		Order("tasks.start_time desc").
 		Offset((req.Page - 1) * req.PageSize).
