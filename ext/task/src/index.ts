@@ -1,6 +1,6 @@
 
 
-import { env, RpcTarget, WorkerEntrypoint } from 'cloudflare:workers'
+import { env, WorkerEntrypoint } from 'cloudflare:workers'
 import { v4 } from 'uuid'
 
 const eenv = env as unknown as any
@@ -17,47 +17,9 @@ let commonConfig = {
 	"Content-Type": "application/json",
 }
 
-export class TaskRpcTarget extends RpcTarget {
-	constructor(private id: string) {
-		super()
-	}
-	async should_exit() {
-		let c2 = await (await fetch(`${MASTER_ENDPOINT}/api/ext/task/check`, {
-			method: "POST",
-			headers: {
-				...commonConfig
-			},
-			body: JSON.stringify({ trace_id: this.id, worker_uid: WORKER_UID })
-		})).json() as any
-		if (c2.code != 0) {
-			return undefined
-		}
-		return c2.data.status === "canceled"
-	}
-	async complete() {
-		let c3 = await (await fetch(`${MASTER_ENDPOINT}/api/ext/task/complete`, {
-			method: "POST",
-			headers: {
-				...commonConfig
-			},
-			body: JSON.stringify({ trace_id: this.id, worker_uid: WORKER_UID })
-		}))
-
-	}
-	async log(text: string) {
-		let c4 = await (await fetch(`${MASTER_ENDPOINT}/api/ext/task/log`, {
-			method: "POST",
-			headers: {
-				...commonConfig
-			},
-			body: JSON.stringify({ trace_id: this.id, worker_uid: WORKER_UID, log: String(text) })
-		}))
-	}
-}
-
 export default class Task extends WorkerEntrypoint {
-	async client() {
-		const id = v4()
+	async create(trace_id?: string) {
+		const id = trace_id ?? v4()
 		let c1 = await fetch(`${MASTER_ENDPOINT}/api/ext/task/create`, {
 			method: "POST",
 			headers: {
@@ -69,11 +31,37 @@ export default class Task extends WorkerEntrypoint {
 		if (c2.code != 0) {
 			return undefined
 		}
-		return new TaskRpcTarget(id)
+		return id
 	}
-
-	// 获取指定 trace_id 的 TaskRpcTarget，用于 debug 端点
-	async getTask(trace_id: string) {
-		return new TaskRpcTarget(trace_id)
+	async should_exit(trace_id: string) {
+		let c2 = await (await fetch(`${MASTER_ENDPOINT}/api/ext/task/check`, {
+			method: "POST",
+			headers: {
+				...commonConfig
+			},
+			body: JSON.stringify({ trace_id, worker_uid: WORKER_UID })
+		})).json() as any
+		if (c2.code != 0) {
+			return undefined
+		}
+		return c2.data.status === "canceled"
+	}
+	async complete(trace_id: string) {
+		await fetch(`${MASTER_ENDPOINT}/api/ext/task/complete`, {
+			method: "POST",
+			headers: {
+				...commonConfig
+			},
+			body: JSON.stringify({ trace_id, worker_uid: WORKER_UID })
+		})
+	}
+	async log(trace_id: string, text: string) {
+		await fetch(`${MASTER_ENDPOINT}/api/ext/task/log`, {
+			method: "POST",
+			headers: {
+				...commonConfig
+			},
+			body: JSON.stringify({ trace_id, worker_uid: WORKER_UID, log: String(text) })
+		})
 	}
 }

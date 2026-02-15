@@ -1,4 +1,4 @@
-import { Context, Env, Hono } from "hono";
+import { Context, Hono } from "hono";
 import { DebugEndpointRequest, ServiceBinding, TaskBinding } from "../types/debug-endpoint";
 import { KVBinding } from "@dicarne/vvorker-kv";
 import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
@@ -228,10 +228,8 @@ export function useDebugEndpoint(app0: any) {
           return c.json({ error: "task binding not found", req }, 404);
         }
         switch (req.method) {
-          case "client": {
-            const rpcTarget = await task.client();
-            // TaskRpcTarget 有 id 属性存储 trace_id
-            const traceId = (rpcTarget as any).id;
+          case "create": {
+            const traceId = await task.create(req.params.trace_id);
             return c.json({
               code: 0,
               message: "task",
@@ -239,21 +237,18 @@ export function useDebugEndpoint(app0: any) {
             });
           }
           case "should_exit": {
-            const rpcTarget = await task.getTask(req.params.trace_id);
-            const shouldExit = await rpcTarget.should_exit();
+            const shouldExit = await task.should_exit(req.params.trace_id);
             return c.json({
               message: "task",
               data: shouldExit,
             });
           }
           case "complete": {
-            const rpcTarget = await task.getTask(req.params.trace_id);
-            await rpcTarget.complete();
+            await task.complete(req.params.trace_id);
             return c.json({ message: "task", data: null });
           }
           case "log": {
-            const rpcTarget = await task.getTask(req.params.trace_id);
-            await rpcTarget.log(req.params.text);
+            await task.log(req.params.trace_id, req.params.text);
             return c.json({ message: "task", data: null });
           }
           default:

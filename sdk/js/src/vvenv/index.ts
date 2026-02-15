@@ -3,7 +3,7 @@ import { OSSBinding } from "@dicarne/vvorker-oss";
 import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
 import { MYSQLBinding } from "@dicarne/vvorker-mysql";
 import { config, isLocalDev } from "../common/common";
-import { ServiceBinding, TaskBinding, TaskRpcTarget } from "../types/debug-endpoint";
+import { ServiceBinding, TaskBinding } from "../types/debug-endpoint";
 import { Base64 } from "js-base64";
 
 function vvoss(key: string, binding: OSSBinding): OSSBinding {
@@ -617,7 +617,7 @@ function assets(key: string, binding: Fetcher) {
 function vvtask(bindingKey: string, binding: TaskBinding): TaskBinding {
   if (isLocalDev()) {
     return {
-      client: async () => {
+      create: async (trace_id?: string) => {
         const r = await fetch(`${config().url}/__vvorker__debug`, {
           method: "POST",
           headers: {
@@ -627,74 +627,63 @@ function vvtask(bindingKey: string, binding: TaskBinding): TaskBinding {
           body: JSON.stringify({
             service: "task",
             binding: bindingKey,
-            method: "client",
-            params: {},
+            method: "create",
+            params: { trace_id },
           }),
         });
         const result = (await r.json()) as any;
-        if (result.code === 0 && result.data?.trace_id) {
-          return createTaskRpcTargetDev(result.data.trace_id, bindingKey);
-        }
-        throw new Error(`Failed to create task: ${JSON.stringify(result)}`);
+        return result.data?.trace_id;
       },
-      getTask: async (trace_id: string) => {
-        return createTaskRpcTargetDev(trace_id, bindingKey);
+      should_exit: async (trace_id: string) => {
+        const r = await fetch(`${config().url}/__vvorker__debug`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${config().token}`,
+          },
+          body: JSON.stringify({
+            service: "task",
+            binding: bindingKey,
+            method: "should_exit",
+            params: { trace_id },
+          }),
+        });
+        const result = (await r.json()) as any;
+        return result.data === true;
+      },
+      complete: async (trace_id: string) => {
+        await fetch(`${config().url}/__vvorker__debug`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${config().token}`,
+          },
+          body: JSON.stringify({
+            service: "task",
+            binding: bindingKey,
+            method: "complete",
+            params: { trace_id },
+          }),
+        });
+      },
+      log: async (trace_id: string, text: string) => {
+        await fetch(`${config().url}/__vvorker__debug`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${config().token}`,
+          },
+          body: JSON.stringify({
+            service: "task",
+            binding: bindingKey,
+            method: "log",
+            params: { trace_id, text },
+          }),
+        });
       },
     };
   }
   return binding;
-}
-
-function createTaskRpcTargetDev(traceId: string, bindingKey: string): TaskRpcTarget {
-  return {
-    should_exit: async () => {
-      const r = await fetch(`${config().url}/__vvorker__debug`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${config().token}`,
-        },
-        body: JSON.stringify({
-          service: "task",
-          binding: bindingKey,
-          method: "should_exit",
-          params: { trace_id: traceId },
-        }),
-      });
-      const result = (await r.json()) as any;
-      return result.data === true;
-    },
-    complete: async () => {
-      await fetch(`${config().url}/__vvorker__debug`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${config().token}`,
-        },
-        body: JSON.stringify({
-          service: "task",
-          binding: bindingKey,
-          method: "complete",
-          params: { trace_id: traceId },
-        }),
-      });
-    },
-    log: async (text: string) => {
-      await fetch(`${config().url}/__vvorker__debug`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${config().token}`,
-        },
-        body: JSON.stringify({
-          service: "task",
-          binding: bindingKey,
-          method: "log",
-          params: { trace_id: traceId, text },
-        }),
-      });
-    },
-  };
 }
 
 /**

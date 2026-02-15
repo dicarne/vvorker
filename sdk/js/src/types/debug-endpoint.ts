@@ -19,12 +19,8 @@ export interface ServiceBinding {
 }
 
 export interface TaskBinding {
-  client: () => Promise<TaskRpcTarget>;
-  getTask: (trace_id: string) => Promise<TaskRpcTarget>;
-}
-
-export interface TaskRpcTarget {
-  should_exit: () => Promise<boolean>;
-  complete: () => Promise<void>;
-  log: (text: string) => Promise<void>;
+  create: (trace_id?: string) => Promise<string | undefined>;
+  should_exit: (trace_id: string) => Promise<boolean>;
+  complete: (trace_id: string) => Promise<void>;
+  log: (trace_id: string, text: string) => Promise<void>;
 }
