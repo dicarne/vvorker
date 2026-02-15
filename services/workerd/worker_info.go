@@ -13,7 +13,10 @@ import (
 func GetWorkerInformationByIDEndpoint(c *gin.Context) {
 
 	id := c.Param("id")
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID(c)
+	if !ok {
+		return
+	}
 	// 检查用户是否有权限访问 Worker（拥有者或协作者）
 	_, err := permissions.CanReadWorker(c, uint64(userID), id)
 	if err != nil {
@@ -47,7 +50,10 @@ func UpdateWorkerInformationEndpoint(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID(c)
+	if !ok {
+		return
+	}
 	// 检查用户是否有写权限（拥有者或协作者）
 	_, err := permissions.CanWriteWorker(c, uint64(userID), id)
 	if err != nil {
@@ -70,7 +76,10 @@ func UpdateWorkerInformationEndpoint(c *gin.Context) {
 func DeleteWorkerInformationEndpoint(c *gin.Context) {
 
 	id := c.Param("id")
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID(c)
+	if !ok {
+		return
+	}
 	// 只有拥有者可以删除 worker 信息
 	_, err := permissions.CanManageWorkerMembers(c, uint64(userID), id)
 	if err != nil {

@@ -69,7 +69,10 @@ func UploadFileEndpoint(c *gin.Context) {
 
 	hashBytes := sha256.Sum256(data)
 	hash := hex.EncodeToString(hashBytes[:])
-	uid := c.GetUint(common.UIDKey)
+	uid, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 	fileRecord, err := dao.GetFileByHashAndCreator(c, hash, uid)
 	if err == nil {
 		if conf.AppConfigInstance.MAN_ASSET_FILE_REPLACE {

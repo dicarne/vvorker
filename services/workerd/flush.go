@@ -15,7 +15,10 @@ func FlushEndpoint(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 
 	if err := Flush(userID, UID); err != nil {
 		c.JSON(500, gin.H{"code": 3, "error": err.Error()})
@@ -27,7 +30,10 @@ func FlushEndpoint(c *gin.Context) {
 }
 
 func FlushAllEndpoint(c *gin.Context) {
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 	workers, err := models.GetAllWorkers(userID)
 	if err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)

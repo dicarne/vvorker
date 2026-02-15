@@ -22,7 +22,11 @@ func ValidOtpEndpoint(c *gin.Context) {
 	}
 
 	db := database.GetDB()
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
+
 	var user models.User
 	if err := db.Where(&models.User{
 		Model: gorm.Model{ID: userID},

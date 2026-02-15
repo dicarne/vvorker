@@ -43,7 +43,10 @@ func GetWorkersEndpoint(c *gin.Context) {
 		common.RespErr(c, common.RespCodeInvalidRequest, "limit is invalid", nil)
 		return
 	}
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 
 	workers, err := models.GetWorkers(userID, offset, limit)
 	if err != nil {
@@ -65,7 +68,10 @@ type SimpleWorker struct {
 
 func GetAllWorkersEndpoint(c *gin.Context) {
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID(c)
+	if !ok {
+		return
+	}
 
 	// 获取用户拥有的 Workers
 	ownedWorkers, err := models.GetWorkersByUserID(uint64(userID))
@@ -138,7 +144,10 @@ type GetWorkerRespose struct {
 
 func GetWorkerEndpoint(c *gin.Context) {
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 	uid := c.Param("uid")
 	if len(uid) == 0 {
 		common.RespErr(c, common.RespCodeInvalidRequest, "uid is empty", nil)
@@ -168,7 +177,10 @@ type GetWorkerEndpointJSONReq struct {
 
 func GetWorkerEndpointJSON(c *gin.Context) {
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 	req := &GetWorkerEndpointJSONReq{}
 	if err := json.NewDecoder(c.Request.Body).Decode(req); err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)

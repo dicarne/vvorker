@@ -15,7 +15,10 @@ import (
 func EnableOTPEndpoint(c *gin.Context) {
 
 	db := database.GetDB()
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 	var user models.User
 	if err := db.Where(&models.User{
 		Model: gorm.Model{ID: userID},
@@ -46,7 +49,10 @@ func EnableOTPEndpoint(c *gin.Context) {
 func IsEnableOTPEndpoint(c *gin.Context) {
 
 	db := database.GetDB()
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 	var user models.User
 	if err := db.Where(&models.User{
 		Model: gorm.Model{ID: userID},
@@ -61,7 +67,10 @@ func IsEnableOTPEndpoint(c *gin.Context) {
 func ValidAddOTPEndpoint(c *gin.Context) {
 
 	db := database.GetDB()
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 	var user models.User
 	if err := db.Where(&models.User{
 		Model: gorm.Model{ID: userID},
@@ -105,7 +114,10 @@ func ValidAddOTPEndpoint(c *gin.Context) {
 func DisableOTPEndpoint(c *gin.Context) {
 
 	db := database.GetDB()
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 	var user models.User
 	if err := db.Where(&models.User{
 		Model: gorm.Model{ID: userID},

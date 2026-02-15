@@ -1,8 +1,9 @@
 package common
 
 import (
-	"github.com/gin-gonic/gin"
 	"vvorker/entities"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Request interface {
@@ -25,4 +26,13 @@ func RequireUID(c *gin.Context) (uint64, bool) {
 		return 0, false
 	}
 	return uid, true
+}
+
+func RequireUID32(c *gin.Context) (uint, bool) {
+	uid, ok := GetUID(c)
+	if !ok {
+		RespErr(c, RespCodeInvalidRequest, "uid is required", nil)
+		return 0, false
+	}
+	return uint(uid), true
 }

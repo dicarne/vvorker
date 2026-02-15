@@ -13,7 +13,10 @@ import (
 func NewVersionEndpoint(c *gin.Context) {
 	workerID := c.Param("workerId")
 	fileID := c.Param("fileId")
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 
 	if len(workerID) == 0 || len(fileID) == 0 {
 		common.RespErr(c, common.RespCodeInvalidRequest, "workerId or fileId is empty", nil)

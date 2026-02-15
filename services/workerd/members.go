@@ -31,7 +31,10 @@ func AddMemberEndpoint(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 
 	// 验证操作者是否可以管理成员
 	_, err := permissions.CanManageWorkerMembers(c, uint64(userID), req.WorkerUID)
@@ -76,7 +79,10 @@ func RemoveMemberEndpoint(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID(c)
+	if !ok {
+		return
+	}
 
 	// 验证操作者是否可以管理成员
 	_, err := permissions.CanManageWorkerMembers(c, uint64(userID), req.WorkerUID)
@@ -110,7 +116,10 @@ func ListMembersEndpoint(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID(c)
+	if !ok {
+		return
+	}
 
 	// 验证操作者是否有权限
 	_, err := permissions.CanReadWorker(c, uint64(userID), workerUID)
@@ -137,7 +146,10 @@ func GetWorkerCollaboratorsEndpoint(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 
 	type CollaboratorInfo struct {
 		IsOwner   bool                   `json:"is_owner"`

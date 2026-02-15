@@ -20,7 +20,10 @@ func DeleteEndpoint(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 	// 只有拥有者可以删除 worker
 	_, err := permissions.CanManageWorkerMembers(c, uint64(userID), UID)
 	if err != nil {

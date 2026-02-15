@@ -17,7 +17,10 @@ func RunWorkerEndpoint(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 	if userID == 0 {
 		logrus.Errorf("userID is empty, ctx: %v", c)
 		common.RespErr(c, common.RespCodeInvalidRequest, common.RespMsgInvalidRequest, nil)

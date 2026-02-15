@@ -104,7 +104,10 @@ func UpdateEndpointJSON(c *gin.Context) {
 	}
 
 	UID := worker.UID
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID(c)
+	if !ok {
+		return
+	}
 	oldworker, err := permissions.CanWriteWorker(c, uint64(userID), UID)
 	if err != nil {
 		return

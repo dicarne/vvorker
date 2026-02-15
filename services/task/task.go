@@ -117,7 +117,10 @@ func CancelTaskEndpoint(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 
 	// 检查用户是否有权限访问该 worker
 	if _, err := models.GetWorkerByUID(userID, req.WorkerUID); err != nil {
@@ -190,7 +193,10 @@ func ListTaskEndpoint(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 
 	// 检查用户是否有权限访问该 worker
 	worker, err := models.GetWorkerByUID(userID, req.WorkerUID)
@@ -251,7 +257,10 @@ func GetLogsEndpoint(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 
 	// 检查用户是否有权限访问该 worker
 	if _, err := models.GetWorkerByUID(userID, req.WorkerUID); err != nil {

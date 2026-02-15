@@ -74,8 +74,11 @@ func SearchUsersEndpoint(c *gin.Context) {
 }
 
 func IsAdmin(c *gin.Context) bool {
-	userId := c.GetUint(common.UIDKey)
-	user, err := models.GetUserByUserID(userId)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return false
+	}
+	user, err := models.GetUserByUserID(userID)
 	if err != nil {
 		return false
 	}

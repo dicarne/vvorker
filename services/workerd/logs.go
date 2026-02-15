@@ -44,7 +44,10 @@ func GetWorkerLogsEndpoint(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID(c)
+	if !ok {
+		return
+	}
 	// 检查用户是否有权限访问 Worker（拥有者或协作者）
 	_, err := permissions.CanReadWorker(c, uint64(userID), UID)
 	if err != nil {

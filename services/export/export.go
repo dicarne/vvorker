@@ -38,7 +38,10 @@ func ExportResourcesConfigEndpoint(c *gin.Context) {
 	if err := c.BindJSON(&req); err != nil {
 		return
 	}
-	userID := c.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(c)
+	if !ok {
+		return
+	}
 	workers, err := models.GetWorkersByUIDs(userID, req.ServiceUIDs)
 	if err != nil {
 		common.RespErr(c, common.RespCodeInternalError, "通过id获取worker失败", nil)
@@ -187,7 +190,10 @@ func ImportResourcesConfigEndpoint(g *gin.Context) {
 		common.RespErr(g, 400, "参数解析失败", nil)
 		return
 	}
-	userID := g.GetUint(common.UIDKey)
+	userID, ok := common.RequireUID32(g)
+	if !ok {
+		return
+	}
 
 	for _, w := range req.Workers {
 		err := workerd.Recover(userID, w.Worker)
