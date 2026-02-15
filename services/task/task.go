@@ -138,6 +138,7 @@ func CancelTaskEndpoint(c *gin.Context) {
 		return
 	}
 	tt.Status = "canceled"
+	tt.EndTime = time.Now()
 	if err := db.Save(&tt).Error; err != nil {
 		common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
 		return
@@ -164,6 +165,7 @@ func CompleteTaskEndpoint(c *gin.Context) {
 		return
 	}
 	tt.Status = "completed"
+	tt.EndTime = time.Now()
 	if err := db.Save(&tt).Error; err != nil {
 		common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
 		return
