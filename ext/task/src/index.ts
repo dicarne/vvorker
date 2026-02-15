@@ -18,14 +18,14 @@ let commonConfig = {
 }
 
 export default class Task extends WorkerEntrypoint {
-	async create(trace_id?: string) {
+	async create(name: string, trace_id?: string) {
 		const id = trace_id ?? v4()
 		let c1 = await fetch(`${MASTER_ENDPOINT}/api/ext/task/create`, {
 			method: "POST",
 			headers: {
 				...commonConfig
 			},
-			body: JSON.stringify({ trace_id: id, worker_uid: WORKER_UID })
+			body: JSON.stringify({ trace_id: id, worker_uid: WORKER_UID, name })
 		})
 		let c2 = await c1.json() as any
 		if (c2.code != 0) {

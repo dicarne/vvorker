@@ -11,7 +11,7 @@ useDebugEndpoint(app)
 app.get("*", async (c) => {
   console.log("start")
   const task = vvbind(c).task("task")
-  const traceId = await task.create()
+  const traceId = await task.create("测试任务")
   if (!traceId) {
     return c.json({ code: 500, msg: "failed to create task", data: null })
   }

@@ -80,7 +80,8 @@ export interface VorkerSettingsProperties {
 export interface Task {
   worker_uid: string
   trace_id: string
-  status: 'completed' | 'running' | 'canceled' | 'failed'
+  name: string
+  status: 'completed' | 'running' | 'canceled' | 'failed' | 'interrupt'
   start_time: string
   end_time: string
   worker_name: string

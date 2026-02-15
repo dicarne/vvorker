@@ -229,7 +229,7 @@ export function useDebugEndpoint(app0: any) {
         }
         switch (req.method) {
           case "create": {
-            const traceId = await task.create(req.params.trace_id);
+            const traceId = await task.create(req.params.name, req.params.trace_id);
             return c.json({
               code: 0,
               message: "task",

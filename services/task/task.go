@@ -16,6 +16,7 @@ func init() {
 type CreateTaskReq struct {
 	WorkerUID string `json:"worker_uid"`
 	TraceID   string `json:"trace_id"`
+	Name      string `json:"name"`
 }
 
 func CreateTaskEndpoint(c *gin.Context) {
@@ -40,6 +41,7 @@ func CreateTaskEndpoint(c *gin.Context) {
 	if err := db.Create(&models.Task{
 		TraceID:   req.TraceID,
 		WorkerUID: req.WorkerUID,
+		Name:      req.Name,
 		Status:    "running",
 		StartTime: time.Now(),
 		Type:      "usertask",

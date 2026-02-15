@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@dicarne/vvorker-sdk':
-        specifier: ^0.1.44
-        version: 0.1.44
+        specifier: ^0.1.45
+        version: 0.1.45
       '@hono/zod-validator':
         specifier: ^0.7.6
         version: 0.7.6(hono@4.11.4)(zod@4.3.5)
@@ -104,8 +104,8 @@ packages:
   '@dicarne/vvorker-pgsql@0.1.7':
     resolution: {integrity: sha512-CiszMMHKLcc7ZAmnHTuEENYfLf1dgOZOpV+Kju74Sjm66OQu4L7f8G7rFtqNdQm4BddXhUZN+zqEnSIC848CdA==}
 
-  '@dicarne/vvorker-sdk@0.1.44':
-    resolution: {integrity: sha512-2vQVdcPhkfz/gKMJ9fh6fEaM2p6STGGbo9NFma3mCvBaNr1ntJFuFGo5AlcL3e7rzOQVtCha1k7JWPTw0kcHlg==}
+  '@dicarne/vvorker-sdk@0.1.45':
+    resolution: {integrity: sha512-0gv4O4F8Ye5bBPQ/80Zkr1sSAoMw8HW6o11qwMw7K+dZbsce8o+XSowEBK0HPKzwqf6pxJo3ecj8QxQWrjFMpg==}
 
   '@emnapi/runtime@1.8.1':
     resolution: {integrity: sha512-mehfKSMWjjNol8659Z8KxEMrdSJDDot5SXMq00dM8BN4o+CLNXQ0xH2V7EchNHV4RmbZLmmPdEaXZc5H2FXmDg==}
@@ -876,7 +876,7 @@ snapshots:
     transitivePeerDependencies:
       - pg-native
 
-  '@dicarne/vvorker-sdk@0.1.44':
+  '@dicarne/vvorker-sdk@0.1.45':
     dependencies:
       '@dicarne/vvorker-kv': 0.1.8
       '@dicarne/vvorker-mysql': 0.1.7

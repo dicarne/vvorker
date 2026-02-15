@@ -120,9 +120,9 @@ const getStatusText = (status: string) => {
 // 表格列定义
 const columns = [
   {
-    title: '任务ID',
-    key: 'trace_id',
-    width: 280,
+    title: '名称',
+    key: 'name',
+    width: 150,
     ellipsis: { tooltip: true },
   },
   {

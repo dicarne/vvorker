@@ -617,7 +617,7 @@ function assets(key: string, binding: Fetcher) {
 function vvtask(bindingKey: string, binding: TaskBinding): TaskBinding {
   if (isLocalDev()) {
     return {
-      create: async (trace_id?: string) => {
+      create: async (name: string, trace_id?: string) => {
         const r = await fetch(`${config().url}/__vvorker__debug`, {
           method: "POST",
           headers: {
@@ -628,7 +628,7 @@ function vvtask(bindingKey: string, binding: TaskBinding): TaskBinding {
             service: "task",
             binding: bindingKey,
             method: "create",
-            params: { trace_id },
+            params: { name, trace_id },
           }),
         });
         const result = (await r.json()) as any;
