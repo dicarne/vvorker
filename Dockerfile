@@ -65,7 +65,7 @@ RUN cd /app/ext/mysql && pnpm run build
 RUN cd /app/admin && pnpm run build
 
 ######################################################################################
-FROM golang:1.25-alpine AS go-builder
+FROM golang:1.26-alpine AS go-builder
 
 # COPY --from=flyio/litefs:0.5 /usr/local/bin/litefs /usr/local/bin/litefs
 WORKDIR /app

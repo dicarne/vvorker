@@ -1,6 +1,6 @@
 module vvorker
 
-go 1.25.4
+go 1.26.0
 
 require (
 	github.com/aliyun/alibabacloud-oss-go-sdk-v2 v1.3.0
