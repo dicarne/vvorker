@@ -282,7 +282,7 @@ watch(showLogs, (newVal) => {
 
 <style scoped>
 .worker-tasks {
-  height: calc(100vh - 310px);
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -291,6 +291,16 @@ watch(showLogs, (newVal) => {
 .tasks-container {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.tasks-container :deep(.n-data-table) {
+  flex: 1;
+  overflow: hidden;
+}
+
+.tasks-container :deep(.n-data-table-wrapper) {
   height: 100%;
 }
 

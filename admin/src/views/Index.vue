@@ -108,9 +108,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
-    <div><TheHeader /></div>
-    <NLayout has-sider>
+  <div class="layout-container">
+    <div class="header-wrapper"><TheHeader /></div>
+    <NLayout has-sider class="main-layout">
       <NLayoutSider
         bordered
         collapse-mode="width"
@@ -129,9 +129,32 @@ onMounted(async () => {
           :options="menuOptions"
         />
       </NLayoutSider>
-      <NLayout>
+      <NLayout class="content-layout">
         <RouterView />
       </NLayout>
     </NLayout>
   </div>
 </template>
+
+<style scoped>
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.header-wrapper {
+  flex-shrink: 0;
+}
+
+.main-layout {
+  flex: 1;
+  overflow: hidden;
+}
+
+.content-layout {
+  height: 100%;
+  overflow: auto;
+}
+</style>
