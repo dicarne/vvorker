@@ -17,7 +17,7 @@ const props = defineProps<{
 }>()
 
 const message = useMessage()
-const DEFAULT_PAGE_SIZE = 20
+const DEFAULT_PAGE_SIZE = 12
 const totalCount = ref<number>(0)
 const curPage = ref<number>(1)
 
