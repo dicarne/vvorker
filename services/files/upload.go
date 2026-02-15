@@ -39,8 +39,7 @@ type UploadFileResp struct {
 
 func UploadFileEndpoint(c *gin.Context) {
 	var req UploadFileReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 

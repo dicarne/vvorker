@@ -255,8 +255,7 @@ type WorkerRequestStatsResp struct {
 func GetWorkerRequestStats(c *gin.Context) {
 
 	var req WorkerRequestStatsReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, common.RespMsgInvalidRequest, nil)
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	var resp WorkerRequestStatsResp
@@ -318,8 +317,7 @@ type WorkerRequestStatsByTimeResp struct {
 func GetWorkerRequestStatsByTime(c *gin.Context) {
 
 	var req WorkerRequestStatsByTimeReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, common.RespMsgInvalidRequest, nil)
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	var resp WorkerRequestStatsByTimeResp

@@ -38,8 +38,7 @@ func UpdateUserStatusEndpoint(c *gin.Context) {
 	}
 
 	var req UpdateUserStatusRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "无效的请求参数: "+err.Error(), nil)
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 
@@ -75,8 +74,7 @@ func BatchUpdateUserStatusEndpoint(c *gin.Context) {
 	}
 
 	var req BatchUpdateUserStatusRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, http.StatusBadRequest, "无效的请求参数: "+err.Error(), gin.H{})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 

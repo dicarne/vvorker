@@ -23,8 +23,7 @@ func CreateUserEndpoint(c *gin.Context) {
 
 	// 解析请求体
 	var req CreateUserRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "invalid request: "+err.Error(), nil)
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 

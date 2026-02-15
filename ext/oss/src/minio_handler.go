@@ -207,7 +207,7 @@ func CompleteMultipartUpload(c *gin.Context) {
 		Parts []minio.CompletePart `json:"Parts"`
 	}
 
-	if err := c.ShouldBindJSON(&completeRequest); err != nil {
+	if err := c.BindJSON(&completeRequest); err != nil {
 		common.RespErr(c, http.StatusBadRequest, "Invalid parts data", gin.H{"error": err.Error()})
 		return
 	}
@@ -347,8 +347,7 @@ func ListObjects(c *gin.Context) {
 // CreateNewOSSResources 创建新的OSS资源
 func CreateNewOSSResourcesEndpoint(c *gin.Context) {
 	var req entities.CreateNewResourcesRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, http.StatusBadRequest, "Invalid request", gin.H{"error": err.Error()})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	userID := uint64(c.GetUint(common.UIDKey))
@@ -427,8 +426,7 @@ func CreateOSS(userID uint64, req entities.CreateNewResourcesRequest, uid string
 // 删除指定OSS资源
 func DeleteOSSResourcesEndpoint(c *gin.Context) {
 	var req entities.DeleteResourcesReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, http.StatusBadRequest, "Invalid request", gin.H{"error": err.Error()})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	// valid

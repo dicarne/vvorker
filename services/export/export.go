@@ -35,8 +35,7 @@ type ExportConfig struct {
 func ExportResourcesConfigEndpoint(c *gin.Context) {
 
 	var req ExportConfigReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, 400, "参数解析失败", nil)
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	userID := c.GetUint(common.UIDKey)
@@ -184,7 +183,7 @@ func ExportResourcesConfigEndpoint(c *gin.Context) {
 func ImportResourcesConfigEndpoint(g *gin.Context) {
 
 	var req ExportConfig
-	if err := g.ShouldBindJSON(&req); err != nil {
+	if err := g.BindJSON(&req); err != nil {
 		common.RespErr(g, 400, "参数解析失败", nil)
 		return
 	}

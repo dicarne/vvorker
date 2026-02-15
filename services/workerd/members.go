@@ -23,7 +23,6 @@ func AddMemberEndpoint(c *gin.Context) {
 
 	var req AddMemberRequest
 	if err := c.BindJSON(&req); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 
@@ -69,7 +68,6 @@ func RemoveMemberEndpoint(c *gin.Context) {
 
 	var req RemoveMemberRequest
 	if err := c.BindJSON(&req); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return
 	}
 

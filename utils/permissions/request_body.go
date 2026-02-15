@@ -7,7 +7,7 @@ import (
 )
 
 func BindJSON[T any](c *gin.Context, req T) error {
-	if err := c.ShouldBindJSON(req); err != nil {
+	if err := c.BindJSON(req); err != nil {
 		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
 		return err
 	}

@@ -13,7 +13,7 @@ const (
 
 func parseRegisterReq(c *gin.Context) (registerRequest entities.RegisterRequest, err error) {
 	registerRequest = entities.RegisterRequest{}
-	if err = c.ShouldBindJSON(&registerRequest); err != nil {
+	if err = c.BindJSON(&registerRequest); err != nil {
 		return
 	}
 	if !registerRequest.Validate() {
@@ -25,7 +25,7 @@ func parseRegisterReq(c *gin.Context) (registerRequest entities.RegisterRequest,
 
 func parseLoginReq(c *gin.Context) (loginRequest entities.LoginRequest, err error) {
 	loginRequest = entities.LoginRequest{}
-	if err = c.ShouldBindJSON(&loginRequest); err != nil {
+	if err = c.BindJSON(&loginRequest); err != nil {
 		return
 	}
 	if !loginRequest.Validate() {

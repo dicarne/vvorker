@@ -139,8 +139,7 @@ func dbCreateWorkerLogs(logs []WorkerLog) error {
 
 func HandleAgentWorkerLogs(c *gin.Context) {
 	var req AgentWorkerLogsReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError, nil)
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	if err := dbCreateWorkerLogs(req.Logs); err != nil {

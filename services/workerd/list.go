@@ -215,7 +215,7 @@ func GetWorkerEndpointAgent(c *gin.Context) {
 func AgentSyncWorkers(c *gin.Context) {
 
 	req := &entities.AgentSyncWorkersReq{}
-	if err := c.ShouldBindJSON(req); err != nil {
+	if err := c.BindJSON(req); err != nil {
 		common.RespErr(c, defs.CodeInvalidRequest, err.Error(), nil)
 		return
 	}
@@ -257,7 +257,7 @@ func AgentSyncWorkers(c *gin.Context) {
 func FillWorkerConfig(c *gin.Context) {
 
 	req := &entities.AgentFillWorkerReq{}
-	if err := c.ShouldBindJSON(req); err != nil {
+	if err := c.BindJSON(req); err != nil {
 		common.RespErr(c, defs.CodeInvalidRequest, err.Error(), nil)
 		return
 	}

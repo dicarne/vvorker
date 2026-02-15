@@ -23,8 +23,7 @@ type GetWorkerLogsResp struct {
 
 func GetWorkerLogsEndpoint(c *gin.Context) {
 	var req *GetWorkerLogsReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, err.Error(), nil)
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 

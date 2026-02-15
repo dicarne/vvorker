@@ -41,7 +41,7 @@ func UpdateWorkerInformationEndpoint(c *gin.Context) {
 
 	id := c.Param("id")
 	var updatedInfo = &models.WorkerInformation{}
-	if err := c.ShouldBindJSON(updatedInfo); err != nil {
+	if err := c.BindJSON(updatedInfo); err != nil {
 		// 使用 common.RespErr 统一错误响应
 		common.RespErr(c, 400, "参数解析失败", nil)
 		return

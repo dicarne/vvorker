@@ -139,9 +139,7 @@ func CreateMySQLDatabase(userID uint64, UID string, req entities.CreateNewResour
 
 func CreateNewMySQLResourcesEndpoint(c *gin.Context) {
 	var req = entities.CreateNewResourcesRequest{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		// 使用 common.RespErr 返回错误响应
-		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": err.Error()})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	if !req.Validate() {
@@ -178,9 +176,7 @@ func DeleteMySQLResourcesEndpoint(c *gin.Context) {
 	uid := uint64(c.GetUint(common.UIDKey))
 
 	var req = entities.DeleteResourcesReq{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, common.RespCodeInternalError, common.RespMsgInternalError,
-			gin.H{"error": err.Error()})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	if !req.Validate() {
@@ -280,8 +276,7 @@ type updateMigrateReq struct {
 
 func UpdateMigrate(c *gin.Context) {
 	var req updateMigrateReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, http.StatusBadRequest, "invalid request", gin.H{"error": err.Error()})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	userID := uint64(c.GetUint(common.UIDKey))

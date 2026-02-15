@@ -25,8 +25,7 @@ type ClearAssetsReq struct {
 func ClearAssetsEndpoint(c *gin.Context) {
 
 	var req = ClearAssetsReq{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request"})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	if req.WorkerUID == "" {
@@ -110,8 +109,7 @@ type UploadAssetsReq struct {
 func UploadAssetsEndpoint(c *gin.Context) {
 
 	var req UploadAssetsReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request"})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	if req.UID == "" || req.Path == "" {
@@ -254,8 +252,7 @@ type CheckAssetsResp struct {
 
 func CheckAssetsEndpoint(c *gin.Context) {
 	var req CheckAssetsReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request"})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	if req.WorkerUID == "" {
@@ -348,8 +345,7 @@ type DeleteAssetsReq struct {
 
 func DeleteAssetsEndpoint(c *gin.Context) {
 	var req DeleteAssetsReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request"})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	if req.WorkerUID == "" || req.Path == "" {

@@ -22,8 +22,7 @@ type CreateTaskReq struct {
 func CreateTaskEndpoint(c *gin.Context) {
 
 	var req CreateTaskReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 
@@ -60,8 +59,7 @@ type GetTaskStatusReq struct {
 func CheckInterruptTaskEndpoint(c *gin.Context) {
 
 	var req GetTaskStatusReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 	db := database.GetDB()
@@ -85,8 +83,7 @@ type LogTaskReq struct {
 func LogTaskEndpoint(c *gin.Context) {
 
 	var req LogTaskReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 
@@ -116,8 +113,7 @@ func LogTaskEndpoint(c *gin.Context) {
 func CancelTaskEndpoint(c *gin.Context) {
 
 	var req GetTaskStatusReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 
@@ -152,8 +148,7 @@ func CancelTaskEndpoint(c *gin.Context) {
 func CompleteTaskEndpoint(c *gin.Context) {
 
 	var req GetTaskStatusReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request"})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 
@@ -191,8 +186,7 @@ type ListTaskResponse struct {
 func ListTaskEndpoint(c *gin.Context) {
 
 	var req ListTaskReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request, worker_uid is required"})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 
@@ -253,8 +247,7 @@ type GetTaskLogsReq struct {
 func GetLogsEndpoint(c *gin.Context) {
 
 	var req GetTaskLogsReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, 400, "error", gin.H{"error": "Invalid request, worker_uid is required"})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 

@@ -15,8 +15,7 @@ type GetWorkersStatusResp struct {
 func GetWorkersStatusByUIDEndpoint(c *gin.Context) {
 
 	req := GetWorkersStatusResp{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, common.RespCodeInvalidRequest, "参数解析失败", nil)
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 

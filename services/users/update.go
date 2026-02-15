@@ -38,11 +38,7 @@ func UpdateUserEndpoint(c *gin.Context) {
 
 	// 解析请求体
 	var req UpdateUserRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.RespErr(c, http.StatusBadRequest, "", gin.H{
-			"code": 1,
-			"msg":  "invalid request: " + err.Error(),
-		})
+	if err := c.BindJSON(&req); err != nil {
 		return
 	}
 
