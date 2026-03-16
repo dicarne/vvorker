@@ -3,6 +3,7 @@ package defs
 import (
 	"bytes"
 	"html/template"
+	"vvorker/conf"
 	"vvorker/ext"
 
 	"github.com/sirupsen/logrus"
@@ -20,6 +21,7 @@ type AllowServiceTemplate struct {
 	Script                string
 	WorkerBindingText     template.HTML
 	FlagsText             template.HTML
+	CompatibilityDate     string // 内部使用，不需要外部传入
 }
 
 var commonExtensionTemplate = `
@@ -35,7 +37,7 @@ var commonWorkerTemplate = `
    modules = [
      (name = "{{.Name}}", esModule = embed "../../lib/{{.Path}}.js"),
    ],
-   compatibilityDate = "2025-05-08",
+   compatibilityDate = "{{.CompatibilityDate}}",
    bindings = [{{.WorkerBindingText}}],
    compatibilityFlags = [{{.FlagsText}}],
  );
@@ -55,6 +57,9 @@ var commonServiceInjectTemplate = `
 
 // 生成简单扩展模板
 func GenerateExtensionTemplate(temp AllowServiceTemplate) AllowServiceTemplate {
+	// 从环境变量获取 CompatibilityDate
+	temp.CompatibilityDate = conf.AppConfigInstance.CompatibilityDate
+
 	capTemplate := template.New("basic")
 	basicTemplate, err := capTemplate.Parse(temp.BasicServiceTemplate)
 	if err != nil {
@@ -84,6 +89,7 @@ func GenerateExtensionTemplate(temp AllowServiceTemplate) AllowServiceTemplate {
 	writer3 := new(bytes.Buffer)
 	basicServiceInject.Execute(writer3, temp)
 	temp.ServiceInjectTemplate = writer3.String()
+
 	return temp
 }
 

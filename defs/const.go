@@ -53,7 +53,7 @@ const v{{.Worker.UID}}Worker :Workerd.Worker = (
   modules = [
     (name = "{{.Worker.Entry}}", esModule = embed "src/{{.Worker.Entry}}"),
   ],
-  compatibilityDate = "2025-05-08",
+  compatibilityDate = "{{.CompatibilityDate}}",
   bindings = [{{.BindingsText}}],
   compatibilityFlags = [{{.FlagsText}}],
 );
@@ -64,7 +64,7 @@ const vControl :Workerd.Worker = (
   modules = [
     (name = "control", esModule = embed "../../lib/control.js"),
   ],
-  compatibilityDate = "2025-05-08",
+  compatibilityDate = "{{.CompatibilityDate}}",
   bindings = [{{.BindingsMainWorker}}],
 );
 

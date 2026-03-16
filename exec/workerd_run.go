@@ -242,7 +242,7 @@ func (m *execManager) RunWorker(copy *workercopy.WorkerCopy) {
 			args := []string{"serve",
 				filepath.Join(workerdDir, defs.CapFileName+"-"+strconv.Itoa(int(copy.LocalID))),
 			}
-			args = append(args, "--verbose")
+			args = append(args, "--verbose", "--experimental")
 
 			logrus.Infof("Starting workerd %s with args: %v", uid, args)
 

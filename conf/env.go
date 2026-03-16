@@ -139,8 +139,9 @@ type AppConfig struct {
 
 	EnableLoginOPT bool `env:"ENABLE_LOGIN_OTP" env-default:"true"` // 是否启用登录OTP验证
 
-	DEBUGPProf  bool `env:"DEBUG_PPROF" env-default:"false"` // 是否开启pprof
-	ModeRelease bool `env:"MODE_RELEASE" env-default:"false"`
+	DEBUGPProf      bool   `env:"DEBUG_PPROF" env-default:"false"`  // 是否开启pprof
+	ModeRelease     bool   `env:"MODE_RELEASE" env-default:"false"`
+	CompatibilityDate string `env:"COMPATIBILITY_DATE" env-default:"2025-05-08"` // workerd compatibility date
 }
 
 type JwtConfig struct {

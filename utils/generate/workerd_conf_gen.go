@@ -24,13 +24,14 @@ import (
 )
 
 type GenTemplateConfig struct {
-	Worker         *entities.Worker
-	BindingsText   template.HTML
-	ExtensionsText template.HTML
-	ServiceText    template.HTML
-	FlagsText      template.HTML
-	SocketText     template.HTML
-	WorkerHost     string
+	Worker            *entities.Worker
+	BindingsText      template.HTML
+	ExtensionsText    template.HTML
+	ServiceText       template.HTML
+	FlagsText         template.HTML
+	SocketText        template.HTML
+	WorkerHost        string
+	CompatibilityDate string
 }
 
 // 检查文件是否存在，若不存在则写入内容
@@ -448,13 +449,14 @@ func BuildCapfile(workers []*entities.Worker, workerQuery funcs.WorkerQuery) map
 		socketText = strings.ReplaceAll(socketText, "{{.ControlPort}}", strconv.Itoa(int(worker.ControlPort)))
 
 		genConfig := GenTemplateConfig{
-			Worker:         worker,
-			BindingsText:   template.HTML(bindingsText),
-			ExtensionsText: template.HTML(extensionsText),
-			ServiceText:    template.HTML(servicesText),
-			FlagsText:      template.HTML(flagsText),
-			SocketText:     template.HTML(socketText),
-			WorkerHost:     worker.Name + conf.AppConfigInstance.WorkerURLSuffix,
+			Worker:            worker,
+			BindingsText:      template.HTML(bindingsText),
+			ExtensionsText:    template.HTML(extensionsText),
+			ServiceText:       template.HTML(servicesText),
+			FlagsText:         template.HTML(flagsText),
+			SocketText:        template.HTML(socketText),
+			WorkerHost:        worker.Name + conf.AppConfigInstance.WorkerURLSuffix,
+			CompatibilityDate: conf.AppConfigInstance.CompatibilityDate,
 		}
 		capTemplate.Execute(writer, genConfig)
 		results[worker.GetUID()] = writer.String()
