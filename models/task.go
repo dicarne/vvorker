@@ -36,6 +36,7 @@ func CreateTask(traceID, workerUID, status string, taskType string) error {
 		Status:    status,
 		Type:      taskType,
 		StartTime: time.Now(),
+		EndTime:   time.Now().Add(99 * 365 * 24 * time.Hour), // 99年后
 	}).Error
 }
 
