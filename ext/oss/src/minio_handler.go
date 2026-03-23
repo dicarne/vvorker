@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 	"vvorker/common"
 	"vvorker/conf"
 	"vvorker/entities"
@@ -411,6 +412,7 @@ func CreateOSS(userID uint64, req entities.CreateNewResourcesRequest, uid string
 		resource.Expiration = account.Expiration
 	} else {
 		resource.SingleBucket = true
+		resource.Expiration = time.Now().Add(99 * 365 * 24 * time.Hour) // 设置一个较长的过期时间，例如 99 年
 	}
 
 	// 创建新的 OSS 资源
