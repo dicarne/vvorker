@@ -86,6 +86,13 @@ func GenerateTypes(c *gin.Context) {
 	finalStr := ""
 	typeStr := `/// <reference path="../worker-configuration.d.ts" />
 
+export interface WorkerScheduler {
+	scheduledTime: number;
+	cron: string;
+	type: "scheduled";
+	name: string;
+}
+
 export interface EnvBinding {
 `
 	if len(worker.WorkerConfig.Ai) > 0 {
