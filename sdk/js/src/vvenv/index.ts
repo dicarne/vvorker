@@ -83,7 +83,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
       },
       uploadStreamFile: async (
         stream: ReadableStream<Uint8Array>,
-        fileName: string
+        fileName: string,
       ) => {
         const r = await fetch(`${config().url}/__vvorker__debug`, {
           method: "POST",
@@ -97,7 +97,7 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
             method: "uploadStreamFile",
             params: {
               stream: Base64.fromUint8Array(
-                (await stream.getReader().read()).value ?? new Uint8Array()
+                (await stream.getReader().read()).value ?? new Uint8Array(),
               ),
               fileName,
             },
@@ -321,7 +321,7 @@ function vvkv(binding_key: string, binding: KVBinding): KVBinding {
               NX?: boolean;
               XX?: boolean;
             }
-          | number
+          | number,
       ) => {
         const r = await fetch(`${config().url}/__vvorker__debug`, {
           method: "POST",
@@ -486,7 +486,7 @@ function service(key: string, binding: ServiceBinding) {
     fetch: async (path: string, init?: RequestInit) =>
       binding.fetch(
         "http://vvorker.local" + (path.startsWith("/") ? path : "/" + path),
-        init
+        init,
       ),
     /**
      * 简化调用方法，直接以json形式调用
@@ -503,7 +503,7 @@ function service(key: string, binding: ServiceBinding) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(data),
-        }
+        },
       );
       return rpcResultWrap(r);
     },
@@ -609,7 +609,7 @@ function assets(key: string, binding: Fetcher) {
     fetch: async (path: string, init?: RequestInit) =>
       binding.fetch(
         "http://vvorker.local" + (path.startsWith("/") ? path : "/" + path),
-        init
+        init,
       ),
   };
 }
@@ -691,7 +691,7 @@ function vvtask(bindingKey: string, binding: TaskBinding): TaskBinding {
  * 在生产时，将直接返回绑定和变量。
  */
 export function vvbind<T extends { env: { vars: any; [key: string]: any } }>(
-  c: T
+  c: T,
 ) {
   return {
     oss: (key: keyof T["env"]) => vvoss(key as string, c.env[key as string]),
@@ -700,7 +700,8 @@ export function vvbind<T extends { env: { vars: any; [key: string]: any } }>(
     mysql: (key: keyof T["env"]) =>
       vvmysql(key as string, c.env[key as string]),
     kv: (key: keyof T["env"]) => vvkv(key as string, c.env[key as string]),
-    proxy: (key: keyof T["env"]) => proxy(key as string, c.env[key as string]),
+    proxy: (key: keyof T["env"], conf?: { remote?: boolean }) =>
+      proxy(key as string, c.env[key as string], conf?.remote),
     vars: () => vars<{ vars: T["env"]["vars"] }>(c.env),
     service: (name: keyof T["env"]) =>
       service(name as string, c.env[name as string]),
