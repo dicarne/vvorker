@@ -49,7 +49,7 @@ func EncryptionMiddleware(config EncryptionConfig) gin.HandlerFunc {
 			}
 
 			if len(body) > 0 {
-				decrypted, err := decrypt(body, config.Key)
+				decrypted, err := Decrypt(body, config.Key)
 				if err != nil {
 					c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "failed to get request body"})
 					return
@@ -99,8 +99,11 @@ func encrypt(plaintext []byte, key []byte) ([]byte, error) {
 }
 
 // Decrypt decrypts ciphertext using AES-GCM
-func decrypt(encrypted []byte, key []byte) ([]byte, error) {
-	encrypted = encrypted[1 : len(encrypted)-1] // 去除双引号，数据是 "Base64data" 的样子
+func Decrypt(encrypted []byte, key []byte) ([]byte, error) {
+	// 去除双引号（兼容 "Base64data" 格式），也支持不带引号的 Base64data
+	if len(encrypted) >= 2 && encrypted[0] == '"' && encrypted[len(encrypted)-1] == '"' {
+		encrypted = encrypted[1 : len(encrypted)-1]
+	}
 	ciphertext, err := base64.StdEncoding.DecodeString(string(encrypted))
 	if err != nil {
 		logrus.Error("Failed to decode base64 data:", err)

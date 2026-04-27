@@ -135,7 +135,7 @@ export interface ExternalServerToken {
 }
 
 // AccessRule 实体接口
-export type AccessRuleType = 'internal' | 'aksk' | 'token' | 'sso' | 'open'
+export type AccessRuleType = 'internal' | 'aksk' | 'token' | 'sso' | 'open' | 'encryption'
 export interface AccessRule {
   // 自增 ID
   id?: number

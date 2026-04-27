@@ -1,8 +1,10 @@
 package proxy
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -12,6 +14,7 @@ import (
 	"vvorker/conf"
 	"vvorker/models"
 	"vvorker/utils/database"
+	"vvorker/utils/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -66,6 +69,9 @@ func Endpoint(c *gin.Context) {
 		requestPath := c.Request.URL.Path
 
 		for _, rule := range rules {
+			if rule.RuleType == "encryption" {
+				continue
+			}
 			if strings.HasPrefix(requestPath, rule.Path) {
 				if rule.RuleType == "open" {
 					authed = true
@@ -230,6 +236,37 @@ func Endpoint(c *gin.Context) {
 		if !authed {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
+		}
+	}
+
+	// 加密解密：独立于访问控制，只要请求带有 X-Encrypted-Data 头就生效
+	if c.GetHeader("X-Encrypted-Data") == "true" {
+		encryptionRules := []models.AccessRule{}
+		db := database.GetDB()
+		db.Model(&models.AccessRule{}).Where(map[string]interface{}{
+			"worker_uid": worker.UID,
+			"rule_type":  "encryption",
+			"status":     1,
+		}).Find(&encryptionRules)
+
+		requestPath := c.Request.URL.Path
+		for _, rule := range encryptionRules {
+			if strings.HasPrefix(requestPath, rule.Path) && rule.Data != "" {
+				body, err := io.ReadAll(c.Request.Body)
+				if err != nil {
+					c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "failed to read request body"})
+					return
+				}
+				if len(body) > 0 {
+					decrypted, err := middleware.Decrypt(body, []byte(rule.Data))
+					if err != nil {
+						c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "failed to decrypt request body"})
+						return
+					}
+					c.Request.Body = io.NopCloser(bytes.NewBuffer(decrypted))
+				}
+				break
+			}
 		}
 	}
 

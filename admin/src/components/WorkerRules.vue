@@ -103,6 +103,10 @@ const ruleTypeOptions = [
     label: 'SSO',
     value: 'sso',
   },
+  {
+    label: '加密',
+    value: 'encryption',
+  },
 ]
 const showCreateRuleModal = ref<boolean>(false)
 const IsCreatingRule = ref<boolean>(false)

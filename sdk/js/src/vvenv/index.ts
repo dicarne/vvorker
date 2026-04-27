@@ -1,8 +1,9 @@
+import { debugFetch } from "../encrypt";
 import { KVBinding } from "@dicarne/vvorker-kv";
 import { OSSBinding } from "@dicarne/vvorker-oss";
 import { PGSQLBinding } from "@dicarne/vvorker-pgsql";
 import { MYSQLBinding } from "@dicarne/vvorker-mysql";
-import { config, isLocalDev } from "../common/common";
+import { isLocalDev } from "../common/common";
 import { ServiceBinding, TaskBinding } from "../types/debug-endpoint";
 import { Base64 } from "js-base64";
 
@@ -10,66 +11,39 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
   if (isLocalDev()) {
     return {
       listBuckets: async () => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "oss",
             binding: key,
             method: "listBuckets",
             params: {},
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
       listObjects: async (bucket: string) => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "oss",
             binding: key,
             method: "listObjects",
             params: {
               bucket,
             },
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
       downloadFile: async (fileName: string) => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "oss",
             binding: key,
             method: "downloadFile",
             params: {
               fileName,
             },
-          }),
-        });
+          })
         return Base64.toUint8Array(((await r.json()) as any).data);
       },
       uploadFile: async (data: Uint8Array, fileName: string) => {
         const base64 = Base64.fromUint8Array(data);
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "oss",
             binding: key,
             method: "uploadFile",
@@ -77,21 +51,14 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
               data: base64,
               fileName,
             },
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
       uploadStreamFile: async (
         stream: ReadableStream<Uint8Array>,
         fileName: string,
       ) => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "oss",
             binding: key,
             method: "uploadStreamFile",
@@ -101,44 +68,29 @@ function vvoss(key: string, binding: OSSBinding): OSSBinding {
               ),
               fileName,
             },
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
       downloadStreamFile: async (fileName: string) => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "oss",
             binding: key,
             method: "downloadStreamFile",
             params: {
               fileName,
             },
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
       deleteObject: async (fileName: string) => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "oss",
             binding: key,
             method: "deleteObject",
             params: {
               fileName,
             },
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
     };
@@ -153,64 +105,37 @@ function vvpgsql(key: string, binding: PGSQLBinding): PGSQLBinding {
       client: () =>
         Promise.resolve({
           query: async (sql: string) => {
-            const r = await fetch(`${config().url}/__vvorker__debug`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${config().token}`,
-              },
-              body: JSON.stringify({
+            const r = await debugFetch({
                 service: "pgsql",
                 binding: key,
                 method: "query",
                 params: {
                   sql,
                 },
-              }),
-            });
+              })
             return ((await r.json()) as any).data;
           },
         }),
       connectionString: async () => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "pgsql",
             binding: key,
             method: "connectionString",
             params: {},
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
       connectionInfo: async () => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "pgsql",
             binding: key,
             method: "connectionInfo",
             params: {},
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
       query: async (sql: string, params: any, method: string) => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "pgsql",
             binding: key,
             method: "querysql",
@@ -219,8 +144,7 @@ function vvpgsql(key: string, binding: PGSQLBinding): PGSQLBinding {
               params,
               method,
             },
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
     };
@@ -233,46 +157,26 @@ function vvmysql(key: string, binding: MYSQLBinding): MYSQLBinding {
   if (isLocalDev()) {
     return {
       connectionString: async () => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "mysql",
             binding: key,
             method: "connectionString",
             params: {},
-          }),
-        });
+          })
         return ((await r.json()) as any).data as string;
       },
       connectionInfo: async () => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "mysql",
             binding: key,
             method: "connectionInfo",
             params: {},
-          }),
-        });
+          })
         let data = ((await r.json()) as any).data;
         return data;
       },
       query: async (sql: string, params: any, method: string) => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "mysql",
             binding: key,
             method: "query",
@@ -281,8 +185,7 @@ function vvmysql(key: string, binding: MYSQLBinding): MYSQLBinding {
               params,
               method,
             },
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
     };
@@ -295,21 +198,14 @@ function vvkv(binding_key: string, binding: KVBinding): KVBinding {
   if (isLocalDev()) {
     return {
       get: async (key: string) => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "kv",
             binding: binding_key,
             method: "get",
             params: {
               key,
             },
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
       set: async (
@@ -323,13 +219,7 @@ function vvkv(binding_key: string, binding: KVBinding): KVBinding {
             }
           | number,
       ) => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "kv",
             binding: binding_key,
             method: "set",
@@ -338,44 +228,29 @@ function vvkv(binding_key: string, binding: KVBinding): KVBinding {
               value,
               options,
             },
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
       del: async (key: string) => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "kv",
             binding: binding_key,
             method: "del",
             params: {
               key,
             },
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
       keys: async (pattern: string) => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "kv",
             binding: binding_key,
             method: "keys",
             params: {
               pattern,
             },
-          }),
-        });
+          })
         return ((await r.json()) as any).data;
       },
     };
@@ -386,19 +261,12 @@ function vvkv(binding_key: string, binding: KVBinding): KVBinding {
 
 async function vars<T extends { vars: any }>(binding: any): Promise<T["vars"]> {
   if (isLocalDev()) {
-    let r = await fetch(`${config().url}/__vvorker__debug`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${config().token}`,
-      },
-      body: JSON.stringify({
+    let r = await debugFetch({
         service: "vars",
         binding: "",
         method: "get",
         params: {},
-      }),
-    });
+      })
     return ((await r.json()) as any).data;
   }
   return binding.vars;
@@ -425,13 +293,7 @@ function service(key: string, binding: ServiceBinding) {
           "vvorker-worker-uid": ((import.meta as any).env.VITE_APP_UID ??
             "") as string,
         };
-        let r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        let r = await debugFetch({
             service: "service",
             binding: key,
             method: "fetch",
@@ -441,8 +303,7 @@ function service(key: string, binding: ServiceBinding) {
                 (path.startsWith("/") ? path : "/" + path),
               init: init,
             },
-          }),
-        });
+          })
         return r;
       },
       /**
@@ -452,13 +313,7 @@ function service(key: string, binding: ServiceBinding) {
        * @returns 响应体json，而不是Response
        */
       call: async (path: string, data?: any) => {
-        let r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        let r = await debugFetch({
             service: "service",
             binding: key,
             method: "fetch",
@@ -476,8 +331,7 @@ function service(key: string, binding: ServiceBinding) {
                 body: JSON.stringify(data),
               },
             },
-          }),
-        });
+          })
         return rpcResultWrap(r);
       },
     };
@@ -537,13 +391,7 @@ function proxy(key: string, binding: ServiceBinding, remote?: boolean) {
             "vvorker-worker-uid": ((import.meta as any).env.VITE_APP_UID ??
               "") as string,
           };
-          let r = await fetch(`${config().url}/__vvorker__debug`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${config().token}`,
-            },
-            body: JSON.stringify({
+          let r = await debugFetch({
               service: "proxy",
               binding: key,
               method: "fetch",
@@ -553,8 +401,7 @@ function proxy(key: string, binding: ServiceBinding, remote?: boolean) {
                   (path.startsWith("/") ? path : "/" + path),
                 init: init,
               },
-            }),
-          });
+            })
           return r;
         },
       };
@@ -583,13 +430,7 @@ function assets(key: string, binding: Fetcher) {
           "vvorker-worker-uid": ((import.meta as any).env.VITE_APP_UID ??
             "") as string,
         };
-        let r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        let r = await debugFetch({
             service: "assets",
             binding: key,
             method: "fetch",
@@ -599,8 +440,7 @@ function assets(key: string, binding: Fetcher) {
                 (path.startsWith("/") ? path : "/" + path),
               init: init,
             },
-          }),
-        });
+          })
         return r;
       },
     };
@@ -618,68 +458,40 @@ function vvtask(bindingKey: string, binding: TaskBinding): TaskBinding {
   if (isLocalDev()) {
     return {
       create: async (name: string, trace_id?: string) => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "task",
             binding: bindingKey,
             method: "create",
             params: { name, trace_id },
-          }),
-        });
+          })
         const result = (await r.json()) as any;
         return result.data?.trace_id;
       },
       should_exit: async (trace_id: string) => {
-        const r = await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        const r = await debugFetch({
             service: "task",
             binding: bindingKey,
             method: "should_exit",
             params: { trace_id },
-          }),
-        });
+          })
         const result = (await r.json()) as any;
         return result.data === true;
       },
       complete: async (trace_id: string) => {
-        await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        await debugFetch({
             service: "task",
             binding: bindingKey,
             method: "complete",
             params: { trace_id },
-          }),
-        });
+          })
       },
       log: async (trace_id: string, text: string) => {
-        await fetch(`${config().url}/__vvorker__debug`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config().token}`,
-          },
-          body: JSON.stringify({
+        await debugFetch({
             service: "task",
             binding: bindingKey,
             method: "log",
             params: { trace_id, text },
-          }),
-        });
+          })
       },
     };
   }
