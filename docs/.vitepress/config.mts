@@ -26,6 +26,7 @@ export default withMermaid({
           { text: "Worker 管理", link: "/guide/worker-management" },
           { text: "节点监控", link: "/guide/node-monitoring" },
           { text: "协作功能", link: "/guide/collaboration" },
+          { text: "请求加密", link: "/guide/encryption" },
         ],
       },
       {

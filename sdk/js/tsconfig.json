@@ -9,20 +9,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "types": ["./worker-configuration.d.ts"]
   },
-  "include": [
-    "src/**/*.ts",
-    "worker-configuration.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "**/*.test.ts"
-  ],
-  "compilerOptions": {
-    "types": [
-      "./worker-configuration.d.ts"
-    ]
-  }
+  "include": ["src/**/*.ts", "worker-configuration.d.ts"],
+  "exclude": ["node_modules", "**/*.test.ts"]
 }

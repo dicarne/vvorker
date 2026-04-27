@@ -267,6 +267,19 @@ const handleDeleteRuleClose = () => {
   ruleUidToDelete.value = ''
 }
 
+// 生成随机 AES 密钥（32 字符，AES-256）
+const generateEncryptionKey = (target: 'create' | 'edit') => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  const arr = new Uint8Array(32)
+  crypto.getRandomValues(arr)
+  const key = Array.from(arr, (b) => chars[b % chars.length]).join('')
+  if (target === 'create') {
+    createRuleForm.value.data = key
+  } else {
+    editRuleForm.value.data = key
+  }
+}
+
 onMounted(async () => {
   await fetchRules()
 })
@@ -334,8 +347,11 @@ onMounted(async () => {
         <NFormItem label="规则类型">
           <NSelect v-model:value="createRuleForm.ruleType" :options="ruleTypeOptions" />
         </NFormItem>
-        <NFormItem label="权限">
-          <NInput v-model:value="createRuleForm.data" placeholder="请输入权限" />
+        <NFormItem :label="createRuleForm.ruleType === 'encryption' ? '密钥' : '权限'">
+          <NInput v-model:value="createRuleForm.data" :placeholder="createRuleForm.ruleType === 'encryption' ? '请输入 AES 密钥（16/24/32 字节）' : '请输入权限'" />
+          <NButton v-if="createRuleForm.ruleType === 'encryption'" class="v-item" secondary type="primary" @click="generateEncryptionKey('create')">
+            自动生成
+          </NButton>
         </NFormItem>
       </NForm>
     </NModal>
@@ -360,8 +376,11 @@ onMounted(async () => {
         <NFormItem label="规则类型">
           <NSelect v-model:value="editRuleForm.ruleType" :options="ruleTypeOptions" />
         </NFormItem>
-        <NFormItem label="权限">
-          <NInput v-model:value="editRuleForm.data" placeholder="请输入权限" />
+        <NFormItem :label="editRuleForm.ruleType === 'encryption' ? '密钥' : '权限'">
+          <NInput v-model:value="editRuleForm.data" :placeholder="editRuleForm.ruleType === 'encryption' ? '请输入 AES 密钥（16/24/32 字节）' : '请输入权限'" />
+          <NButton v-if="editRuleForm.ruleType === 'encryption'" class="v-item" secondary type="primary" @click="generateEncryptionKey('edit')">
+            自动生成
+          </NButton>
         </NFormItem>
       </NForm>
     </NModal>
