@@ -40,21 +40,8 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker, desc string)
 
 	curNodeName := conf.AppConfigInstance.NodeName
 
-	if workerRecord.NodeName == curNodeName {
-		exec.ExecManager.ExitCmd(workerRecord.GetUID())
-	}
-
-	// 删除旧的worker
-	err = workerRecord.Delete()
-	if err != nil {
-		if traceID != "" {
-			models.CompleteTask(traceID, "failed")
-		}
-		return traceID, err
-	}
-
-	// 创建新的worker
-	newWorker := &models.Worker{Worker: worker,
+	newWorker := &models.Worker{Model: workerRecord.Model,
+		Worker:              worker,
 		EnableAccessControl: workerRecord.EnableAccessControl,
 		Description:         desc,
 	}
@@ -74,7 +61,7 @@ func UpdateWorker(userID uint, UID string, worker *entities.Worker, desc string)
 		}
 	}
 
-	err = newWorker.Create()
+	err = newWorker.Update()
 	if err != nil {
 		if traceID != "" {
 			models.CompleteTask(traceID, "failed")

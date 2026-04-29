@@ -119,10 +119,7 @@ func (c *Client) AddWorker(clientID, routeHostname string, forwardPort int) erro
 		},
 	}
 	newCfg.Complete("")
-	if _, ok := c.proxyConf.LoadOrStore(clientID, newCfg); ok {
-		logger(context.Background(), "Client.Add").Errorf("client %s already exists", clientID)
-		return nil
-	}
+	c.proxyConf.Store(clientID, newCfg)
 
 	err := c.cli.UpdateAllConfigurer(lo.Values(c.proxyConf.ToMap()), lo.Values(c.visitorConf.ToMap()))
 	if err != nil {
@@ -130,7 +127,7 @@ func (c *Client) AddWorker(clientID, routeHostname string, forwardPort int) erro
 			Errorf("reload conf failed, config is: %+v", c.proxyConf.ToMap())
 		return err
 	}
-	logger(context.Background(), "Client.Add").Infof("client %s added successfully, router: %s, port: %d", clientID, routeHostname, forwardPort)
+	logger(context.Background(), "Client.Add").Infof("client %s synced successfully, router: %s, port: %d", clientID, routeHostname, forwardPort)
 	return nil
 }
 

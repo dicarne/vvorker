@@ -338,38 +338,111 @@ func (w *Worker) GetWorkerClientID() string {
 	return w.UID + "-worker-" + strconv.Itoa(int(w.LocalID))
 }
 
-func (w *Worker) Create() error {
+func getWorkerClientIDByLocalID(uid string, localID int) string {
+	return uid + "-worker-" + strconv.Itoa(localID)
+}
+
+func claimWorkerBackendPort(c context.Context, uid string, localID int, suffix string) int32 {
+	return tunnel.GetPortManager().ClaimWorkerPort(c, fmt.Sprintf("%s-worker-%d-%s-%d", uid, localID, suffix, time.Now().UnixNano()))
+}
+
+func (w *Worker) syncWorkerCopies(resetExisting bool) error {
 	c := context.Background()
+	db := database.GetDB()
+
+	existingCopies := []workercopy.WorkerCopy{}
+	db.Where(&workercopy.WorkerCopy{WorkerUID: w.UID}).Find(&existingCopies)
+
+	if resetExisting {
+		for _, copy := range existingCopies {
+			clientID := getWorkerClientIDByLocalID(w.UID, int(copy.LocalID))
+			tunnel.GetClient().Delete(clientID)
+			tunnel.GetClient().Delete(clientID + "-control")
+		}
+		db.Model(&workercopy.WorkerCopy{}).Unscoped().Where(&workercopy.WorkerCopy{WorkerUID: w.UID}).Delete(&workercopy.WorkerCopy{})
+		existingCopies = nil
+	}
+
+	existingByLocalID := make(map[uint]workercopy.WorkerCopy, len(existingCopies))
+	for _, copy := range existingCopies {
+		existingByLocalID[copy.LocalID] = copy
+	}
+
+	keepLocalIDs := make(map[uint]struct{}, int(w.MaxCount))
+	for i := 0; i < int(w.MaxCount); i++ {
+		localID := uint(i)
+		keepLocalIDs[localID] = struct{}{}
+
+		clientID := getWorkerClientIDByLocalID(w.UID, i)
+		controlClientID := clientID + "-control"
+
+		copy, ok := existingByLocalID[localID]
+		if !ok {
+			copy = workercopy.WorkerCopy{
+				WorkerUID: w.UID,
+				LocalID:   localID,
+			}
+		}
+
+		if copy.Port == 0 {
+			copy.Port = uint(tunnel.GetPortManager().ClaimWorkerPort(c, clientID))
+		}
+		if copy.ControlPort == 0 {
+			copy.ControlPort = uint(tunnel.GetPortManager().ClaimWorkerPort(c, controlClientID))
+		}
+
+		copy.BackendPort = uint(claimWorkerBackendPort(c, w.UID, i, "backend"))
+		copy.BackendControlPort = uint(claimWorkerBackendPort(c, w.UID, i, "control-backend"))
+
+		tunnel.GetClient().AddWorker(clientID, utils.WorkerHostPrefix(w.GetName()), int(copy.Port))
+		tunnel.GetClient().AddWorker(controlClientID, w.GetUID()+"-control", int(copy.ControlPort))
+
+		if copy.ID == 0 {
+			if err := db.Create(&copy).Error; err != nil {
+				logrus.WithError(err).Errorf("create worker copy error: %v", copy)
+				return err
+			}
+			continue
+		}
+
+		if err := db.Model(&workercopy.WorkerCopy{}).Where("id = ?", copy.ID).Updates(map[string]any{
+			"port":                 copy.Port,
+			"control_port":         copy.ControlPort,
+			"backend_port":         copy.BackendPort,
+			"backend_control_port": copy.BackendControlPort,
+		}).Error; err != nil {
+			logrus.WithError(err).Errorf("update worker copy error: %v", copy)
+			return err
+		}
+	}
+
+	for _, copy := range existingCopies {
+		if _, ok := keepLocalIDs[copy.LocalID]; ok {
+			continue
+		}
+
+		clientID := getWorkerClientIDByLocalID(w.UID, int(copy.LocalID))
+		tunnel.GetClient().Delete(clientID)
+		tunnel.GetClient().Delete(clientID + "-control")
+		exec.ExecManager.DrainAndExitCopy(w.UID, copy.LocalID)
+
+		if err := db.Unscoped().Delete(&copy).Error; err != nil {
+			logrus.WithError(err).Errorf("delete worker copy error: %v", copy)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (w *Worker) Create() error {
 	if w.MaxCount == 0 {
 		w.MaxCount = 1
 	}
 	db := database.GetDB()
 	if w.NodeName == conf.AppConfigInstance.NodeName {
-		db.Model(&workercopy.WorkerCopy{}).Unscoped().Where(&workercopy.WorkerCopy{WorkerUID: w.UID}).Delete(&workercopy.WorkerCopy{})
-
-		for i := 0; i < int(w.MaxCount); i++ {
-			w.LocalID = int32(i)
-
-			logrus.Infof("create worker copy %v", i)
-
-			port := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID())
-			w.Port = port
-			tunnel.GetClient().AddWorker(w.GetWorkerClientID(), utils.WorkerHostPrefix(w.GetName()), int(w.GetPort()))
-
-			controlPort := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID()+"-control")
-			w.ControlPort = controlPort
-			tunnel.GetClient().AddWorker(w.GetWorkerClientID()+"-control", w.GetUID()+"-control", int(controlPort))
-
-			wCopy := &workercopy.WorkerCopy{
-				WorkerUID:   w.UID,
-				LocalID:     uint(i),
-				Port:        uint(port),
-				ControlPort: uint(controlPort),
-			}
-			if err := db.Create(wCopy).Error; err != nil {
-				logrus.WithError(err).Errorf("create worker copy error: %v", wCopy)
-				return err
-			}
+		if err := w.syncWorkerCopies(true); err != nil {
+			return err
 		}
 
 		if err := w.UpdateFile(); err != nil {
@@ -396,7 +469,6 @@ func (w *Worker) Create() error {
 }
 
 func (w *Worker) Update() error {
-	c := context.Background()
 	// if w.ID == 0 {
 	// 	return errors.New("worker has no id")
 	// }
@@ -405,37 +477,8 @@ func (w *Worker) Update() error {
 		w.MaxCount = 1
 	}
 	if w.NodeName == conf.AppConfigInstance.NodeName {
-		workercopies := &[]workercopy.WorkerCopy{}
-		db.Model(&workercopy.WorkerCopy{}).Where(&workercopy.WorkerCopy{WorkerUID: w.UID}).Find(workercopies)
-		for i := range *workercopies {
-			w.LocalID = int32(i)
-			tunnel.GetClient().Delete(w.GetWorkerClientID())
-			tunnel.GetClient().Delete(w.GetWorkerClientID() + "-control")
-		}
-		db.Model(&workercopy.WorkerCopy{}).Unscoped().Where(&workercopy.WorkerCopy{WorkerUID: w.UID}).Delete(&workercopy.WorkerCopy{})
-
-		for i := 0; i < int(w.MaxCount); i++ {
-			w.LocalID = int32(i)
-			logrus.Infof("update worker copy %v", i)
-			port := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID())
-			w.Port = port
-			tunnel.GetClient().AddWorker(w.GetWorkerClientID(), utils.WorkerHostPrefix(w.GetName()), int(port))
-
-			controlPort := tunnel.GetPortManager().ClaimWorkerPort(c, w.GetWorkerClientID()+"-control")
-			w.ControlPort = controlPort
-
-			tunnel.GetClient().AddWorker(w.GetWorkerClientID()+"-control", w.GetUID()+"-control", int(controlPort))
-
-			wCopy := &workercopy.WorkerCopy{
-				WorkerUID:   w.UID,
-				LocalID:     uint(i),
-				Port:        uint(port),
-				ControlPort: uint(controlPort),
-			}
-			if err := db.Create(wCopy).Error; err != nil {
-				logrus.WithError(err).Errorf("create worker copy error: %v", wCopy)
-				return err
-			}
+		if err := w.syncWorkerCopies(false); err != nil {
+			return err
 		}
 
 		if err := w.UpdateFile(); err != nil {
@@ -650,6 +693,7 @@ func DiffWorkers(newWorkerList []entities.WorkerUIDVersion) ([]entities.WorkerUI
 func SyncWorkers(workerList []entities.WorkerUIDVersion) error {
 	partialFail := false
 	UIDs := []string{}
+	db := database.GetDB()
 
 	for _, workerUIDVersion := range workerList {
 		worker, err := rpc.GetWorkerByUID(conf.AppConfigInstance.MasterEndpoint, workerUIDVersion.UID)
@@ -664,28 +708,26 @@ func SyncWorkers(workerList []entities.WorkerUIDVersion) error {
 			UID: worker.GetUID(), Name: worker.GetName(), NodeName: worker.GetNodeName(),
 		})
 
-		exec.ExecManager.ExitCmd(worker.UID)
-
-		if err := modelWorker.Delete(); err != nil && err != gorm.ErrRecordNotFound {
-			logrus.WithError(err).Errorf("sync workers db delete error, worker is: %+v", worker)
-			partialFail = true
-			continue
-		}
-
-		if err := modelWorker.Create(); err != nil {
-			logrus.WithError(err).Errorf("sync workers db create error, worker is: %+v", worker)
-			partialFail = true
-			continue
-		}
-
-		if err := modelWorker.DeleteFile(); err != nil {
-			logrus.WithError(err).Errorf("sync workers delete file error, worker is: %+v", worker)
-			partialFail = true
-			continue
-		}
-
-		if err := modelWorker.UpdateFile(); err != nil {
-			logrus.WithError(err).Errorf("sync workers update file error, worker is: %+v", worker)
+		currentWorker := Worker{}
+		err = db.Where(&Worker{Worker: &entities.Worker{UID: worker.UID}}).First(&currentWorker).Error
+		switch {
+		case err == nil:
+			modelWorker.Model = currentWorker.Model
+			modelWorker.EnableAccessControl = currentWorker.EnableAccessControl
+			modelWorker.Description = currentWorker.Description
+			if err := modelWorker.Update(); err != nil {
+				logrus.WithError(err).Errorf("sync workers db update error, worker is: %+v", worker)
+				partialFail = true
+				continue
+			}
+		case err == gorm.ErrRecordNotFound:
+			if err := modelWorker.Create(); err != nil {
+				logrus.WithError(err).Errorf("sync workers db create error, worker is: %+v", worker)
+				partialFail = true
+				continue
+			}
+		default:
+			logrus.WithError(err).Errorf("sync workers get current worker error, worker is: %+v", worker)
 			partialFail = true
 			continue
 		}

@@ -3,7 +3,7 @@ package exec
 import (
 	"context"
 	"errors"
-	"os"
+	"fmt"
 	"os/exec"
 	"path/filepath"
 	"strconv"
@@ -32,6 +32,10 @@ type execManager struct {
 	chanMap *defs.SyncMap[string, chan struct{}]
 	// 用于存储进程 ID
 	pidMap *defs.SyncMap[string, int]
+	// 当前对外服务中的进程
+	currentProcessMap *defs.SyncMap[string, string]
+	processInfoMap    *defs.SyncMap[string, *workerProcessInfo]
+	proxyMap          *defs.SyncMap[string, *switchableTCPProxy]
 	// 用于记录 worker 运行状态
 	runningMap *defs.SyncMap[string, bool]
 	// 用于存储调度器实例
@@ -72,12 +76,15 @@ func init() {
 	}
 
 	ExecManager = &execManager{
-		signMap:       new(defs.SyncMap[string, bool]),
-		chanMap:       new(defs.SyncMap[string, chan struct{}]),
-		pidMap:        new(defs.SyncMap[string, int]),
-		runningMap:    new(defs.SyncMap[string, bool]), // 初始化运行状态映射
-		scheduler:     scheduler,                       // 初始化调度器
-		schedulerJobs: new(defs.SyncMap[string, []gocron.Job]),
+		signMap:           new(defs.SyncMap[string, bool]),
+		chanMap:           new(defs.SyncMap[string, chan struct{}]),
+		pidMap:            new(defs.SyncMap[string, int]),
+		currentProcessMap: new(defs.SyncMap[string, string]),
+		processInfoMap:    new(defs.SyncMap[string, *workerProcessInfo]),
+		proxyMap:          new(defs.SyncMap[string, *switchableTCPProxy]),
+		runningMap:        new(defs.SyncMap[string, bool]), // 初始化运行状态映射
+		scheduler:         scheduler,                       // 初始化调度器
+		schedulerJobs:     new(defs.SyncMap[string, []gocron.Job]),
 	}
 
 	ExecManager.scheduler.Start()
@@ -150,11 +157,6 @@ func HandleAgentWorkerLogs(c *gin.Context) {
 }
 
 func (m *execManager) RunCmd(uid string) {
-	if _, ok := m.chanMap.Get(uid); ok {
-		logrus.Warnf("workerd %s is already running!", uid)
-		return
-	}
-
 	// 写入 worker 启动日志到数据库
 	db := database.GetDB()
 	db.Create(&WorkerLog{
@@ -206,24 +208,62 @@ func (m *execManager) RunCmd(uid string) {
 	}
 
 	for _, copy := range copies {
-		m.RunWorker(&copy)
+		m.RunWorker(&copy, worker.Version)
 	}
 
 }
 
-func (m *execManager) RunWorker(copy *workercopy.WorkerCopy) {
-	uid := copy.WorkerUID + "-" + strconv.Itoa(int(copy.LocalID))
+func (m *execManager) RunWorker(copy *workercopy.WorkerCopy, version string) {
+	copyKey := buildCopyKey(copy.WorkerUID, copy.LocalID)
+	processKey := buildProcessKey(copy, version)
+	backendPort := copy.BackendPort
+	if backendPort == 0 {
+		backendPort = copy.Port
+	}
+	backendControlPort := copy.BackendControlPort
+	if backendControlPort == 0 {
+		backendControlPort = copy.ControlPort
+	}
 
-	c := make(chan struct{})
-	m.chanMap.Set(uid, c)
+	if currentProcessKey, ok := m.currentProcessMap.Get(copyKey); ok && currentProcessKey == processKey {
+		if _, running := m.chanMap.Get(processKey); running {
+			logrus.Infof("workerd %s is already running!", processKey)
+			return
+		}
+	}
+
+	if _, ok := m.chanMap.Get(processKey); ok {
+		logrus.Infof("workerd %s is already starting!", processKey)
+		return
+	}
+
+	if _, err := m.ensureProxy(copyKey, copy.Port); err != nil {
+		logrus.WithError(err).Errorf("failed to initialize worker proxy for %s", copyKey)
+		return
+	}
+	if _, err := m.ensureProxy(copyKey+"-control", copy.ControlPort); err != nil {
+		logrus.WithError(err).Errorf("failed to initialize control proxy for %s", copyKey)
+		return
+	}
+
+	c := make(chan struct{}, 1)
+	m.chanMap.Set(processKey, c)
+	m.processInfoMap.Set(processKey, &workerProcessInfo{WorkerUID: copy.WorkerUID, CopyKey: copyKey})
 
 	ctx, cancel := context.WithCancel(context.Background())
-	go func(ctx context.Context, uid string, m *execManager) {
-		defer func(uid string, m *execManager) {
-			m.signMap.Delete(uid)
-		}(uid, m)
+	go func(ctx context.Context, processKey string, copyKey string, m *execManager) {
+		defer func(processKey string, copyKey string, m *execManager) {
+			m.signMap.Delete(processKey)
+			m.chanMap.Delete(processKey)
+			m.pidMap.Delete(processKey)
+			m.processInfoMap.Delete(processKey)
+			if currentProcessKey, ok := m.currentProcessMap.Get(copyKey); ok && currentProcessKey == processKey {
+				m.currentProcessMap.Delete(copyKey)
+			}
+			m.refreshWorkerRunning(copy.WorkerUID)
+		}(processKey, copyKey, m)
 
-		logrus.Infof("workerd %s running!", uid)
+		logrus.Infof("workerd %s running!", processKey)
 		workerdDir := filepath.Join(
 			conf.AppConfigInstance.WorkerdDir,
 			defs.WorkerInfoPath,
@@ -234,7 +274,7 @@ func (m *execManager) RunWorker(copy *workercopy.WorkerCopy) {
 			// 检查上下文是否被取消，如果取消则退出循环
 			select {
 			case <-ctx.Done():
-				logrus.Infof("workerd %s context cancelled, exiting loop", uid)
+				logrus.Infof("workerd %s context cancelled, exiting loop", processKey)
 				return
 			default:
 			}
@@ -244,7 +284,7 @@ func (m *execManager) RunWorker(copy *workercopy.WorkerCopy) {
 			}
 			args = append(args, "--verbose", "--experimental")
 
-			logrus.Infof("Starting workerd %s with args: %v", uid, args)
+			logrus.Infof("Starting workerd %s with args: %v", processKey, args)
 
 			cmd := exec.CommandContext(ctx, conf.AppConfigInstance.WorkerdBinPath, args...)
 			cmd.Dir = workerdDir
@@ -253,27 +293,64 @@ func (m *execManager) RunWorker(copy *workercopy.WorkerCopy) {
 			// 创建一个管道来捕获标准输出
 			stdoutPipe, err := cmd.StdoutPipe()
 			if err != nil {
-				logrus.Errorf("Failed to create stdout pipe for workerd %s: %v", uid, err)
+				logrus.Errorf("Failed to create stdout pipe for workerd %s: %v", processKey, err)
 			}
 
 			// 创建一个管道来捕获错误输出
 			stderrPipe, err := cmd.StderrPipe()
 			if err != nil {
-				logrus.Errorf("Failed to create stderr pipe for workerd %s: %v", uid, err)
+				logrus.Errorf("Failed to create stderr pipe for workerd %s: %v", processKey, err)
 			}
 
 			if err := cmd.Start(); err != nil {
-				logrus.Errorf("Failed to start workerd %s: %v", uid, err)
-				m.runningMap.Set(uid, false)
+				logrus.Errorf("Failed to start workerd %s: %v", processKey, err)
+				m.refreshWorkerRunning(copy.WorkerUID)
 
+				if exit, ok := m.signMap.Get(processKey); ok && exit {
+					return
+				}
+				time.Sleep(3 * time.Second)
 				continue
 			}
 
-			// 保存进程 ID
-			m.pidMap.Set(uid, cmd.Process.Pid)
+			m.pidMap.Set(processKey, cmd.Process.Pid)
+
+			if !waitForTCPPort(backendPort, 15*time.Second) || !waitForTCPPort(backendControlPort, 15*time.Second) {
+				logrus.Errorf("workerd %s backend ports are not ready in time", processKey)
+				_ = cmd.Process.Kill()
+				if exit, ok := m.signMap.Get(processKey); ok && exit {
+					return
+				}
+				time.Sleep(3 * time.Second)
+				continue
+			}
+
+			mainProxy, err := m.ensureProxy(copyKey, copy.Port)
+			if err != nil {
+				logrus.WithError(err).Errorf("failed to initialize worker proxy for %s", copyKey)
+				_ = cmd.Process.Kill()
+				return
+			}
+			controlProxy, err := m.ensureProxy(copyKey+"-control", copy.ControlPort)
+			if err != nil {
+				logrus.WithError(err).Errorf("failed to initialize control proxy for %s", copyKey)
+				_ = cmd.Process.Kill()
+				return
+			}
+
+			oldProcessKey, _ := m.currentProcessMap.Get(copyKey)
+			oldMainTarget := mainProxy.SwitchTo(fmt.Sprintf("%s:%d", defs.DefaultHostName, backendPort))
+			oldControlTarget := controlProxy.SwitchTo(fmt.Sprintf("%s:%d", defs.DefaultHostName, backendControlPort))
+			m.currentProcessMap.Set(copyKey, processKey)
+			m.runningMap.Set(copy.WorkerUID, true)
+
+			if oldProcessKey != "" && oldProcessKey != processKey {
+				m.signMap.Set(oldProcessKey, true)
+				go m.retireProcessAfterDrain(oldProcessKey, oldMainTarget, oldControlTarget)
+			}
 
 			// 读取标准输出并发送到 channel
-			go func(uid string) {
+			go func(processKey string) {
 				maxBufferSize := 4 * 1024
 				buf := make([]byte, maxBufferSize)
 				lineBuffer := make([]byte, 0, maxBufferSize)
@@ -338,10 +415,10 @@ func (m *execManager) RunWorker(copy *workercopy.WorkerCopy) {
 						}
 					}
 				}
-			}(uid)
+			}(processKey)
 
 			// 读取错误输出并发送到 channel
-			go func(uid string) {
+			go func(processKey string) {
 				maxBufferSize := 4 * 1024
 				buf := make([]byte, maxBufferSize)
 				lineBuffer := make([]byte, 0, maxBufferSize)
@@ -406,85 +483,54 @@ func (m *execManager) RunWorker(copy *workercopy.WorkerCopy) {
 						}
 					}
 				}
-			}(uid)
-			m.runningMap.Set(uid, true)
+			}(processKey)
+			m.runningMap.Set(copy.WorkerUID, true)
 
 			if err := cmd.Wait(); err != nil {
-				logrus.Errorf("Workerd %s : %d exited with error: %v", uid, copy.LocalID, err)
-				m.runningMap.Set(uid, false)
+				logrus.Errorf("Workerd %s : %d exited with error: %v", processKey, copy.LocalID, err)
 			}
+			m.refreshWorkerRunning(copy.WorkerUID)
 
-			if exit, ok := m.signMap.Get(uid); ok && exit {
+			if exit, ok := m.signMap.Get(processKey); ok && exit {
 				return
 			}
 			time.Sleep(3 * time.Second)
 		}
-	}(ctx, uid, m)
+	}(ctx, processKey, copyKey, m)
 
-	go func(cancel context.CancelFunc, uid string, m *execManager) {
-		defer func(uid string, m *execManager) {
-			m.chanMap.Delete(uid)
-			// m.pidMap.Delete(uid) // 不要试图删除pid
-		}(uid, m)
-
-		if channel, ok := m.chanMap.Get(uid); ok {
+	go func(cancel context.CancelFunc, processKey string, m *execManager) {
+		if channel, ok := m.chanMap.Get(processKey); ok {
 			<-channel
 			cancel() // 调用 cancel 函数取消上下文
 		}
-	}(cancel, uid, m)
+	}(cancel, processKey, m)
 }
 
 // ExitCmd 根据 uid 停止某个正在运行的 worker
 func (m *execManager) ExitCmd(uid string) {
-	defer func(uid string, m *execManager) {
-		m.signMap.Delete(uid)
-		m.runningMap.Set(uid, false) // 标记 worker 为停止状态
-	}(uid, m)
-
 	allJobs, ok := m.schedulerJobs.Get(uid)
 	if ok {
 		for _, job := range allJobs {
 			ExecManager.scheduler.RemoveJob(job.ID())
 		}
 	}
-
-	db := database.GetDB()
-	copies := []workercopy.WorkerCopy{}
-	db.Where(&workercopy.WorkerCopy{WorkerUID: uid}).Find(&copies)
-
-	for _, copy := range copies {
-		uid_localid := copy.WorkerUID + "-" + strconv.Itoa(int(copy.LocalID))
-		if channel, ok := m.chanMap.Get(uid_localid); ok {
-			channel <- struct{}{}
-			logrus.Infof("workerd %s is being stopped!", uid_localid)
-		} else {
-			logrus.Warnf("workerd %s is not running, cannot stop it!", uid_localid)
+	m.currentProcessMap.Range(func(copyKey string, processKey string) bool {
+		info, exists := m.processInfoMap.Get(processKey)
+		if exists && info.WorkerUID == uid {
+			m.currentProcessMap.Delete(copyKey)
 		}
+		return true
+	})
 
-		// 尝试获取进程 ID
-		pid, ok := m.pidMap.Get(uid_localid)
-		if !ok {
-			logrus.Warnf("No process ID found for workerd %s", uid_localid)
-			return
-		} else {
-			logrus.Infof("workerd %s pid is %d", uid_localid, pid)
+	m.processInfoMap.Range(func(processKey string, info *workerProcessInfo) bool {
+		if info != nil && info.WorkerUID == uid {
+			logrus.Infof("workerd %s is being stopped", processKey)
+			m.forceStopProcess(processKey)
 		}
+		return true
+	})
 
-		// 获取进程句柄
-		process, err := os.FindProcess(pid)
-		if err != nil {
-			logrus.Errorf("Failed to find process for workerd %s: %v", uid_localid, err)
-			return
-		}
-
-		// 等待进程退出
-		_, err = process.Wait()
-		if err != nil {
-			logrus.Errorf("Error waiting for workerd %s to exit: %v", uid_localid, err)
-		} else {
-			logrus.Infof("workerd %s has stopped", uid_localid)
-		}
-	}
+	m.runningMap.Set(uid, false)
 
 }
 

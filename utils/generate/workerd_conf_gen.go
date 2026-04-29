@@ -473,12 +473,22 @@ func GenWorkerConfig(worker *entities.Worker, workerQuery funcs.WorkerQuery) err
 	db.Where(&workercopy.WorkerCopy{WorkerUID: worker.GetUID()}).Find(&copies)
 
 	for _, copy := range copies {
+		workerPort := copy.Port
+		if copy.BackendPort != 0 {
+			workerPort = copy.BackendPort
+		}
+
+		controlPort := copy.ControlPort
+		if copy.BackendControlPort != 0 {
+			controlPort = copy.BackendControlPort
+		}
+
 		newworker := &entities.Worker{
 			UID:             worker.GetUID(),
 			LocalID:         int32(copy.LocalID),
 			Name:            worker.Name,
 			Template:        worker.Template,
-			ControlPort:     int32(copy.ControlPort),
+			ControlPort:     int32(controlPort),
 			Version:         worker.Version,
 			ActiveVersionID: worker.ActiveVersionID,
 			MaxCount:        worker.MaxCount,
@@ -486,7 +496,7 @@ func GenWorkerConfig(worker *entities.Worker, workerQuery funcs.WorkerQuery) err
 			ExternalPath:    worker.ExternalPath,
 			HostName:        worker.HostName,
 			NodeName:        worker.NodeName,
-			Port:            int32(copy.Port),
+			Port:            int32(workerPort),
 			Entry:           worker.Entry,
 			Code:            worker.Code,
 			TunnelID:        worker.TunnelID,

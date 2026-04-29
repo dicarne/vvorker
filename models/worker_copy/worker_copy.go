@@ -4,8 +4,10 @@ import "gorm.io/gorm"
 
 type WorkerCopy struct {
 	gorm.Model
-	WorkerUID   string
-	LocalID     uint
-	Port        uint
-	ControlPort uint
+	WorkerUID          string
+	LocalID            uint
+	Port               uint
+	ControlPort        uint
+	BackendPort        uint
+	BackendControlPort uint
 }
