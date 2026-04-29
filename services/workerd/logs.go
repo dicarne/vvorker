@@ -9,6 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const maxWorkerLogPages = 50
+
 // GetWorkerLogsReq 定义获取工作者日志请求结构体
 type GetWorkerLogsReq struct {
 	Page     int `json:"page" binding:"gte=1"`      // 页码，从 1 开始
@@ -34,6 +36,11 @@ func GetWorkerLogsEndpoint(c *gin.Context) {
 	if req.PageSize <= 0 {
 		req.PageSize = 10
 	}
+	if req.Page > maxWorkerLogPages {
+		req.Page = maxWorkerLogPages
+	}
+
+	maxLogRows := req.PageSize * maxWorkerLogPages
 
 	// 计算 offset
 	offset := (req.Page - 1) * req.PageSize
@@ -58,8 +65,12 @@ func GetWorkerLogsEndpoint(c *gin.Context) {
 	db := database.GetDB()
 	var logs []*exec.WorkerLog
 	var total int64
-	// 先查询日志总数
-	if err := db.Model(&exec.WorkerLog{}).Where("uid = ?", UID).Limit(10000).Count(&total).Error; err != nil {
+	limitedLogs := db.Model(&exec.WorkerLog{}).
+		Select("id").
+		Where("uid = ?", UID).
+		Order("time desc").
+		Limit(maxLogRows)
+	if err := db.Table("(?) as limited_worker_logs", limitedLogs).Count(&total).Error; err != nil {
 		common.RespErr(c, common.RespCodeInternalError, err.Error(), nil)
 		return
 	}

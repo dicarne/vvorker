@@ -251,11 +251,22 @@ type GetTaskLogsReq struct {
 }
 
 func GetLogsEndpoint(c *gin.Context) {
-
+	maxTaskLogPages := 50
 	var req GetTaskLogsReq
 	if err := c.BindJSON(&req); err != nil {
 		return
 	}
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.PageSize <= 0 {
+		req.PageSize = 10
+	}
+	if req.Page > maxTaskLogPages {
+		req.Page = maxTaskLogPages
+	}
+
+	maxLogRows := req.PageSize * maxTaskLogPages
 
 	userID, ok := common.RequireUID32(c)
 	if !ok {
@@ -288,7 +299,12 @@ func GetLogsEndpoint(c *gin.Context) {
 	}
 
 	var total int64
-	if err := db.Model(&models.TaskLog{}).Where(&models.TaskLog{TraceID: req.TraceID}).Count(&total).Error; err != nil {
+	limitedLogs := db.Model(&models.TaskLog{}).
+		Select("id").
+		Where(&models.TaskLog{TraceID: req.TraceID}).
+		Order("time desc").
+		Limit(maxLogRows)
+	if err := db.Table("(?) as limited_task_logs", limitedLogs).Count(&total).Error; err != nil {
 		common.RespErr(c, 500, "error", gin.H{"error": "Internal server error"})
 		return
 	}
