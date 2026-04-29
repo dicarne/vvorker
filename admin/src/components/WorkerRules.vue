@@ -297,7 +297,7 @@ onMounted(async () => {
             <th>路由前缀</th>
             <th>控制类型</th>
             <th>描述</th>
-            <th>权限</th>
+            <th>配置</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -347,8 +347,8 @@ onMounted(async () => {
         <NFormItem label="规则类型">
           <NSelect v-model:value="createRuleForm.ruleType" :options="ruleTypeOptions" />
         </NFormItem>
-        <NFormItem :label="createRuleForm.ruleType === 'encryption' ? '密钥' : '权限'">
-          <NInput v-model:value="createRuleForm.data" :placeholder="createRuleForm.ruleType === 'encryption' ? '请输入 AES 密钥（16/24/32 字节）' : '请输入权限'" />
+        <NFormItem :label="createRuleForm.ruleType === 'encryption' ? '密钥' : '配置'">
+          <NInput v-model:value="createRuleForm.data" :placeholder="createRuleForm.ruleType === 'encryption' ? '请输入 AES 密钥（16/24/32 字节）' : '请输入配置'" />
           <NButton v-if="createRuleForm.ruleType === 'encryption'" class="v-item" secondary type="primary" @click="generateEncryptionKey('create')">
             自动生成
           </NButton>
@@ -376,8 +376,8 @@ onMounted(async () => {
         <NFormItem label="规则类型">
           <NSelect v-model:value="editRuleForm.ruleType" :options="ruleTypeOptions" />
         </NFormItem>
-        <NFormItem :label="editRuleForm.ruleType === 'encryption' ? '密钥' : '权限'">
-          <NInput v-model:value="editRuleForm.data" :placeholder="editRuleForm.ruleType === 'encryption' ? '请输入 AES 密钥（16/24/32 字节）' : '请输入权限'" />
+        <NFormItem :label="editRuleForm.ruleType === 'encryption' ? '密钥' : '配置'">
+          <NInput v-model:value="editRuleForm.data" :placeholder="editRuleForm.ruleType === 'encryption' ? '请输入 AES 密钥（16/24/32 字节）' : '请输入配置'" />
           <NButton v-if="editRuleForm.ruleType === 'encryption'" class="v-item" secondary type="primary" @click="generateEncryptionKey('edit')">
             自动生成
           </NButton>
