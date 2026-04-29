@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 	"vvorker/common"
@@ -32,7 +33,6 @@ type SSOAuthInfo struct {
 }
 
 func Endpoint(c *gin.Context) {
-
 	host := c.Request.Host
 	c.Request.Host = host
 
@@ -250,7 +250,9 @@ func Endpoint(c *gin.Context) {
 		}).Find(&encryptionRules)
 
 		requestPath := c.Request.URL.Path
+
 		for _, rule := range encryptionRules {
+			logrus.Infof("Encryption rule: path=%s, data=%s", rule.Path, rule.Data)
 			if strings.HasPrefix(requestPath, rule.Path) && rule.Data != "" {
 				body, err := io.ReadAll(c.Request.Body)
 				if err != nil {
@@ -263,7 +265,12 @@ func Endpoint(c *gin.Context) {
 						c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "failed to decrypt request body"})
 						return
 					}
-					c.Request.Body = io.NopCloser(bytes.NewBuffer(decrypted))
+					c.Request.Body = io.NopCloser(bytes.NewReader(decrypted))
+					c.Request.ContentLength = int64(len(decrypted))
+					c.Request.Header.Set("Content-Length", strconv.Itoa(len(decrypted)))
+					c.Request.GetBody = func() (io.ReadCloser, error) {
+						return io.NopCloser(bytes.NewReader(decrypted)), nil
+					}
 				}
 				break
 			}
