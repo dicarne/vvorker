@@ -513,6 +513,22 @@ func RegisterNodeToMaster() {
 
 func modifyProxyRequestHeaders(c *gin.Context) bool {
 	if conf.AppConfigInstance.WorkerHostMode == "path" && c.Request.Header.Get("Server-Host") == "" {
+		if c.Request.URL.Path != "/" && !strings.HasSuffix(c.Request.URL.Path, "/") {
+			trimmedPath := strings.TrimPrefix(c.Request.URL.Path, "/")
+			if conf.AppConfigInstance.WorkerHostPath == "" {
+				if !strings.Contains(trimmedPath, "/") {
+					c.Redirect(http.StatusPermanentRedirect, c.Request.URL.Path+"/"+buildQuerySuffix(c.Request.URL.RawQuery))
+					return false
+				}
+			} else {
+				parts := strings.SplitN(trimmedPath, "/", 3)
+				if len(parts) == 2 && parts[0] == conf.AppConfigInstance.WorkerHostPath && parts[1] != "" {
+					c.Redirect(http.StatusPermanentRedirect, c.Request.URL.Path+"/"+buildQuerySuffix(c.Request.URL.RawQuery))
+					return false
+				}
+			}
+		}
+
 		// 此时，URL的第一段会被提取出来作为host name，并在传下去的url中去掉这一段
 		// 按照 / 切分
 		url := c.Request.URL.Path
@@ -576,6 +592,13 @@ func modifyProxyRequestHeaders(c *gin.Context) bool {
 		}
 	}
 	return true
+}
+
+func buildQuerySuffix(rawQuery string) string {
+	if rawQuery == "" {
+		return ""
+	}
+	return "?" + rawQuery
 }
 
 func modifyProxyRequestHeadersMid(c *gin.Context) {
