@@ -99,10 +99,10 @@ type AppConfig struct {
 	ServerMySQLOneDBName string `env:"SERVER_MYSQL_ONE_DB_NAME"` // 当不为空时，所有mysql资源都将在同一个库中，并且不进行权限控制
 
 	// 数据库连接池配置
-	DBMaxIdleConns  int `env:"DB_MAX_IDLE_CONNS" env-default:"5"`           // 最大空闲连接数
-	DBMaxOpenConns  int `env:"DB_MAX_OPEN_CONNS" env-default:"20"`          // 最大打开连接数
-	DBConnMaxLifetime int `env:"DB_CONN_MAX_LIFETIME" env-default:"5"`      // 连接最大生命周期（分钟）
-	DBConnMaxIdleTime int `env:"DB_CONN_MAX_IDLE_TIME" env-default:"1"`     // 空闲连接超时时间（分钟）
+	DBMaxIdleConns    int `env:"DB_MAX_IDLE_CONNS" env-default:"5"`     // 最大空闲连接数
+	DBMaxOpenConns    int `env:"DB_MAX_OPEN_CONNS" env-default:"20"`    // 最大打开连接数
+	DBConnMaxLifetime int `env:"DB_CONN_MAX_LIFETIME" env-default:"5"`  // 连接最大生命周期（分钟）
+	DBConnMaxIdleTime int `env:"DB_CONN_MAX_IDLE_TIME" env-default:"1"` // 空闲连接超时时间（分钟）
 
 	ClientMinioPort   int `env:"CLIENT_MINIO_PORT" env-default:"19000"`
 	ClientPostgrePort int `env:"CLIENT_POSTGRE_PORT" env-default:"15432"`
@@ -139,9 +139,11 @@ type AppConfig struct {
 
 	EnableLoginOPT bool `env:"ENABLE_LOGIN_OTP" env-default:"true"` // 是否启用登录OTP验证
 
-	DEBUGPProf      bool   `env:"DEBUG_PPROF" env-default:"false"`  // 是否开启pprof
-	ModeRelease     bool   `env:"MODE_RELEASE" env-default:"false"`
+	DEBUGPProf        bool   `env:"DEBUG_PPROF" env-default:"false"` // 是否开启pprof
+	ModeRelease       bool   `env:"MODE_RELEASE" env-default:"false"`
 	CompatibilityDate string `env:"COMPATIBILITY_DATE" env-default:"2025-05-08"` // workerd compatibility date
+
+	EXP_FIX_PATH_REDIRECT bool `env:"EXP_FIX_PATH_REDIRECT" env-default:"true"` // 是否启用路径重定向修复，修复worker_host_mode为path时，路径重定向导致的访问问题
 }
 
 type JwtConfig struct {

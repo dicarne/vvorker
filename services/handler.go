@@ -513,18 +513,20 @@ func RegisterNodeToMaster() {
 
 func modifyProxyRequestHeaders(c *gin.Context) bool {
 	if conf.AppConfigInstance.WorkerHostMode == "path" && c.Request.Header.Get("Server-Host") == "" {
-		if c.Request.URL.Path != "/" && !strings.HasSuffix(c.Request.URL.Path, "/") {
-			trimmedPath := strings.TrimPrefix(c.Request.URL.Path, "/")
-			if conf.AppConfigInstance.WorkerHostPath == "" {
-				if !strings.Contains(trimmedPath, "/") {
-					c.Redirect(http.StatusPermanentRedirect, c.Request.URL.Path+"/"+buildQuerySuffix(c.Request.URL.RawQuery))
-					return false
-				}
-			} else {
-				parts := strings.SplitN(trimmedPath, "/", 3)
-				if len(parts) == 2 && parts[0] == conf.AppConfigInstance.WorkerHostPath && parts[1] != "" {
-					c.Redirect(http.StatusPermanentRedirect, c.Request.URL.Path+"/"+buildQuerySuffix(c.Request.URL.RawQuery))
-					return false
+		if conf.AppConfigInstance.EXP_FIX_PATH_REDIRECT {
+			if c.Request.URL.Path != "/" && !strings.HasSuffix(c.Request.URL.Path, "/") {
+				trimmedPath := strings.TrimPrefix(c.Request.URL.Path, "/")
+				if conf.AppConfigInstance.WorkerHostPath == "" {
+					if !strings.Contains(trimmedPath, "/") {
+						c.Redirect(http.StatusPermanentRedirect, c.Request.URL.Path+"/"+buildQuerySuffix(c.Request.URL.RawQuery))
+						return false
+					}
+				} else {
+					parts := strings.SplitN(trimmedPath, "/", 3)
+					if len(parts) == 2 && parts[0] == conf.AppConfigInstance.WorkerHostPath && parts[1] != "" {
+						c.Redirect(http.StatusPermanentRedirect, c.Request.URL.Path+"/"+buildQuerySuffix(c.Request.URL.RawQuery))
+						return false
+					}
 				}
 			}
 		}
